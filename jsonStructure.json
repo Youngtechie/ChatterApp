@@ -1,0 +1,189 @@
+{
+  "Users": {
+    "id": {
+      "id": "string",
+      "fullName": "string",
+      "email": "string",
+      "username": "string",
+      "bio": "string",
+      "profilePicture": "string",
+      "dateOfBirth": "string",
+      "location": "string",
+      "followers": {
+        "total": "integer",
+        "theFollowers": ["id"]
+      },
+      "following": {
+        "total": "integer",
+        "theFollowers": ["id"]
+      },
+      "posts": [
+        {
+          "id": "string",
+          "details": "HTML Document"
+        }
+      ],
+      "likes": {
+        "out": [
+          {
+            "postid": "string",
+            "time": "string"
+          }
+        ],
+        "in": [
+          {
+            "postid": "string",
+            "time": "string"
+          }
+        ],
+        "totalLikes": {
+          "out": "number",
+          "in": "number"
+        }
+      },
+      "comments": {
+        "out": [
+          {
+            "postId": "string",
+            "commentArr": [
+              {
+                "details": "string",
+                "time": "string"
+              }
+            ]
+          }
+        ],
+        "in": [
+          {
+            "postId": "string",
+            "commentsArr": [
+              {
+                "details": "string",
+                "time": "string"
+              }
+            ]
+          }
+        ],
+        "totalComments": {
+          "out": "number",
+          "in": "number"
+        }
+      },
+      "notifications": [
+        {
+          "type": "string",
+          "details": {
+            "time": "string"
+          }
+        }
+      ],
+      "settings": {
+        "privacySettings": {
+          "showEmail": "boolean",
+          "showLastseen": "boolean",
+          "blockedUsers": ["UserId"]
+        },
+        "securitySettings": {
+          "emailVerified": "boolean"
+        }
+      },
+      "interests": ["string"],
+      "activityLog": [
+        {
+          "activityName": "string",
+          "details": {}
+        }
+      ],
+      "savedPosts": ["string"],
+      "badges": ["badgeId"],
+      "relationshipStatus": "string",
+      "education": [
+        {
+          "type": "string",
+          "institution": "string",
+          "date": "string"
+        }
+      ],
+      "workExperience": [
+        {
+          "type": "string",
+          "companyName": "string",
+          "workLocation": "string",
+          "date": "string"
+        }
+      ],
+      "lastActive": "time",
+      "gender": "string",
+      "isLogined": "boolean",
+      "blogName": "string",
+      "contacts": [
+        {
+          "name": "string",
+          "link": "string"
+        }
+      ],
+      "interactions": [
+        {
+          "type": "string",
+          "details": {
+            "time": "string",
+            "postid": "string"
+          }
+        }
+      ],
+      "analyses": {
+        "totalComments": "number",
+        "totalLiked": "number",
+        "totalPostsLikes": "number",
+        "totalPostsComments": "number",
+        "totalPosts": "number",
+        "totalReposts": "number"
+      }
+    }
+  },
+  "Reposts": {
+    "id": {
+      "reposterid": "string",
+      "postdetails": {},
+      "added": "text",
+      "repostedtime": "time"
+    }
+  },
+  "Posts": {
+    "id": {
+      "posterId": "string",
+      "postTitle": [],
+      "postContain": "text",
+      "postTags": [],
+      "Posttime": "time",
+      "PostLikes": {
+        "ids": ["userId"],
+        "total": "number"
+      },
+      "postsComments": {
+        "details": [
+          {
+            "id": "string",
+            "text": "string",
+            "time": "string"
+          }
+        ],
+        "total": "number"
+      },
+      "postReposts": "number",
+      "postViews": "number",
+      "postMedia": {
+        "images": [],
+        "video": []
+      }
+    }
+  },
+  "Badges":{
+    "id": {
+        "badgeId": "string",
+        "name": "string",
+        "description": "string",
+        "image": "string"
+    }
+  }
+}

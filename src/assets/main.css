@@ -1,0 +1,174 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body {
+  height: auto;
+  width: auto;
+}
+#app {
+  height: auto;
+  display: flex;
+  flex-flow: column wrap;
+}
+.DayApp {
+  background-color: #efefef;
+}
+.NightApp {
+  background-color: black;
+  color: white;
+}
+.router-link-exact-active button {
+  background-color: purple;
+  cursor: not-allowed;
+  color: white;
+}
+#textarea {
+  display: inline-block;
+  position: relative;
+}
+#textarea button {
+  top: 0px;
+  align-self: center;
+  display: flex;
+  flex-flow: column wrap;
+  align-items: center;
+}
+#previewer ul, #previewer ol {
+  padding: 20px;
+}
+#previewer p{
+  display: flex;
+  flex-flow: column wrap;
+  width: 100%;
+}
+#previewer p > img, #previewer p > video, #textarea p > video, #textarea p > img  {
+  /* CSS properties for the paragraph containing an image followed by a video */
+  align-self: center;
+  width: 100%;
+}
+#previewer img {
+  display: block;
+  align-self: center;
+}
+#previewer video {
+  display: block;
+  align-self: center;
+}
+#themeBtn{
+    display: flex;
+    align-items: center;
+    width: 40px;
+    height: 20px;
+    border-radius: 10px;
+    position: relative;
+}
+#themeImgContainer{
+    display: flex;
+    align-items: center;
+    width: 50%;
+    border-radius: 10px;
+    position: absolute;
+}
+.NightApp #themeImgContainer{
+    right: 0;
+    background-color: #efefef;
+}
+.DayApp #themeImgContainer img{
+    filter: brightness(0) invert(1);
+}
+.DayApp #themeImgContainer{
+    background-color: black;
+    left: 0;
+}
+.DayApp #themeBtn{
+    background-color: #efefef;
+    border: 2px solid black;
+}
+.NightApp #themeBtn{
+    background-color: black;
+    border: 2px solid #efefef;
+}
+::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: transparent;
+}
+code {
+  display: block;
+  padding: 1em;
+  background-color: #282c34;
+  color: #abb2bf;
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 14px;
+  line-height: 1.5;
+  border-radius: 5px;
+  overflow: auto;
+}
+
+pre {
+  margin: 0;
+  overflow: auto;
+}
+
+code::-webkit-scrollbar {
+  width: 8px;
+}
+
+code::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 4px;
+}
+
+code::-webkit-scrollbar-track {
+  background-color: #282c34;
+}
+
+code::selection {
+  background-color: #abb2bf;
+  color: #282c34;
+}
+a, a:active, a:hover{
+  text-decoration: none;
+}
+#previewer h1:first-of-type{
+  text-align: center;
+}
+.DayApp button{
+  background-color: #efefef;
+  color: black;
+}
+.NightApp button{
+  background-color: black;
+  color: white;
+}
+.DayApp .analysesDisplay svg path{
+    stroke: black;
+    stroke-width: 1px;
+}
+
+.NightApp .analysesDisplay svg path{
+  stroke: #fff;
+  stroke-width: 1px;
+}
+
+.DayApp .clickNotify{
+  background-color: ghostwhite;
+  border: 5px outset white;
+}
+.NightApp .clickNotify{
+  background-color: #282c34;
+  border: 5px inset #333;
+}
+.red * {
+  fill: red;
+}
