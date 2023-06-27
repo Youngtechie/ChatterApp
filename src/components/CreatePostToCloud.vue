@@ -182,7 +182,7 @@ export default async function CreatePostToCloud(rawDocument: string, document: s
 
             postLastMedias.forEach((media) => {
                 const match = allMedias.find(med => med.id === media.id)
-                if (match) {
+                if (match && match !== undefined) {
                     mediaFullPaths.value.push(media);
                 }
                 else {
@@ -194,17 +194,19 @@ export default async function CreatePostToCloud(rawDocument: string, document: s
                 }
             })
 
-            for (const element of allMedias) {
-                if (element.id > lastMediaId) {
-                    const inputFile = store.uploadFiles(element.id);
-                    const cloudStorage = storageRef(FullStorage, `posts/${postID}/${element.nameType}/${inputFile?.file.name}`);
-                    mediaFullPaths.value.push({
-                        id: element.id,
-                        mediaFullPath: `ChatterAppFiles/posts/${postID}/${element.nameType}/${inputFile?.file.name}`
-                    });
-                    uploadBytes(cloudStorage, inputFile?.file as File).catch(error => {
-                        console.log(error);
-                    });
+            if (store.fileInputs.length > 0) {
+                for (const element of allMedias) {
+                    if (element.id > lastMediaId) {
+                        const inputFile = store.uploadFiles(element.id);
+                        const cloudStorage = storageRef(FullStorage, `posts/${postID}/${element.nameType}/${inputFile?.file.name}`);
+                        mediaFullPaths.value.push({
+                            id: element.id,
+                            mediaFullPath: `ChatterAppFiles/posts/${postID}/${element.nameType}/${inputFile?.file.name}`
+                        });
+                        uploadBytes(cloudStorage, inputFile?.file as File).catch(error => {
+                            console.log(error);
+                        });
+                    }
                 }
             }
 

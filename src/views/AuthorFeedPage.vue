@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onUnmounted, watchEffect } from 'vue'
+import { ref, onUnmounted, watchEffect, onMounted, nextTick } from 'vue'
 import { useChatterStore } from '@/stores/store';
 import { getStorage, ref as storageRef, getDownloadURL, deleteObject, listAll } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, deleteDoc } from 'firebase/firestore'
@@ -33,10 +33,28 @@ const db = getFirestore(app)
 
 const store = useChatterStore()
 
+
 watchEffect(() => {
     if (posts.value?.length as number > 0) {
         posts.value?.sort((a: Record<string, any>, b: Record<string, any>) => b.postTime.seconds - a.postTime.seconds)
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'none';
+            }
+        })
     }
+})
+
+onMounted(() => {
+    clearTimeout(timeOut)
+    nextTick(() => {
+        const warningShow = document.getElementById('warningShow');
+        if (warningShow) {
+            warningShow.style.display = 'flex';
+            warningShow.textContent = 'Loading ...'
+        }
+    })
 })
 
 getPosts()
@@ -162,7 +180,6 @@ async function deleteFolder(folderPath: string) {
             </div>
         </div>
     </div>
-    <div v-else>Loading ... </div>
 </template>
 <style scoped>
 .resultsContainer {
@@ -231,10 +248,19 @@ async function deleteFolder(folderPath: string) {
     font-size: medium;
     cursor: pointer;
 }
-.editSectionbtn{
+
+.editSectionbtn {
     display: flex;
     align-items: center;
     justify-content: space-around;
     margin-top: 10px;
 }
-</style>
+
+.editSectionbtn button:last-of-type {
+    color: red;
+}
+
+.editSectionbtn button:last-of-type:hover {
+    background-color: red;
+    color: white;
+}</style>

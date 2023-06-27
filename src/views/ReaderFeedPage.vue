@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onUnmounted, watchEffect } from 'vue'
+import { ref, onUnmounted, watchEffect, onMounted, nextTick } from 'vue'
 import { useChatterStore } from '@/stores/store';
 import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc, limit, orderBy } from 'firebase/firestore'
@@ -52,17 +52,57 @@ const stopNoData = ref(0)
 
 watchEffect(() => {
     if (presentSection.value === 'interested_section') {
-        posts.value = []
         getPostsByTag(interests.value)
     }
     else if (presentSection.value === 'following_section') {
-        followings.value = []
         getFollowings()
     }
 })
 
+watchEffect(() => {
+    if (posts.value?.length as number > 0) {
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'none';
+            }
+        })
+    }
+})
+
+watchEffect(() => {
+    if (followings.value?.length as number > 0) {
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'none';
+            }
+        })
+    }
+})
+
+onMounted(() => {
+    clearTimeout(timeOut)
+    nextTick(() => {
+        const warningShow = document.getElementById('warningShow');
+        if (warningShow) {
+            warningShow.style.display = 'flex';
+            warningShow.textContent = 'Loading ...'
+        }
+    })
+})
+
 function handleChangeSection(section: string) {
+    posts.value = []
+    followings.value = []
     presentSection.value = section
+    nextTick(() => {
+        const warningShow = document.getElementById('warningShow');
+        if (warningShow) {
+            warningShow.style.display = 'flex';
+            warningShow.textContent = 'Loading ...'
+        }
+    })
 }
 
 function routeToPost(postId: string) {
@@ -214,8 +254,6 @@ async function getFollowings() {
     const numOfData = Math.floor(10 / length as number)
     followings.value = []
 
-    console.log(length, numOfData, store.signedUser.following.theFollowings.length)
-
     for (let i = 0; i < store.signedUser.following.theFollowings.length; i++) {
         try {
             const followingsQuery = query(collection(db, 'posts'), where('posterId', '==', `${store.signedUser.following.theFollowings[i]}`), orderBy('postTime', 'desc'), limit(numOfData))
@@ -303,7 +341,6 @@ async function getFollowings() {
             </div>
         </div>
     </div>
-    <div v-else>Loading....</div>
 </template>
 <style scoped>
 .btns {
@@ -383,4 +420,5 @@ async function getFollowings() {
     font-weight: bolder;
     font-size: medium;
     cursor: pointer;
-}</style>
+}
+</style>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Ref, ref, onMounted, onUnmounted, watchEffect } from 'vue';
+import { type Ref, ref, onMounted, onUnmounted, watchEffect, nextTick } from 'vue';
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 import router from '@/router/index';
@@ -70,7 +70,6 @@ const undoStack = ref<{ content: string; cursor: number }[]>([]);
 const redoStack = ref<{ content: string; cursor: number }[]>([]);
 let timeOut: ReturnType<typeof setTimeout>;
 const DomParse = new DOMParser()
-const isLoading = ref(true)
 
 const observer = new MutationObserver((mutationsList) => {
     // Handle the changes here
@@ -148,6 +147,7 @@ async function getPost() {
         }
     }
     else {
+        clearTimeout(timeOut)
         const error = document.getElementById('ErrorShow') as HTMLDivElement;
         error.innerText = `Can't find a post with ${id} id`
         error.style.display = 'flex'
@@ -164,28 +164,34 @@ onMounted(() => {
             btn.setAttribute('disabled', '')
             btn.style.cursor = "not-allowed"
         })
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'flex';
+                warningShow.textContent = 'Loading ...'
+            }
+        })
         getPost().then(() => {
             document.querySelectorAll('button').forEach((btn) => {
                 btn.removeAttribute('disabled')
                 btn.style.cursor = 'pointer'
             })
+            nextTick(() => {
+                const warningShow = document.getElementById('warningShow');
+                if (warningShow) {
+                    warningShow.style.display = 'none';
+                }
+            })
         })
     }
-
-    const error = document.getElementById('ErrorShow') as HTMLDivElement
-    if (store.signedUser.isLogined === undefined) {
-        error.innerText = 'You must be logged in to be able to post'
-        error.style.display = 'flex'
-        timeOut = setTimeout(() => {
-            error.style.display = 'none'
-        }, 3000)
-    }
+    
     undoStack.value.push({ content: '', cursor: 0 });
     textarea.value?.focus();
     // Configure and start observing the div for changes in its child nodes
     const observerConfig = { childList: true, subtree: true };
     observer.observe((textarea.value as HTMLDivElement), observerConfig);
 
+    clearTimeout(timeOut)
 })
 
 onUnmounted(() => {

@@ -12,6 +12,7 @@ onMounted(() => {
 <template>
   <RouterView />
   <div id="ErrorShow"></div>
+  <div id="warningShow"></div>
 </template>
 <style scoped>
 #ErrorShow{
@@ -30,6 +31,31 @@ onMounted(() => {
   align-items: center;
   display: none;
   animation: dance 3s infinite;
+}
+
+#warningShow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px;
+  border: 1px outset #efefef;
+  display: none;
+  text-align: center;
+  height: 200px;
+  width: 200px;
+  border-radius: 10px;
+  font-weight: bolder;
+  align-items: center;
+  justify-content: center;
+}
+.DayApp #warningShow{
+  color: #efefef;
+  background-color: black;
+}
+.NightApp #warningShow{
+  color: black;
+  background-color: #efefef;
 }
 
 @keyframes dance {

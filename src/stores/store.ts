@@ -68,6 +68,7 @@ export const useChatterStore = defineStore('chatter', () => {
 
   function toggleAccountType() {
     asReader.value = !asReader.value
+    toggleSidebar()
   }
 
   const authenticated = false // Refactor: Use camelCase for variable names (authenticated)
