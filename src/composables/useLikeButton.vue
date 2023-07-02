@@ -23,12 +23,20 @@ onMounted(() => {
         onSnapshot(PostQ, (doc2) => {
             const post = doc2.docs[0].data()
             if (post.postLikes.ids.includes(store.signedUser.id)) {
-                (document.querySelector(`#btnLike${props.viewPostId} svg path`) as SVGPathElement).style.fill = 'red';
-                (document.querySelector(`#btnLike${props.viewPostId} span`) as HTMLSpanElement).textContent = `${post.postLikes.total}`;
+                document.querySelectorAll(`#btnLike${props.viewPostId} svg path`).forEach((element: any) => {
+                    element.style.fill = 'red';
+                })
+                document.querySelectorAll(`#btnLike${props.viewPostId} span`).forEach((element: any) => {
+                    element.textContent = `${post.postLikes.total}`;
+                })
             }
             else if (!post.postLikes.ids.includes(store.signedUser.id)) {
-                (document.querySelector(`#btnLike${props.viewPostId} svg path`) as SVGPathElement).style.fill = 'none';
-                (document.querySelector(`#btnLike${props.viewPostId} span`) as HTMLSpanElement).textContent = `${post.postLikes.total}`;
+                document.querySelectorAll(`#btnLike${props.viewPostId} svg path`).forEach((element: any) => {
+                    element.style.fill = 'none';
+                })
+                document.querySelectorAll(`#btnLike${props.viewPostId} span`).forEach((element: any) => {
+                    element.textContent = `${post.postLikes.total}`;
+                })
             }
         })
     } catch (error) {

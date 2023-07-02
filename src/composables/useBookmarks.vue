@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import useAuthentication from './useAuth.vue';
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore'
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc, onSnapshot, getDoc, type DocumentData } from 'firebase/firestore'
 import router from '@/router';
 import { useChatterStore } from '@/stores/store';
 
@@ -23,22 +23,23 @@ onMounted(() => {
     try {
         onSnapshot(PostQ, (doc2) => {
             const post = doc2.docs[0].data()
+            const userRef = doc(db, 'users', store.signedUser.id)
+            getDoc(userRef).then((doc1) => {
+                store.signedUser = doc1.data() as DocumentData
+            })
             if (post.postBookmarks.includes(store.signedUser.id)) {
                 bookmarked.value = true;
-                (document.querySelector(`#btnBook${props.viewPostId} span`) as HTMLSpanElement).textContent = `${post.postBookmarks.length}`;
+                document.querySelectorAll(`#btnBook${props.viewPostId} span`).forEach((element) => {
+                    element.textContent = `${post.postBookmarks.length}`;
+                })
 
             }
             else if (!post.postBookmarks.includes(store.signedUser.id)) {
                 bookmarked.value = false;
-                (document.querySelector(`#btnBook${props.viewPostId} span`) as HTMLSpanElement).textContent = `${post.postBookmarks.length}`;
+                document.querySelectorAll(`#btnBook${props.viewPostId} span`).forEach((element) => {
+                    element.textContent = `${post.postBookmarks.length}`;
+                })
             }
-        })
-
-        const qUser = query(collection(db, 'users'), where('id', '==', `${store.signedUser.id}`))
-
-        onSnapshot(qUser, (doc)=>{
-            const user = doc.docs[0].data()
-            store.signedUser = user
         })
         
     } catch (error) {

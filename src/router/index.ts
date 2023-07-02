@@ -15,12 +15,6 @@ const router = createRouter({
           sensitive: true
         },
         {
-          path: '/notification',
-          name: 'Notification',
-          component: ()=> import('../views/NotificationPage.vue'),
-          sensitive: true
-        },
-        {
           path: '/search',
           name: 'Search',
           component: ()=> import('../views/SearchPage.vue'),

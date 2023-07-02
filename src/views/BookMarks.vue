@@ -10,10 +10,9 @@ import axios from 'axios'
 import useDetailButtons from '@/composables/useDetailButtons.vue'
 import useCalculateTime from '@/composables/useCalculateTime.vue'
 
-let timeOut: ReturnType<typeof setTimeout>;
+useUserDetails()
 
 onUnmounted(() => {
-    clearTimeout(timeOut)
     const warning = document.getElementById('warningShow') as HTMLDivElement
     warning.style.display = 'none'
 })
@@ -21,13 +20,13 @@ const divContent = ref('')
 
 const DomParse = new DOMParser()
 
-useUserDetails()
-
 const { app } = useAuthentication()
 
 const storage = getStorage(app)
 
 const store = useChatterStore()
+
+store.sidebar = false
 
 const db = getFirestore(app)
 
@@ -47,7 +46,6 @@ const posts = ref<DocumentData[] | null>([])
 const poster = ref<Poster | null>()
 
 onMounted(() => {
-    clearTimeout(timeOut)
     nextTick(() => {
         const warningShow = document.getElementById('warningShow');
         if (warningShow) {
@@ -55,14 +53,7 @@ onMounted(() => {
             warningShow.textContent = 'Loading ...'
         }
     })
-    getPosts(store.signedUser.bookmarks).finally(() => {
-        nextTick(() => {
-            const warningShow = document.getElementById('warningShow');
-            if (warningShow) {
-                warningShow.style.display = 'none';
-            }
-        })
-    })
+    getPosts(store.signedUser.bookmarks)
 })
 
 function routeToPost(postId: string) {
@@ -99,9 +90,6 @@ async function getPostContent(post: DocumentData) {
         const error = document.getElementById('ErrorShow') as HTMLDivElement
         error.style.display = 'flex'
         error.textContent = 'Something went wrong, check your internet connection'
-        timeOut = setTimeout(() => {
-            error.style.display = 'none'
-        }, 3000)
     }
 }
 
@@ -159,8 +147,7 @@ async function getPosts(bookmarks: string[]) {
 
                     post.posterDetails = poster.value;
                     poster.value = null;
-                    isLoading.value = false;
-
+                    
                     return post;
                 })
             );
@@ -169,14 +156,21 @@ async function getPosts(bookmarks: string[]) {
         const resolvedPosts = await Promise.all(promises);
         const flattenedPosts = resolvedPosts.flat();
         posts.value = flattenedPosts;
+        isLoading.value = false;
+
+        if (posts.value) {
+            nextTick(() => {
+                const warningShow = document.getElementById('warningShow');
+                if (warningShow) {
+                    warningShow.style.display = 'none';
+                }
+            })
+        }
     } catch (err) {
         console.log(err);
         const error = document.getElementById('ErrorShow') as HTMLDivElement;
         error.style.display = 'flex';
         error.textContent = 'Something went wrong, check your internet connection';
-        timeOut = setTimeout(() => {
-            error.style.display = 'none';
-        }, 3000);
     }
 }
 
@@ -198,7 +192,7 @@ async function getPosts(bookmarks: string[]) {
                 </div>
             </div>
         </div>
-        <div v-if="store.signedUser.bookmarks.length === 0" class="noBookmarks">
+        <div v-if="store.signedUser.bookmarks.length === 0 && isLoading === false" class="noBookmarks">
             No Bookmarks yet.
         </div>
     </div>
@@ -209,7 +203,8 @@ h2 {
     margin: 10px 0;
     height: 5vh;
 }
-.bookmarksCon{
+
+.bookmarksCon {
     width: 100%;
     height: 80vh;
     display: flex;
@@ -217,6 +212,7 @@ h2 {
     align-items: center;
     overflow-y: scroll;
 }
+
 .noBookmarks {
     width: 100%;
     text-align: center;

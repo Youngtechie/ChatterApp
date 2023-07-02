@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, ref, type Ref, onMounted, nextTick } from 'vue';
+import { onUnmounted, ref, type Ref, onMounted, nextTick, watchEffect } from 'vue';
 import { useChatterStore } from '@/stores/store';
 import { useRouter } from 'vue-router';
 import useLoadingPage from "@/composables/useLoadingPage.vue";
@@ -11,15 +11,12 @@ import useAuthentication from '@/composables/useAuth.vue'
 import useCalculateTime from '@/composables/useCalculateTime.vue';
 import useDetailButtons from '@/composables/useDetailButtons.vue'
 import axios from 'axios'
-import getUser from '@/composables/useUserViewProfile.vue';
 
 const router = useRouter();
 
 const isLoading: Ref<boolean> = ref(true)
 
 const store = useChatterStore()
-
-useUserDetails()
 
 interface Poster {
     img: string,
@@ -30,13 +27,20 @@ interface Poster {
 }
 
 onMounted(() => {
+    useUserDetails()
+
     nextTick(() => {
         const warning = document.getElementById('warningShow') as HTMLDivElement
         warning.style.display = 'none'
     })
-    getUser(store.userId).then(() => {
+
+    store.section = 'personal'
+})
+
+watchEffect(()=>{
+    if(store.signedUser.id !== undefined){
         isLoading.value = false
-    })
+    }
 })
 
 const poster = ref<Poster | null>()
@@ -138,7 +142,7 @@ async function getPosts(interactions: Record<string, any>) {
                 );
             })
             const resolvedPosts = await Promise.all(promises);
-            store.viwedProfile.interactions = resolvedPosts.flat()
+            store.signedUser.interactions = resolvedPosts.flat()
             isinteractionsLoading.value = false
         } catch (error) {
             //
@@ -156,7 +160,7 @@ function back() {
 function changeSection(value: string) {
     store.section = value
     if (value === 'interaction' && store.userId !== '' && store.userId !== undefined) {
-        getPosts(store.viwedProfile.interactions)
+        getPosts(store.signedUser.interactions)
     }
 }
 
@@ -212,15 +216,15 @@ onUnmounted(() => {
 
         <div class="body">
             <div class="imageCon">
-                <div class="imgCon" :style="{ backgroundImage: `url(${store.viwedProfile.profilePicture})` }"></div>
+                <div class="imgCon" :style="{ backgroundImage: `url(${store.signedUser.profilePicture})` }"></div>
             </div>
 
             <section class="sectionFoImage">
-                <h3>{{ store.signedUser.fullName }}</h3> <!--fullname--> <!-- username -->
+                <h3>{{ store.signedUser.fullName }}</h3>
                 <div class="follow">
-                    <P>{{ store.signedUser.followers.total }} Followers</P>
+                    <p>{{ store.signedUser.followers.total }} Followers</p>
                     <p>||</p>
-                    <P>{{ store.signedUser.following.total }} Following</P>
+                    <p>{{ store.signedUser.following.total }} Following</p>
                 </div>
             </section>
 
@@ -229,7 +233,6 @@ onUnmounted(() => {
             </div>
 
             <div class="readerSec">
-                <!--section to show personal info and other interaction for reader mode -->
                 <div class="btnSection">
                     <button @click="changeSection('personal')"
                         :class="{ active: store.section === 'personal' }">Personal</button>
@@ -237,7 +240,6 @@ onUnmounted(() => {
                         :class="{ active: store.section === 'interaction' }">Interactions</button>
                 </div>
                 <div :class="{ show: store.section === 'personal', none: store.section !== 'personal', personal: true }">
-                    <!--personal details -->
                     <p><span>Full Name:</span> {{ store.signedUser.fullName }} </p>
                     <p><span>User Name:</span> {{ store.signedUser.username }}</p>
                     <p><span>Blog Name:</span> {{ store.signedUser.blogName }}</p>
@@ -249,15 +251,12 @@ onUnmounted(() => {
                     <p><span>Gender:</span> {{ store.signedUser.gender }}</p>
                     <p v-if="store.signedUser.interests.length > 0"><span>Interests:</span> {{
                         store.signedUser.interests.join(',') }} </p>
-                    <!-- <p>Last Active: {{ store.signedUser.lastActive }}</p>
-                    <p>Relationship Status: {{ store.signedUser.relationshipStatus }}</p> -->
                 </div>
                 <div v-if="store.section === 'interaction'"
                     :class="{ show: store.section === 'interaction', none: store.section !== 'interaction', interaction: true }">
-                    <!--interaction details -->
                     <p v-if="isinteractionsLoading" class="loading">Loading...</p>
                     <div v-else>
-                        <div v-for="(interaction, index) in store.viwedProfile.interactions" :key="index">
+                        <div v-for="(interaction, index) in store.signedUser.interactions" :key="index">
                             <div class="type">
                                 {{ interaction.type }}
                             </div>

@@ -23,7 +23,6 @@ const isLoading: Ref<boolean> = ref(true)
 
 onMounted(() => {
     useUserDetails()
-    
     store.sidebar = false
 })
 
@@ -69,11 +68,11 @@ function Signout() {
         signOut(auth).then(() => {
             const logoutId = store.signedUser.id
             const logOutUser = doc(db, 'users', logoutId)
-            store.signedUser = {}
             updateDoc(logOutUser, {
                 isLogined: false
             })
             router.push('/login')
+            store.signedUser = {}
         })
     }
     catch (error) {
@@ -249,7 +248,7 @@ function Signout() {
         <section id="navigators">
             <RouterLink to="/home"><button>Home</button></RouterLink>
             <RouterLink to="/search"><button>Search</button></RouterLink>
-            <RouterLink to="/notification"><button id="notification-button">Notification<span class="dot"
+            <RouterLink to="/notification" v-show="!store.signedUser.isLogined"><button id="notification-button">Notification<span class="dot"
                         v-show="!store.signedUser.isLogined"></span></button>
             </RouterLink>
         </section>

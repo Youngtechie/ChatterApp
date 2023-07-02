@@ -55,9 +55,9 @@ async function Delete() {
   let deletedId = store.signedUser.id
   SignOut().then(() => {
     deleteDoc(doc(db, 'users', `${deletedId}`)).then(() => {
+      router.push('/')
       store.signedUser = {}
       store.authenticated = false
-      router.push('/')
     }).catch((err) => {
       console.log(err)
     })

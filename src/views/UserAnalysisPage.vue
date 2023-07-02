@@ -80,10 +80,10 @@ function createPie(totalPosts: any, totalComments: any, totalLiked: any, totalBo
     <useLoadingPage v-if="isLoading" action-name="Loading Analysis..." />
     <main v-else class="analysisPage">
         <button @click.prevent="back">Back</button>
-        <h1>{{ store.signedUser.username }}'s Analyses</h1>
+        <h1>{{ store.signedUser.username }} Analyses</h1>
         <section>
             <p><span>Total Posts:</span> {{ store.signedUser.analyses.totalPosts }}</p>
-            <p><span>Total Posts Commented on:</span> {{ store.signedUser.analyses.totalComments }}</p>
+            <p><span>Total Comments Made:</span> {{ store.signedUser.analyses.totalComments }}</p>
             <p><span>Total Posts Liked:</span> {{ store.signedUser.analyses.totalLiked }}</p>
             <p><span>Bookmarks: </span> {{ store.signedUser.bookmarks.length }} </p>
         </section>

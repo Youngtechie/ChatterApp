@@ -177,6 +177,7 @@ onUnmounted(() => {
 </script>
 <template>
     <main class="exploreSection">
+        <h2>Exploring Posts</h2>
         <div v-if="posts?.length as number > 0 && isloading === false" :class="{ resultsContainer: true }">
             <div v-for="(post, index) in posts" :key="index" class="result-item">
                 <div class="imgCon" @click.prevent="routeToProfile(post.posterId)"
@@ -196,6 +197,11 @@ onUnmounted(() => {
     </main>
 </template>
 <style scoped>
+h2 {
+    text-align: center;
+    margin-bottom: 10px;
+    height: 5vh;
+}
 .imgCon{
     width: 50px;
     height: 50px;
@@ -211,7 +217,7 @@ onUnmounted(() => {
     display: flex;
     flex-direction: column;
     padding-top: 20px;
-    height: 85vh;
+    height: 80vh;
 }
 
 .resultsContainer {
@@ -222,6 +228,7 @@ onUnmounted(() => {
     padding-top: 10px;
     overflow-y: scroll;
     max-width: 320px;
+    border-top: 2px solid blue;
 }
 .result-item {
     margin-bottom: 10px;

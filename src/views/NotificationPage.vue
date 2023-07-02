@@ -11,6 +11,7 @@ store.sidebar = false
 
 if (store.signedUser.isLogined) {
     store.signedUser.notifications.sort((a: Record<string, any>, b: Record<string, any>) => b.details.time.seconds - a.details.time.seconds)
+    console.log(store.signedUser.notifications)
 }
 
 if (store.authenticated === true) {
