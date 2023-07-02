@@ -212,10 +212,7 @@ onUnmounted(() => {
 
         <div class="body">
             <div class="imageCon">
-                <div class="imgCon">
-                    <img :src="store.viwedProfile.profilePicture" height="40"
-                        :alt="store.signedUser.fullName + 'profile pic'" /> <!-- profilePic -->
-                </div>
+                <div class="imgCon" :style="{ backgroundImage: `url(${store.viwedProfile.profilePicture})` }"></div>
             </div>
 
             <section class="sectionFoImage">
@@ -307,6 +304,16 @@ onUnmounted(() => {
     flex-direction: column;
 }
 
+.imgCon {
+    width: 80px;
+    height: 80px;
+    background-color: #efefef;
+    border-radius: 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 main {
     display: flex;
     flex-direction: column;
@@ -335,20 +342,6 @@ header {
 .imageCon {
     margin-bottom: 0.5rem;
     border-radius: 50%;
-}
-
-.imgCon {
-    width: 80px;
-    height: 80px;
-    overflow: hidden;
-    border-radius: 50%;
-    background-color: #fff;
-}
-
-.imgCon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
 }
 
 .sectionFoImage {

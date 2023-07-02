@@ -56,7 +56,7 @@ onMounted(() => {
             warningShow.textContent = 'Loading ...'
         }
     })
-    
+
     getPosts()
 })
 
@@ -167,8 +167,7 @@ async function deleteFolder(folderPath: string) {
 <template>
     <div v-if="posts?.length as number > 0 && isloading === false" :class="{ resultsContainer: true }">
         <div v-for="(post, index) in posts" :key="index" class="result-item">
-            <img :src="store.signedUser.profilePicture" :alt="store.signedUser.username + 'profile picture'"
-                class="result-item-image" @click.prevent="routeToProfile(post.posterId)" />
+            <div class="imgCon" @click.prevent="routeToProfile(post.posterId)" :style="{backgroundImage: `url(${store.signedUser.profilePicture})`}"></div>
             <div class="result-item-other">
                 <div class="result-item-header">
                     <span @click.prevent="routeToProfile(post.posterId)">{{ store.signedUser.blogName }}</span>
@@ -195,13 +194,14 @@ async function deleteFolder(folderPath: string) {
     height: 80vh;
     max-width: 320px;
 }
-
-.result-item-image {
+.imgCon{
     width: 50px;
     height: 50px;
-    margin-left: 5px;
-    border-radius: 50%;
     background-color: #efefef;
+    border-radius: 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 .result-item {
@@ -265,4 +265,5 @@ async function deleteFolder(folderPath: string) {
 .editSectionbtn button:last-of-type:hover {
     background-color: red;
     color: white;
-}</style>
+}
+</style>

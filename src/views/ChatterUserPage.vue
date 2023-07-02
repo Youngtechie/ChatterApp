@@ -3,7 +3,7 @@ import { onUnmounted, ref, type Ref } from 'vue';
 import { useChatterStore } from '@/stores/store';
 import { useRouter } from 'vue-router';
 import useLoadingPage from "@/composables/useLoadingPage.vue";
-import { getStorage, ref as storageRef, getDownloadURL} from 'firebase/storage'
+import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData } from 'firebase/firestore'
 import getUser from '@/composables/useUserViewProfile.vue';
 import useUserDetails from '@/composables/useUserDetails.vue'
@@ -137,10 +137,7 @@ onUnmounted(() => {
 
         <div class="body">
             <div class="imageCon">
-                <div class="imgCon">
-                    <img :src="store.viwedProfile.profilePicture" height="40"
-                        :alt="store.viwedProfile.fullName + '' + 'profile pic'" /> <!-- profilePic -->
-                </div>
+                <div class="imgCon" :style="{ backgroundImage: `url(${store.viwedProfile.profilePicture})` }"></div>
             </div>
 
             <section class="sectionFoImage">
@@ -226,6 +223,15 @@ onUnmounted(() => {
     flex-direction: column;
 }
 
+.imgCon{
+    width: 80px;
+    height: 80px;
+    background-color: #efefef;
+    border-radius: 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
 main {
     display: flex;
     flex-direction: column;
@@ -254,20 +260,6 @@ header {
 .imageCon {
     margin-bottom: 0.5rem;
     border-radius: 50%;
-}
-
-.imgCon {
-    width: 80px;
-    height: 80px;
-    overflow: hidden;
-    border-radius: 50%;
-    background-color: #fff;
-}
-
-.imgCon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
 }
 
 .sectionFoImage {

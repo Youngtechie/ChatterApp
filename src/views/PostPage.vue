@@ -158,6 +158,14 @@ onUnmounted(() => {
     warning.style.display = 'none'
 })
 
+function routeToProfile(userId: string) {
+    if (userId === store.signedUser.id) {
+        return router.push('/userProfile')
+    }
+    else {
+        router.push(`/chatterUser/${userId}`)
+    }
+}
 
 </script>
 <template>
@@ -167,8 +175,9 @@ onUnmounted(() => {
             <h1>{{ store.viwedPost.postTitle.join(' ') as string }}</h1>
             <div>
                 <div>
-                    <img :src="posterDetail[0].profilePicture" width="50" height="50">
-                    <h3>{{ (posterDetail[0].fullName) }}</h3>
+                    <div class="imgCon" @click.prevent="routeToProfile(store.viwedPost.posterId)" :style="{backgroundImage: `url(${posterDetail[0].profilePicture})`}"></div>
+            
+                    <h3 @click.prevent="routeToProfile(store.viwedPost.posterId)">{{ (posterDetail[0].fullName) }}</h3>
                     <div v-if="store.signedUser.id !== store.viwedPost.posterId">
                         <button v-if="isFollowing" @click.prevent="unFollow">UnFollow</button>
                         <button @click.prevent="Follow" v-else>Follow</button>
@@ -215,4 +224,15 @@ onUnmounted(() => {
         </div>
     </main>
 </template>
-<style scoped></style>
+<style scoped>
+.imgCon{
+    width: 50px;
+    height: 50px;
+    background-color: #efefef;
+    border-radius: 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+</style>

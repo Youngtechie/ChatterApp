@@ -179,8 +179,8 @@ onUnmounted(() => {
     <main class="exploreSection">
         <div v-if="posts?.length as number > 0 && isloading === false" :class="{ resultsContainer: true }">
             <div v-for="(post, index) in posts" :key="index" class="result-item">
-                <img :src="post?.posterDetails.img" :alt="post?.posterDetails.username + 'profile picture'"
-                    class="result-item-image" @click.prevent="routeToProfile(post.posterId)" />
+                <div class="imgCon" @click.prevent="routeToProfile(post.posterId)"
+                    :style="{ backgroundImage: `url(${post?.posterDetails.img})` }"></div>
                 <div class="result-item-other">
                     <div class="result-item-header">
                         <span @click.prevent="routeToProfile(post.posterId)">{{ post?.posterDetails.blogname }}</span>
@@ -196,6 +196,16 @@ onUnmounted(() => {
     </main>
 </template>
 <style scoped>
+.imgCon{
+    width: 50px;
+    height: 50px;
+    background-color: #efefef;
+    border-radius: 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 .exploreSection {
     overflow-y: scroll;
     display: flex;
@@ -213,15 +223,6 @@ onUnmounted(() => {
     overflow-y: scroll;
     max-width: 320px;
 }
-
-.result-item-image {
-    width: 50px;
-    height: 50px;
-    margin-left: 5px;
-    border-radius: 50%;
-    background-color: #efefef;
-}
-
 .result-item {
     margin-bottom: 10px;
     border-bottom: 1px solid #ccc;

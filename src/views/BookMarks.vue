@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onUnmounted, watchEffect, onMounted, nextTick } from 'vue'
+import { ref, onUnmounted, onMounted, nextTick } from 'vue'
 import { useChatterStore } from '@/stores/store';
 import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc } from 'firebase/firestore'
@@ -46,17 +46,6 @@ interface Poster {
 const posts = ref<DocumentData[] | null>([])
 const poster = ref<Poster | null>()
 
-watchEffect(() => {
-    if (posts.value?.length as number > 0) {
-        nextTick(() => {
-            const warningShow = document.getElementById('warningShow');
-            if (warningShow) {
-                warningShow.style.display = 'none';
-            }
-        })
-    }
-})
-
 onMounted(() => {
     clearTimeout(timeOut)
     nextTick(() => {
@@ -66,7 +55,14 @@ onMounted(() => {
             warningShow.textContent = 'Loading ...'
         }
     })
-    getPosts(store.signedUser.bookmarks)
+    getPosts(store.signedUser.bookmarks).finally(() => {
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'none';
+            }
+        })
+    })
 })
 
 function routeToPost(postId: string) {
@@ -172,7 +168,6 @@ async function getPosts(bookmarks: string[]) {
 
         const resolvedPosts = await Promise.all(promises);
         const flattenedPosts = resolvedPosts.flat();
-
         posts.value = flattenedPosts;
     } catch (err) {
         console.log(err);
@@ -188,18 +183,23 @@ async function getPosts(bookmarks: string[]) {
 </script>
 <template>
     <h2>Bookmarks</h2>
-    <div v-if="posts?.length as number > 0 && isLoading === false" :class="{ resultsContainer: true }">
-        <div v-for="(post, index) in posts" :key="index" class="result-item">
-            <img :src="post?.posterDetails.img" :alt="post?.posterDetails.username + 'profile picture'"
-                class="result-item-image" @click.prevent="routeToProfile(post.posterId)" />
-            <div class="result-item-other">
-                <div class="result-item-header">
-                    <span @click.prevent="routeToProfile(post.posterId)">{{ post?.posterDetails.blogname }}</span>
-                    <span>{{ useCalculateTime(post.postTime.seconds) }}</span>
+    <div class="bookmarksCon">
+        <div v-if="posts?.length as number > 0 && isLoading === false" :class="{ resultsContainer: true }">
+            <div v-for="(post, index) in posts" :key="index" class="result-item">
+                <div class="imgCon" @click.prevent="routeToProfile(post.posterId)"
+                    :style="{ backgroundImage: `url(${post?.posterDetails.img})` }"></div>
+                <div class="result-item-other">
+                    <div class="result-item-header">
+                        <span @click.prevent="routeToProfile(post.posterId)">{{ post?.posterDetails.blogname }}</span>
+                        <span>{{ useCalculateTime(post.postTime.seconds) }}</span>
+                    </div>
+                    <div v-html="post.postContain" id="divContent" @click.prevent="routeToPost(post.postId)"></div>
+                    <useDetailButtons :post="post" />
                 </div>
-                <div v-html="post.postContain" id="divContent" @click.prevent="routeToPost(post.postId)"></div>
-                <useDetailButtons :post="post" />
             </div>
+        </div>
+        <div v-if="store.signedUser.bookmarks.length === 0" class="noBookmarks">
+            No Bookmarks yet.
         </div>
     </div>
 </template>
@@ -207,6 +207,31 @@ async function getPosts(bookmarks: string[]) {
 h2 {
     text-align: center;
     margin: 10px 0;
+    height: 5vh;
+}
+.bookmarksCon{
+    width: 100%;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: scroll;
+}
+.noBookmarks {
+    width: 100%;
+    text-align: center;
+    margin-top: 20px;
+    font-size: xx-large;
+}
+
+.imgCon {
+    width: 50px;
+    height: 50px;
+    background-color: #efefef;
+    border-radius: 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 .resultsContainer {

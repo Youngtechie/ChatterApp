@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, watchEffect, onUnmounted } from 'vue'
-import {useChatterStore} from '@/stores/store'
-import {useRouter} from 'vue-router'
+import { useChatterStore } from '@/stores/store'
+import { useRouter } from 'vue-router'
 import useAuthentication from './useAuth.vue';
 import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc } from 'firebase/firestore'
@@ -268,7 +268,7 @@ function routeToProfile(userId: string) {
     if (userId === store.signedUser.id) {
         return router.push('/userProfile')
     }
-    else{
+    else {
         router.push(`/chatterUser/${userId}`)
     }
 }
@@ -289,15 +289,16 @@ function routeToProfile(userId: string) {
         </div>
         <div v-if="posts?.length as number > 0" class="results-container">
             <div v-for="(post, index) in posts" :key="index" class="result-item-post">
-                <img :src="post?.posterDetails.img" :alt="post?.posterDetails.username + 'profile picture'"
-                    class="result-item-image" @click.prevent="routeToProfile(post.posterId)"  />
+                <div class="imgCon" @click.prevent="routeToProfile(post.posterId)"
+                    :style="{ backgroundImage: `url(${post?.posterDetails.img})` }"></div>
+
                 <div class="result-item-other">
                     <div class="result-item-header">
-                        <span @click.prevent="routeToProfile(post.posterId)" >{{ post?.posterDetails.blogname }}</span>
+                        <span @click.prevent="routeToProfile(post.posterId)">{{ post?.posterDetails.blogname }}</span>
                         <span>{{ useCalculateTime(post.postTime.seconds) }}</span>
                     </div>
                     <div v-html="post.postContain" id="divContent" @click.prevent="routeToPost(post.postId)"></div>
-                    <useDetailButtons :post="post"/>
+                    <useDetailButtons :post="post" />
                 </div>
             </div>
         </div>
@@ -310,6 +311,16 @@ function routeToProfile(userId: string) {
     </div>
 </template>
 <style scoped>
+.imgCon {
+    width: 50px;
+    height: 50px;
+    background-color: #efefef;
+    border-radius: 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 #mainSearchContainer {
     display: flex;
     flex-flow: column wrap;
@@ -397,6 +408,7 @@ function routeToProfile(userId: string) {
     padding: 5px 5px 0 5px;
     border-radius: 5px;
 }
+
 .result-item-image {
     width: 50px;
     height: 50px;

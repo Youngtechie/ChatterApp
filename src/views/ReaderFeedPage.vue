@@ -187,6 +187,7 @@ async function getPostsByTag(tags: string[]) {
                     poster.value = null;
                     isLoading.value = false;
 
+
                     return post;
                 })
             );
@@ -273,14 +274,12 @@ async function getFollowings() {
             stopNoData.value = 10;
         }
 
-        if (followings.value.length > 0) {
-            nextTick(() => {
-                const warningShow = document.getElementById('warningShow');
-                if (warningShow) {
-                    warningShow.style.display = 'none';
-                }
-            })
-        }
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'none';
+            }
+        })
     } catch (error) {
         const errorDiv = document.getElementById('ErrorShow') as HTMLDivElement;
         errorDiv.style.display = 'flex';
@@ -301,8 +300,9 @@ async function getFollowings() {
     </div>
     <div v-if="posts?.length as number > 0 && presentSection === 'interested_section'" :class="{ resultsContainer: true }">
         <div v-for="(post, index) in posts" :key="index" class="result-item">
-            <img :src="post?.posterDetails.img" :alt="post?.posterDetails.username + 'profile picture'"
-                class="result-item-image" @click.prevent="routeToProfile(post.posterId)" />
+            <div class="imgCon" @click.prevent="routeToProfile(post.posterId)"
+                :style="{ backgroundImage: `url(${post?.posterDetails.img})` }"></div>
+
             <div class="result-item-other">
                 <div class="result-item-header">
                     <span @click.prevent="routeToProfile(post.posterId)">{{ post?.posterDetails.blogname }}</span>
@@ -328,11 +328,36 @@ async function getFollowings() {
             </div>
         </div>
     </div>
+    <div v-show="store.signedUser.following.theFollowings.length === 0 && presentSection === 'following_section'"
+        class="noFollower">
+        You are not following any one yet.
+    </div>
 </template>
 <style scoped>
 .btns {
     height: 5%;
     width: 320px;
+}
+
+.noFollower {
+    width: 100%;
+    height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-y: scroll;
+    font-size: larger;
+}
+
+.imgCon {
+    width: 50px;
+    height: 50px;
+    background-color: #efefef;
+    border-radius: 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
 .btns button {
@@ -361,14 +386,6 @@ async function getFollowings() {
     overflow-y: scroll;
     height: 80vh;
     max-width: 320px;
-}
-
-.result-item-image {
-    width: 50px;
-    height: 50px;
-    margin-left: 5px;
-    border-radius: 50%;
-    background-color: #efefef;
 }
 
 .result-item {
@@ -407,5 +424,4 @@ async function getFollowings() {
     font-weight: bolder;
     font-size: medium;
     cursor: pointer;
-}
-</style>
+}</style>

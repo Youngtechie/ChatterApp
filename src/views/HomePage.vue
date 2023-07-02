@@ -110,8 +110,7 @@ function Signout() {
             <section class="profileSection" v-if="store.signedUser.isLogined">
                 <RouterLink to="/userProfile" id="userProfile">
                     <button>
-                        <img :src="store.signedUser.profilePicture" height="40"
-                            :alt="store.signedUser.fullName + 'profile pic'" />
+                        <div class="imgCon" :style="{backgroundImage: `url(${store.signedUser.profilePicture})`}"></div>
                         <span>{{ (store.signedUser.username) }}</span>
                     </button>
                 </RouterLink>
@@ -278,6 +277,16 @@ header {
 header #sidebarOpenBtn {
     background-color: transparent;
 }
+.imgCon{
+    width: 50px;
+    height: 50px;
+    background-color: #efefef;
+    border-radius: 50%;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    margin-right: 10px;
+}
 
 nav {
     position: fixed;
@@ -432,16 +441,6 @@ nav #navFooter {
     align-self: flex-start;
     justify-self: flex-start;
 }
-
-.profileSection img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    margin-right: 10px;
-    border: 2px solid #efefef;
-    background-color: #efefef;
-}
-
 .profileSection span {
     font-size: 12px;
     color: #fff;
