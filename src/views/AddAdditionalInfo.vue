@@ -8,8 +8,6 @@ import useUserDetails from '@/composables/useUserDetails.vue'
 import useLoadingPage from '@/composables/useLoadingPage.vue';
 import SignOut from '@/composables/useSignOut.vue'
 
-
-
 const { app } = useAuthentication()
 const router = useRouter()
 const store = useChatterStore()
@@ -18,9 +16,7 @@ const db = getFirestore(app)
 const fullName: Ref<string> = ref('')
 
 onMounted(() => {
-  useUserDetails().finally(() => {
-    isLoading.value = false
-  })
+  useUserDetails()
 })
 
 watchEffect(() => {
@@ -57,11 +53,16 @@ async function AddOtherInfo() {
 
 async function Delete() {
   let deletedId = store.signedUser.id
-  SignOut()
-  await deleteDoc(doc(db, 'users', `${deletedId}`))
-  store.signedUser = {}
-  store.authenticated = false
-  router.push({ name: 'Home' })
+  SignOut().then(() => {
+    deleteDoc(doc(db, 'users', `${deletedId}`)).then(() => {
+      store.signedUser = {}
+      store.authenticated = false
+      router.push('/')
+    }).catch((err) => {
+      console.log(err)
+    })
+  })
+
 }
 
 let id = setTimeout(() => {
@@ -69,8 +70,8 @@ let id = setTimeout(() => {
     if (store.signedUser.username.trim() !== '') {
       router.push({ name: 'Home' })
     }
-    else{
-      return
+    else {
+      isLoading.value = false
     }
   }
   else {
@@ -131,7 +132,7 @@ onUnmounted(() => {
       <section class="btns">
         <input type="submit" value="Submit" class="submit-button" />
 
-        <button @click.prevent="Delete()" class="delete-button">Delete Account</button>
+        <button @click.prevent="Delete" class="delete-button">Delete Account</button>
       </section>
     </form>
   </div>

@@ -63,7 +63,7 @@ onMounted(() => {
     })
 
     getPostsByTag(interests.value)
-    
+
 })
 
 function handleChangeSection(section: string) {
@@ -77,9 +77,9 @@ function handleChangeSection(section: string) {
             warningShow.textContent = 'Loading ...'
         }
     })
-    
-    if(section === 'following_section'){
-        getFollowings() 
+
+    if (section === 'following_section') {
+        getFollowings()
     }
     if (section === 'interested_section') {
         getPostsByTag(interests.value)
@@ -139,38 +139,12 @@ async function getPoster(posterID: string) {
         if (posterDetails.data() !== undefined) {
             const { fullName, profilePicture, username, blogName } = posterDetails.data() as DocumentData
             const data = { profilePicture, posterID, fullName, username, blogName }
-
-            const storage = getStorage();
-            const posterImage = storageRef(storage, data.profilePicture)
-
-            try {
-                await getDownloadURL(posterImage)
-                    .then((url) => {
-                        if (data.profilePicture) {
-                            data.profilePicture = url
-                        }
-
-                        if (data.blogName === '') {
-                            data.blogName = `${data.username}Blog`
-                        }
-
-                        poster.value = {
-                            id: posterID as string,
-                            img: data.profilePicture as string,
-                            fullName: data.fullName as string,
-                            username: data.username as string,
-                            blogname: data.blogName as string
-                        }
-
-                    })
-            }
-            catch (err) {
-                const error = document.getElementById('ErrorShow') as HTMLDivElement
-                error.style.display = 'flex'
-                error.textContent = 'Something went wrong, check your internet connection'
-                timeOut = setTimeout(() => {
-                    error.style.display = 'none'
-                }, 3000)
+            poster.value = {
+                id: posterID as string,
+                img: data.profilePicture as string,
+                fullName: data.fullName as string,
+                username: data.username as string,
+                blogname: data.blogName as string
             }
         }
     } catch (error) {
@@ -298,7 +272,7 @@ async function getFollowings() {
         if (followings.value.length > 10) {
             stopNoData.value = 10;
         }
-        
+
         if (followings.value.length > 0) {
             nextTick(() => {
                 const warningShow = document.getElementById('warningShow');

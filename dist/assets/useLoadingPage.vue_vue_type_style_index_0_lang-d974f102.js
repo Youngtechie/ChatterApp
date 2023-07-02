@@ -1,0 +1,1 @@
+import{d as t,c as a,f as o,g as e,t as c}from"./index-0d83a52f.js";const i={class:"loading-page"},_=e("div",{class:"spinner"},null,-1),d=t({__name:"useLoadingPage",props:{actionName:{type:String,required:!0}},setup(n){const s=n;return(r,p)=>(a(),o("div",i,[_,e("h1",null,c(s.actionName)+".",1)]))}});export{d as _};

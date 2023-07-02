@@ -4,7 +4,7 @@ import useAuthentication from '@/composables/useAuth.vue'
 
 const {auth} = useAuthentication()
 
-export default function SignOut() {
+export default async function SignOut() {
     signOut(auth)
 }
 

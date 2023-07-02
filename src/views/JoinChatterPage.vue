@@ -35,9 +35,16 @@ async function getUserDetails(accessToken: any, result: any) {
                 const ChatterAcc = document?.docs
                 if (ChatterAcc.length < 1 && details.value.email) {
                     const NewUser = store.createUser(details.value.email)
-                    NewUser.fullName = details.value.given_name + ' ' + details.value.family_name
+                    
+                    const firstName = details.value.given_name !== undefined ? details.value.given_name : ''
+                    const lastName = details.value.family_name !== undefined ? details.value.family_name : ''
+
+                    NewUser.fullName = firstName + ' ' + lastName
+
                     NewUser.id = result.user.uid
+
                     const unknownAvatar = refFromStorage(storage, "ChatterAppFiles/avatar/unknown/UnkownUser.png")
+
                     getDownloadURL(unknownAvatar).then((url) => {
                         NewUser.profilePicture = url
                     }).finally(() => {
