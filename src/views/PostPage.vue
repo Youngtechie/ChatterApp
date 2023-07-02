@@ -3,7 +3,7 @@ import { useRouter } from 'vue-router';
 import { useChatterStore } from '@/stores/store';
 import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { doc, getFirestore, getDoc, type DocumentData, updateDoc } from 'firebase/firestore'
-import { ref, onUnmounted } from 'vue'
+import { ref, onUnmounted, onMounted } from 'vue'
 import useLoadingPage from "@/composables/useLoadingPage.vue";
 import axios from 'axios'
 import useCalculateTime from '@/composables/useCalculateTime.vue';
@@ -89,7 +89,11 @@ async function getData() {
     }
 }
 
-getData()
+onMounted(() => {
+    getData().then(() => {
+        isLoading.value = false
+    })
+})
 
 async function getPostContent() {
     try {
@@ -122,25 +126,12 @@ async function getPoster() {
         if (posterDetails.data() !== undefined) {
             const { fullName, profilePicture } = posterDetails.data() as DocumentData
             const data = { fullName, profilePicture, id }
-
-            const storage = getStorage();
-            const unknownAvatar = storageRef(storage, "ChatterAppFiles/avatar/unknown/UnkownUser.png")
+            
             posterDetail.value.push(data)
 
             await useCheckFollow(store.viwedPost.posterId, store.signedUser.id).then((isFollow) => {
                 isFollowing.value = isFollow
             })
-
-            try {
-                await getDownloadURL(unknownAvatar)
-                    .then((urlUnknown) => {
-                        if (posterDetail.value[0].profilePicture === '')
-                            posterDetail.value[0].profilePicture = urlUnknown
-                    })
-            }
-            catch (error) {
-                console.log(error)
-            }
         }
     } catch (error) {
         //
@@ -163,6 +154,8 @@ let id = setTimeout(() => {
 
 onUnmounted(() => {
     clearTimeout(id)
+    const warning = document.getElementById('warningShow') as HTMLDivElement
+    warning.style.display = 'none'
 })
 
 
@@ -195,20 +188,22 @@ onUnmounted(() => {
                     <p v-if="store.viwedPost.postComments.total < 1">No comments yet</p>
                     <div v-else>
                         <div v-for="(comment, index) in store.viwedPost.postComments.details" :key="index">
-                            <p>postId: {{comment.id}}</p>
-                            <div :id="index.toString()+'commentDiv'">{{comment.text}}</div>
+                            <p>postId: {{ comment.id }}</p>
+                            <div :id="index.toString() + 'commentDiv'">{{ comment.text }}</div>
                             <p>Time: {{ useCalculateTime(comment.time.seconds) }}</p>
                             <div>
                                 <useDeleteComment :currentUserId="store.signedUser.id" :viewPostId="props.postId"
-                                :viewPostPosterId="store.viwedPost.posterId" :commentId="comment.commentId" :commentText="comment.text"/>
+                                    :viewPostPosterId="store.viwedPost.posterId" :commentId="comment.commentId"
+                                    :commentText="comment.text" />
                                 <useEditComment :currentUserId="store.signedUser.id" :viewPostId="props.postId"
-                                :viewPostPosterId="store.viwedPost.posterId" :commentId="comment.commentId" :commentText="comment.text" :divEditId="index.toString() + 'commentDiv'" />
+                                    :viewPostPosterId="store.viwedPost.posterId" :commentId="comment.commentId"
+                                    :commentText="comment.text" :divEditId="index.toString() + 'commentDiv'" />
                             </div>
                         </div>
                     </div>
                 </div>
                 <useAddComment :currentUserId="store.signedUser.id" :viewPostId="props.postId"
-                :viewPostPosterId="store.viwedPost.posterId"/>
+                    :viewPostPosterId="store.viwedPost.posterId" />
             </div>
         </div>
         <div v-else>

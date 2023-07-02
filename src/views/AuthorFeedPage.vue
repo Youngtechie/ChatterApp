@@ -4,17 +4,16 @@ import { useChatterStore } from '@/stores/store';
 import { getStorage, ref as storageRef, getDownloadURL, deleteObject, listAll } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, deleteDoc } from 'firebase/firestore'
 import { useRouter } from 'vue-router';
-import useUserDetails from '@/composables/useUserDetails.vue'
 import useAuthentication from '@/composables/useAuth.vue'
 import axios from 'axios'
 import useCalculateTime from '@/composables/useCalculateTime.vue'
-
-useUserDetails()
 
 let timeOut: ReturnType<typeof setTimeout>;
 
 onUnmounted(() => {
     clearTimeout(timeOut)
+    const warning = document.getElementById('warningShow') as HTMLDivElement
+    warning.style.display = 'none'
 })
 
 const posts = ref<DocumentData[] | null>([])
@@ -32,6 +31,8 @@ const storage = getStorage(app)
 const db = getFirestore(app)
 
 const store = useChatterStore()
+
+const isloading = ref(true)
 
 
 watchEffect(() => {
@@ -55,9 +56,10 @@ onMounted(() => {
             warningShow.textContent = 'Loading ...'
         }
     })
+    
+    getPosts()
 })
 
-getPosts()
 
 async function getPostContent(post: DocumentData) {
     divContent.value = ''
@@ -88,29 +90,29 @@ async function getPostContent(post: DocumentData) {
 
 async function getPosts() {
     const q = query(collection(db, 'posts'), where('posterId', '==', store.signedUser.id))
-    const querySnapshot = await getDocs(q)
-    querySnapshot.forEach((doc) => {
-        const post = doc.data()
-        getPostContent(post).then(() => {
-            document.getElementById('searchBtn')?.removeAttribute('disabled')
+    const querySnapshot = await getDocs(q);
+    const promises = querySnapshot.docs.map(async (doc) => {
+        const post = doc.data();
+        await getPostContent(post as DocumentData);
 
-            const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html')
+        const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
+        bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
+            tag.remove();
+        });
+        bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
+            tag.remove();
+        });
+        bodyImgRemove.body.querySelector('h1')?.remove();
+        divContent.value = bodyImgRemove.body.innerHTML;
 
-            bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
-                tag.remove()
-            })
+        (post as DocumentData).postContain = divContent.value;
 
-            bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
-                tag.remove()
-            })
+        return post;
+    });
 
-            bodyImgRemove.body.querySelector('h1')?.remove()
-
-            divContent.value = bodyImgRemove.body.innerHTML
-            post.postContain = divContent.value
-            posts.value?.push(post)
-        })
-    })
+    const resolvedPosts = await Promise.all(promises);
+    posts.value = resolvedPosts as DocumentData[];
+    isloading.value = false;
 }
 
 function routeToPost(postId: string) {
@@ -163,7 +165,7 @@ async function deleteFolder(folderPath: string) {
 
 </script>
 <template>
-    <div v-if="posts?.length as number > 0" :class="{ resultsContainer: true }">
+    <div v-if="posts?.length as number > 0 && isloading === false" :class="{ resultsContainer: true }">
         <div v-for="(post, index) in posts" :key="index" class="result-item">
             <img :src="store.signedUser.profilePicture" :alt="store.signedUser.username + 'profile picture'"
                 class="result-item-image" @click.prevent="routeToProfile(post.posterId)" />
@@ -190,7 +192,7 @@ async function deleteFolder(folderPath: string) {
     align-items: center;
     padding-top: 10px;
     overflow-y: scroll;
-    height: 85%;
+    height: 80vh;
     max-width: 320px;
 }
 

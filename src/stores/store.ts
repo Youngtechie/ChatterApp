@@ -14,6 +14,7 @@ interface textarea{
 }
 
 export const useChatterStore = defineStore('chatter', () => {
+  const userId = ref('')
   const asReader = ref(true) 
   const section = 'personal' 
   const sidebar = ref(false) 
@@ -132,6 +133,7 @@ export const useChatterStore = defineStore('chatter', () => {
     blogName = ''
     contacts: string[] = []
     interactions: string[] = []
+    bookmarks: string[] = []
     analyses: Record<string, any> = {
       totalComments: 0,
       totalLiked: 0,
@@ -166,6 +168,7 @@ export const useChatterStore = defineStore('chatter', () => {
     }
     postReposts = 0
     postViews = 0
+    postBookmarks: string[] = []
     postMedia: string[] = []
     postSettings: Record<string, any> = {
       disableComments: false,
@@ -191,6 +194,7 @@ export const useChatterStore = defineStore('chatter', () => {
     signedUser,
     themeDetails,
     authenticated,
+    userId,
     viwedPost,
     fileInputs,
     viwedPosterFollowed,

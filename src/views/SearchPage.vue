@@ -8,6 +8,8 @@ const router = useRouter()
  
 const store = useChatterStore()
 
+store.sidebar = false 
+
 if (store.authenticated === true) {
     if (store.signedUser.id === undefined && store.signedUser.username === undefined) {
         router.push({ name: 'NetworkError', query: { redirect: `${router.currentRoute.value.path}` } })

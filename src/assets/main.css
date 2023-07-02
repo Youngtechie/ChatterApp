@@ -172,3 +172,8 @@ a, a:active, a:hover{
 .red * {
   fill: red;
 }
+
+.router-link-active button{
+  background-color: blue;
+  color: white
+}

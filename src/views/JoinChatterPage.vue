@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import { useChatterStore } from '@/stores/store';
 import { collection, query, where, getDocs, getFirestore, setDoc, doc } from "firebase/firestore";
 import { GoogleAuthProvider, signInWithPopup, setPersistence, browserSessionPersistence } from "firebase/auth";
+import { getStorage, ref as refFromStorage, getDownloadURL } from "firebase/storage";
 import useLoadingPage from "@/composables/useLoadingPage.vue";
 import useAuthentication from '@/composables/useAuth.vue';
 import axios from 'axios';
@@ -18,6 +19,7 @@ type AnyObject = {
 const { auth, provider, app } = useAuthentication()
 const db = getFirestore(app);
 const store = useChatterStore()
+const storage = getStorage(app)
 const router = useRouter()
 const details: AnyObject = ref({})
 const isLoading: Ref<boolean> = ref(true)
@@ -35,9 +37,15 @@ async function getUserDetails(accessToken: any, result: any) {
                     const NewUser = store.createUser(details.value.email)
                     NewUser.fullName = details.value.given_name + ' ' + details.value.family_name
                     NewUser.id = result.user.uid
-                    setDoc(doc(db, "users", `${result.user.uid}`), { ...NewUser })
-                    isLoading.value = true
-                    router.push('/additionalData')
+                    const unknownAvatar = refFromStorage(storage, "ChatterAppFiles/avatar/unknown/UnkownUser.png")
+                    getDownloadURL(unknownAvatar).then((url) => {
+                        NewUser.profilePicture = url
+                    }).finally(() => {
+                        setDoc(doc(db, "users", `${result.user.uid}`), { ...NewUser }).then(() => {
+                            isLoading.value = true
+                            router.push('/additionalData')
+                        })
+                    })
                 }
                 else if (ChatterAcc.length > 0 && ChatterAcc[0].data().username.trim() !== '') {
                     isLoading.value = true
@@ -64,10 +72,7 @@ function LoginWithGmail() {
         }).catch(() => {
             const error = document.getElementById('ErrorShow') as HTMLDivElement
             error.style.display = 'flex'
-            error.textContent = 'Something went wrong, check your internet connection'
-            timeOut = setTimeout(() => {
-                error.style.display = 'none'
-            }, 3000)
+            error.textContent = 'Something went wrong, check your internet connection and try again.'
         })
 }
 
@@ -77,6 +82,8 @@ timeOut = setTimeout(() => {
 
 onUnmounted(() => {
     clearTimeout(timeOut)
+    const warning = document.getElementById('warningShow') as HTMLDivElement
+    warning.style.display = 'none'
 })
 
 </script>

@@ -44,6 +44,8 @@ let id = setTimeout(() => {
 
 onUnmounted(() => {
     clearTimeout(id)
+    const warning = document.getElementById('warningShow') as HTMLDivElement
+    warning.style.display = 'none'
 })
 
 function back() {

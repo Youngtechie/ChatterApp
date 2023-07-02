@@ -7,20 +7,26 @@ onMounted(() => {
   const chatterApp = document.querySelector('#app')
   chatterApp?.setAttribute('class', 'DayApp')
 })
+
+function closeError() {
+  const error = document.getElementById('ErrorShow') as HTMLDivElement
+  error.style.display = 'none'
+}
+
 </script>
 
 <template>
   <RouterView />
-  <div id="ErrorShow"></div>
+  <div id="ErrorShow"><button @click="closeError">X</button></div>
   <div id="warningShow"></div>
 </template>
 <style scoped>
-#ErrorShow{
+#ErrorShow {
   position: fixed;
   top: 80%;
   align-self: center;
   width: 300px;
-  height: 50px;
+  height: 60px;
   padding: 10px;
   border: 2px outset black;
   background-color: black;
@@ -28,9 +34,18 @@ onMounted(() => {
   color: azure;
   font-weight: 600;
   font-size: 12px;
-  align-items: center;
   display: none;
-  animation: dance 3s infinite;
+  align-items: center;
+}
+
+#ErrorShow button{
+  position: absolute;
+  top: 0;
+  right: 5px;
+  background-color: transparent;
+  border: none;
+  color: white;
+  font-weight: bolder;
 }
 
 #warningShow {
@@ -49,11 +64,13 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
 }
-.DayApp #warningShow{
+
+.DayApp #warningShow {
   color: #efefef;
   background-color: black;
 }
-.NightApp #warningShow{
+
+.NightApp #warningShow {
   color: black;
   background-color: #efefef;
 }
@@ -62,17 +79,20 @@ onMounted(() => {
   0% {
     transform: rotate(0deg);
   }
+
   25% {
     transform: rotate(5deg);
   }
+
   50% {
     transform: rotate(0deg);
   }
+
   75% {
     transform: rotate(-5deg);
   }
+
   100% {
     transform: rotate(0deg);
   }
-}
-</style>
+}</style>

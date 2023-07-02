@@ -1,18 +1,33 @@
 <script setup lang="ts">
-import { ref, type Ref, onUnmounted } from 'vue'
+import { ref, type Ref, onUnmounted, watchEffect, onMounted } from 'vue'
 import { doc, updateDoc, getFirestore, deleteDoc } from 'firebase/firestore'
 import { useChatterStore } from '@/stores/store';
 import { useRouter } from 'vue-router';
 import useAuthentication from '@/composables/useAuth.vue'
 import useUserDetails from '@/composables/useUserDetails.vue'
 import useLoadingPage from '@/composables/useLoadingPage.vue';
+import SignOut from '@/composables/useSignOut.vue'
 
-useUserDetails()
+
 
 const { app } = useAuthentication()
 const router = useRouter()
 const store = useChatterStore()
 const db = getFirestore(app)
+
+const fullName: Ref<string> = ref('')
+
+onMounted(() => {
+  useUserDetails().finally(() => {
+    isLoading.value = false
+  })
+})
+
+watchEffect(() => {
+  if (store.signedUser.fullName) {
+    fullName.value = store.signedUser.fullName
+  }
+})
 
 const username: Ref<string> = ref('')
 
@@ -28,19 +43,21 @@ const interests: Ref<string> = ref('')
 
 async function AddOtherInfo() {
   await updateDoc(doc(db, 'users', `${store.signedUser.id}`), {
-    profilePicture: "ChatterAppFiles/avatar/unknown/UnkownUser.png",
+    blogName: username.value.charAt(0).toUpperCase() + username.value.slice(1).toLowerCase() + 'Blog',
     username: username.value.charAt(0).toUpperCase() + username.value.slice(1).toLowerCase(),
     dateOfBirth: Birthday.value,
     location: Location.value,
     gender: gender.value,
     isLogined: true,
     interests: interests.value.split(','),
+    fullName: fullName.value
   })
   router.push({ name: 'Home' })
 }
 
 async function Delete() {
   let deletedId = store.signedUser.id
+  SignOut()
   await deleteDoc(doc(db, 'users', `${deletedId}`))
   store.signedUser = {}
   store.authenticated = false
@@ -48,10 +65,15 @@ async function Delete() {
 }
 
 let id = setTimeout(() => {
-  if(store.signedUser.username.trim() === ''){
-    isLoading.value = false
+  if (store.signedUser.username !== undefined) {
+    if (store.signedUser.username.trim() !== '') {
+      router.push({ name: 'Home' })
+    }
+    else{
+      return
+    }
   }
-  else{
+  else {
     router.push({ name: 'Home' })
   }
 }, 5000)
@@ -65,10 +87,16 @@ onUnmounted(() => {
 <template>
   <useLoadingPage v-if="isLoading" :action-name="'Loading...'" />
   <div v-else id="otherInfoCon">
-    <form @submit.prevent="AddOtherInfo()" class="otherInfoForm">
+    <form @submit.prevent="AddOtherInfo" class="otherInfoForm">
+      <section class="fullname">
+        <label for="fullname2">Full Name:</label>
+        <input type="text" id="fullname2" required autocomplete="additional-name" v-model="fullName" />
+      </section>
+
       <section class="username">
         <label for="username2">Username:</label>
-        <input type="text" id="username2" required autocomplete="username" v-model="username" pattern="[^\d]+" />
+        <input type="text" id="username2" required autocomplete="username" v-model="username" pattern="[^\d]+"
+          maxlength="15" />
       </section>
 
       <section class="gender">
@@ -94,10 +122,10 @@ onUnmounted(() => {
 
       <div class="interests">
         <div class="section">
-            <label for="interests">Interests:</label>
-            <input type="text" id="interests" placeholder="Posts tags separate with a comma" required v-model="interests" />
+          <label for="interests">Interests:</label>
+          <input type="text" id="interests" placeholder="Posts tags separate with a comma" required v-model="interests" />
         </div>
-        <span class="example-note">Example: food, travel, sport, programming</span>
+        <span class="example-note">Example: Food, Travel, Sport, Programming, Fashion, Meme</span>
       </div>
 
       <section class="btns">
@@ -110,11 +138,12 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-#otherInfoCon{
+#otherInfoCon {
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 .otherInfoForm {
   display: flex;
   flex-direction: column;
@@ -128,14 +157,18 @@ onUnmounted(() => {
 .username,
 .gender,
 .Location,
-.birthday, .interests {
+.birthday,
+.interests,
+.fullname {
   margin-bottom: 1.5rem;
   width: 100%;
 }
 
 .username,
 .Location,
-.birthday, .interests .section {
+.birthday,
+.interests .section,
+.fullname {
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -158,13 +191,13 @@ onUnmounted(() => {
   margin-bottom: 1rem;
 }
 
-label{
+label {
   font-weight: bold;
   width: 30%;
 }
 
 input[type="text"],
-input[type="date"]{
+input[type="date"] {
   padding: 0.5rem;
   border-radius: 4px;
   border: 1px solid #ccc;

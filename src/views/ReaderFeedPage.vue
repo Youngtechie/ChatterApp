@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onUnmounted, watchEffect, onMounted, nextTick } from 'vue'
+import { ref, onUnmounted, onMounted, nextTick } from 'vue'
 import { useChatterStore } from '@/stores/store';
 import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc, limit, orderBy } from 'firebase/firestore'
@@ -14,6 +14,8 @@ let timeOut: ReturnType<typeof setTimeout>;
 
 onUnmounted(() => {
     clearTimeout(timeOut)
+    const warning = document.getElementById('warningShow') as HTMLDivElement
+    warning.style.display = 'none'
 })
 const divContent = ref('')
 
@@ -50,37 +52,6 @@ const poster = ref<Poster | null>()
 const followings = ref<DocumentData[] | null>([])
 const stopNoData = ref(0)
 
-watchEffect(() => {
-    if (presentSection.value === 'interested_section') {
-        getPostsByTag(interests.value)
-    }
-    else if (presentSection.value === 'following_section') {
-        getFollowings()
-    }
-})
-
-watchEffect(() => {
-    if (posts.value?.length as number > 0) {
-        nextTick(() => {
-            const warningShow = document.getElementById('warningShow');
-            if (warningShow) {
-                warningShow.style.display = 'none';
-            }
-        })
-    }
-})
-
-watchEffect(() => {
-    if (followings.value?.length as number > 0) {
-        nextTick(() => {
-            const warningShow = document.getElementById('warningShow');
-            if (warningShow) {
-                warningShow.style.display = 'none';
-            }
-        })
-    }
-})
-
 onMounted(() => {
     clearTimeout(timeOut)
     nextTick(() => {
@@ -90,6 +61,9 @@ onMounted(() => {
             warningShow.textContent = 'Loading ...'
         }
     })
+
+    getPostsByTag(interests.value)
+    
 })
 
 function handleChangeSection(section: string) {
@@ -103,6 +77,13 @@ function handleChangeSection(section: string) {
             warningShow.textContent = 'Loading ...'
         }
     })
+    
+    if(section === 'following_section'){
+        getFollowings() 
+    }
+    if (section === 'interested_section') {
+        getPostsByTag(interests.value)
+    }
 }
 
 function routeToPost(postId: string) {
@@ -198,109 +179,141 @@ async function getPoster(posterID: string) {
 }
 
 async function getPostsByTag(tags: string[]) {
-    tags.forEach((tag) => {
-        const postsQuery = query(collection(db, 'posts'), where('postTag', '==', `${tag}`), orderBy('postTime', 'desc'))
-        try {
-            getDocs(postsQuery)
-                .then((docs) => {
-                    docs.docs.forEach((doc) => {
-                        const post = doc.data()
-                        getPostContent(post).then(() => {
-                            document.getElementById('searchBtn')?.removeAttribute('disabled')
-                            const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html')
-                            bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
-                                tag.remove()
-                            })
-                            bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
-                                tag.remove()
-                            })
+    try {
+        const promises = tags.map(async (tag) => {
+            const postsQuery = query(
+                collection(db, 'posts'),
+                where('postTag', '==', tag),
+                orderBy('postTime', 'desc')
+            );
 
-                            bodyImgRemove.body.querySelector('h1')?.remove()
+            const querySnapshot = await getDocs(postsQuery);
 
-                            divContent.value = bodyImgRemove.body.innerHTML
-                            post.postContain = divContent.value
+            return Promise.all(
+                querySnapshot.docs.map(async (doc) => {
+                    const post = doc.data();
 
-                            getPoster(post.posterId).then(() => {
-                                post.posterDetails = poster.value
-                                posts.value?.push(post)
-                                poster.value = null
-                                isLoading.value = false
-                            })
-                        })
-                    })
-                }).catch((err) => {
-                    console.log(err)
-                    const error = document.getElementById('ErrorShow') as HTMLDivElement
-                    error.style.display = 'flex'
-                    error.textContent = 'Something went wrong, check your internet connection'
-                    timeOut = setTimeout(() => {
-                        error.style.display = 'none'
-                    }, 3000)
+                    await getPostContent(post);
+
+                    const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
+                    bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
+                        tag.remove();
+                    });
+                    bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
+                        tag.remove();
+                    });
+                    bodyImgRemove.body.querySelector('h1')?.remove();
+
+                    divContent.value = bodyImgRemove.body.innerHTML;
+                    post.postContain = divContent.value;
+
+                    await getPoster(post.posterId);
+
+                    post.posterDetails = poster.value;
+                    poster.value = null;
+                    isLoading.value = false;
+
+                    return post;
                 })
-        } catch (err) {
-            const error = document.getElementById('ErrorShow') as HTMLDivElement
-            error.style.display = 'flex'
-            error.textContent = 'Something went wrong'
-            timeOut = setTimeout(() => {
-                error.style.display = 'none'
-                document.getElementById('searchBtn')?.removeAttribute('disabled')
-            }, 3000)
+            );
+        });
+
+        const resolvedPosts = await Promise.all(promises);
+        const flattenedPosts = resolvedPosts.flat();
+        posts.value = flattenedPosts;
+        if (posts.value.length > 0) {
+            nextTick(() => {
+                const warningShow = document.getElementById('warningShow');
+                if (warningShow) {
+                    warningShow.style.display = 'none';
+                }
+            })
         }
-    })
+    } catch (err) {
+        console.log(err);
+        const error = document.getElementById('ErrorShow') as HTMLDivElement;
+        error.style.display = 'flex';
+        error.textContent = 'Something went wrong, check your internet connection';
+        timeOut = setTimeout(() => {
+            error.style.display = 'none';
+        }, 3000);
+    }
 }
 
 async function getFollowings() {
-    const length = store.signedUser.following.theFollowings.length < 10 ? store.signedUser.following.theFollowings.length : 10
-    const numOfData = Math.floor(10 / length as number)
-    followings.value = []
+    const length = store.signedUser.following.theFollowings.length < 10 ? store.signedUser.following.theFollowings.length : 10;
+    const numOfData = Math.floor(10 / length as number);
+    followings.value = [];
 
-    for (let i = 0; i < store.signedUser.following.theFollowings.length; i++) {
+    const promises = store.signedUser.following.theFollowings.map(async (followingId: string) => {
         try {
-            const followingsQuery = query(collection(db, 'posts'), where('posterId', '==', `${store.signedUser.following.theFollowings[i]}`), orderBy('postTime', 'desc'), limit(numOfData))
-            getDocs(followingsQuery)
-                .then((docs) => {
-                    docs.docs.forEach((doc) => {
-                        const following = doc.data()
-                        getPostContent(following).then(() => {
-                            document.getElementById('searchBtn')?.removeAttribute('disabled')
-                            const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html')
-                            bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
-                                tag.remove()
-                            })
-                            bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
-                                tag.remove()
-                            })
+            const followingsQuery = query(
+                collection(db, 'posts'),
+                where('posterId', '==', followingId),
+                orderBy('postTime', 'desc'),
+                limit(numOfData)
+            );
 
-                            bodyImgRemove.body.querySelector('h1')?.remove()
+            const querySnapshot = await getDocs(followingsQuery);
 
-                            divContent.value = bodyImgRemove.body.innerHTML
-                            following.postContain = divContent.value
+            return Promise.all(
+                querySnapshot.docs.map(async (doc) => {
+                    const following = doc.data();
 
-                            getPoster(following.posterId).then(() => {
-                                following.posterDetails = poster.value
-                                followings.value?.push(following)
-                                poster.value = null
-                                isLoading.value = false
-                            })
-                        })
-                    })
+                    await getPostContent(following);
+
+                    const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
+                    bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
+                        tag.remove();
+                    });
+                    bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
+                        tag.remove();
+                    });
+                    bodyImgRemove.body.querySelector('h1')?.remove();
+
+                    divContent.value = bodyImgRemove.body.innerHTML;
+                    following.postContain = divContent.value;
+
+                    await getPoster(following.posterId);
+
+                    following.posterDetails = poster.value;
+                    poster.value = null;
+                    isLoading.value = false;
+
+                    return following;
                 })
-                .catch((error) => {
-                    console.log(error)
-                })
-            if (i > 10) {
-                stopNoData.value = i
-                break;
-            }
-
-        } catch (err) {
-            const error = document.getElementById('ErrorShow') as HTMLDivElement
-            error.style.display = 'flex'
-            error.textContent = 'Something went wrong, check your internet connection'
-            timeOut = setTimeout(() => {
-                error.style.display = 'none'
-            }, 3000)
+            );
+        } catch (error) {
+            console.log(error);
+            throw new Error('Something went wrong');
         }
+    });
+
+    try {
+        const resolvedFollowings = await Promise.all(promises);
+        const flattenedFollowings = resolvedFollowings.flat();
+
+        followings.value = flattenedFollowings;
+
+        if (followings.value.length > 10) {
+            stopNoData.value = 10;
+        }
+        
+        if (followings.value.length > 0) {
+            nextTick(() => {
+                const warningShow = document.getElementById('warningShow');
+                if (warningShow) {
+                    warningShow.style.display = 'none';
+                }
+            })
+        }
+    } catch (error) {
+        const errorDiv = document.getElementById('ErrorShow') as HTMLDivElement;
+        errorDiv.style.display = 'flex';
+        errorDiv.textContent = 'Something went wrong, check your internet connection';
+        timeOut = setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 3000);
     }
 }
 
@@ -372,7 +385,7 @@ async function getFollowings() {
     align-items: center;
     padding-top: 10px;
     overflow-y: scroll;
-    height: 85%;
+    height: 80vh;
     max-width: 320px;
 }
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, type Ref, onUnmounted, watchEffect } from 'vue'
 import { doc, updateDoc, getFirestore } from 'firebase/firestore'
-import { getStorage, ref as refFromStorage, uploadBytes } from "firebase/storage";
+import { getStorage, ref as refFromStorage, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useChatterStore } from '@/stores/store';
 import { useRouter } from 'vue-router';
 import useAuthentication from '@/composables/useAuth.vue'
@@ -47,24 +47,34 @@ function addIamge() {
 
 function updateUser() {
     const userRef = doc(db, "users", `${store.signedUser.id}`);
+    document.getElementById('updateBtn')?.setAttribute('disabled', 'true')
     if (file.value !== null) {
         const imageRef = refFromStorage(storage, `ChatterAppFiles/avatar/${store.signedUser.id}/${file.value!.name}`)
-        uploadBytes(imageRef, file.value!)
-        updateDoc(userRef, {
-            profilePicture: `ChatterAppFiles/avatar/${store.signedUser.id}/${file.value!.name}`,
-            bio: bio.value,
-            blogName: blogname.value,
-            dateOfBirth: Birthday.value,
-            fullName: fullname.value,
-            gender: gender.value,
-            interests: interests.value.split(','),
-            location: country.value,
-            username: username.value,
-            settings: {
-                privacySettings: {
-                    showEmail: showEmail.value
-                }
-            }
+        uploadBytes(imageRef, file.value!).then(() => {
+            getDownloadURL(imageRef).then((url) => {
+                updateDoc(userRef, {
+                    profilePicture: url,
+                    bio: bio.value,
+                    blogName: blogname.value,
+                    dateOfBirth: Birthday.value,
+                    fullName: fullname.value,
+                    gender: gender.value,
+                    interests: interests.value.split(','),
+                    location: country.value,
+                    username: username.value,
+                    settings: {
+                        privacySettings: {
+                            showEmail: showEmail.value
+                        }
+                    }
+                })
+            })
+        }).then(() => {
+            router.push('/userProfile')
+        }).catch((err) => {
+            console.log(err)
+        }).finally(()=>{
+            document.getElementById('updateBtn')?.removeAttribute('disabled')
         })
     }
     else {
@@ -82,9 +92,14 @@ function updateUser() {
                     showEmail: showEmail.value
                 }
             }
+        }).then(() => {
+            router.push('/userProfile')
+        }).catch((err) => {
+            console.log(err)
+        }).finally(()=>{
+            document.getElementById('updateBtn')?.removeAttribute('disabled')
         })
     }
-    router.push('/userProfile')
 }
 
 
@@ -130,6 +145,8 @@ let id = setTimeout(() => {
 
 onUnmounted(() => {
     clearTimeout(id)
+    const warning = document.getElementById('warningShow') as HTMLDivElement
+    warning.style.display = 'none'
 })
 </script>
 <template>

@@ -5,7 +5,7 @@ import DOMPurify from 'dompurify';
 import router from '@/router/index';
 import displayImage from '@/components/UploadImage.vue'
 import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
-import { getFirestore, type DocumentData, doc, getDoc } from 'firebase/firestore'
+import { getFirestore, type DocumentData, doc, getDoc, getDocs, collection, query } from 'firebase/firestore'
 import displayVideo from '../components/UploadVideo.vue'
 import { useChatterStore } from '@/stores/store';
 import useUserDetails from '@/composables/useUserDetails.vue'
@@ -60,7 +60,7 @@ const UploadVideosName: Ref<RequiredDeepFileCVideo[]> = ref([]);
 const allMedias: Ref<DeepFileC[]> = ref([])
 const rawDocument = ref('')
 const currentMedia = ref<mediaFullPaths[]>([])
-const suggestedTags = ['Technology', 'Programming', 'Travel', 'Food', 'Fashion', 'Sport', 'Meme']
+const suggestedTags: Ref<string[]> = ref([])
 const postTag = ref('')
 const disableComments = ref(false)
 const postContentToBePosted = ref('')
@@ -70,6 +70,7 @@ const undoStack = ref<{ content: string; cursor: number }[]>([]);
 const redoStack = ref<{ content: string; cursor: number }[]>([]);
 let timeOut: ReturnType<typeof setTimeout>;
 const DomParse = new DOMParser()
+const tagOption = ref('option1')
 
 const observer = new MutationObserver((mutationsList) => {
     // Handle the changes here
@@ -158,7 +159,20 @@ async function getPost() {
     }
 }
 
+async function getTags() {
+    const tagsRef = query(collection(db, 'tags'))
+    await getDocs(tagsRef)
+        .then((docs) => {
+            docs.forEach((doc) => {
+                suggestedTags.value.push(doc.id)
+            })
+        })
+}
+
 onMounted(() => {
+
+    getTags()
+
     if (router.currentRoute.value.params.postId !== undefined && router.currentRoute.value.params.postId !== "") {
         document.querySelectorAll('button').forEach((btn) => {
             btn.setAttribute('disabled', '')
@@ -184,7 +198,7 @@ onMounted(() => {
             })
         })
     }
-    
+
     undoStack.value.push({ content: '', cursor: 0 });
     textarea.value?.focus();
     // Configure and start observing the div for changes in its child nodes
@@ -199,6 +213,8 @@ onUnmounted(() => {
     redoStack.value = [];
     observer.disconnect();
     clearTimeout(timeOut)
+    const warning = document.getElementById('warningShow') as HTMLDivElement
+    warning.style.display = 'none'
 });
 
 watchEffect(() => {
@@ -642,14 +658,30 @@ function handlePaste(event: ClipboardEvent) {
         </header>
         <button @click.prevent="changeSection('edit-section')">Edit Post</button>
         <form @submit.prevent="createPost()">
-            <select id="tags" v-model="postTag" required>
-                <option value="" disabled>Select a tag for your post</option>
-                <option v-for="tag in suggestedTags" :key="tag" :value="tag">{{ tag }}</option>
-            </select>
 
             <div>
-                <p><span>Disable Comments </span><button @click.prevent="changeSettingsComment">{{ disableComments
-                }}</button>
+                <h2>Select a tag for your post</h2>
+                <div>
+                    <input type="radio" value="option1" id="opt1" name="tag" required v-model="tagOption" />
+                    <label for="opt1">Choose from available tags</label>
+                    <input type="radio" value="option2" name="tag" id="opt2" required v-model="tagOption" />
+                    <label for="opt2">Create a new tag</label>
+                </div>
+
+                <select id="tags" v-model="postTag" v-show="tagOption === 'option1'" required>
+                    <option value="" disabled>Select a tag for your post</option>
+                    <option v-for="tag in suggestedTags" :key="tag" :value="tag">{{ tag }}</option>
+                </select>
+
+                <input v-model="postTag" pattern="[^\d]+" v-show="tagOption === 'option2'"
+                    placeholder="Write your tag here" required />
+            </div>
+            <div>
+                <p>
+                    <span>Disable Comments </span>
+                    <button @click.prevent="changeSettingsComment">
+                        {{ disableComments }}
+                    </button>
                 </p>
             </div>
             <input type="submit" value="Publish">

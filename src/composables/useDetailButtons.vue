@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import useLikeButton from '@/composables/useLikeButton.vue'
+import useBookmarks from './useBookmarks.vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter()
@@ -45,6 +46,7 @@ const routeToPost = (postId: string) => {
             </svg>
             <span>{{ props.post.postViews }}</span>
         </button>
+        <useBookmarks :view-post-id="props.post.postId"/>
     </div>
 </template>
 <style scoped>
@@ -72,10 +74,10 @@ span{
     font-weight: bold;
     font-size: smaller;
 }
-.DayApp button:last-of-type svg *{
+.DayApp button:nth-of-type(3) svg *{
     fill: black
 }
-.NightApp button:last-of-type svg *{
+.NightApp button:nth-of-type(3) svg *{
     fill: #fff;
 }
 

@@ -1,16 +1,153 @@
 <script setup lang="ts">
-import { onUnmounted, ref, type Ref } from 'vue';
+import { onUnmounted, ref, type Ref, onMounted, nextTick } from 'vue';
 import { useChatterStore } from '@/stores/store';
 import { useRouter } from 'vue-router';
 import useLoadingPage from "@/composables/useLoadingPage.vue";
+import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
+import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc } from 'firebase/firestore'
 import useUserDetails from '@/composables/useUserDetails.vue'
 import SignOut from '@/composables/useSignOut.vue';
+import useAuthentication from '@/composables/useAuth.vue'
+import useCalculateTime from '@/composables/useCalculateTime.vue';
+import useDetailButtons from '@/composables/useDetailButtons.vue'
+import axios from 'axios'
+import getUser from '@/composables/useUserViewProfile.vue';
 
 const router = useRouter();
+
+const isLoading: Ref<boolean> = ref(true)
 
 const store = useChatterStore()
 
 useUserDetails()
+
+interface Poster {
+    img: string,
+    id: string,
+    fullName: string,
+    username: string,
+    blogname: string,
+}
+
+onMounted(() => {
+    nextTick(() => {
+        const warning = document.getElementById('warningShow') as HTMLDivElement
+        warning.style.display = 'none'
+    })
+    getUser(store.userId).then(() => {
+        isLoading.value = false
+    })
+})
+
+const poster = ref<Poster | null>()
+
+const { app } = useAuthentication()
+
+const storage = getStorage(app)
+
+const db = getFirestore(app)
+
+const DomParse = new DOMParser()
+
+const divContent = ref('')
+
+const isinteractionsLoading = ref(true)
+
+
+async function getPostContent(post: DocumentData) {
+    divContent.value = ''
+    const postContentRef = storageRef(storage, post.postContain)
+    const contentUrl = await getDownloadURL(postContentRef)
+        .catch((error) => {
+            console.log(error)
+        })
+    await axios.post('/postContent', { contentUrl })
+        .then(response => {
+            const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
+            divContent.value = newHTML.body.innerHTML
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+}
+
+async function getPoster(posterID: string) {
+    poster.value = null
+    try {
+        const posterRef = doc(db, 'users', posterID)
+        const posterDetails = await getDoc(posterRef)
+        if (posterDetails.data() !== undefined) {
+            const { fullName, profilePicture, username, blogName } = posterDetails.data() as DocumentData
+            const data = { profilePicture, posterID, fullName, username, blogName }
+
+            poster.value = {
+                id: posterID as string,
+                img: data.profilePicture as string,
+                fullName: data.fullName as string,
+                username: data.username as string,
+                blogname: data.blogName as string
+            }
+
+        }
+    } catch (error) {
+        //
+    }
+}
+
+async function getPosts(interactions: Record<string, any>) {
+    if (interactions.length > 0) {
+        try {
+            const promises = interactions.map(async (interaction: any) => {
+                const postsQuery = query(
+                    collection(db, 'posts'),
+                    where('postId', '==', interaction.details.postid)
+                );
+
+                const querySnapshot = await getDocs(postsQuery);
+
+                return Promise.all(
+                    querySnapshot.docs.map(async (doc) => {
+                        const post = doc.data();
+
+                        await getPostContent(post);
+
+                        const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
+                        bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
+                            tag.remove();
+                        });
+                        bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
+                            tag.remove();
+                        });
+                        bodyImgRemove.body.querySelector('h1')?.remove();
+
+                        divContent.value = bodyImgRemove.body.innerHTML;
+                        post.postContain = divContent.value;
+
+                        await getPoster(post.posterId);
+
+                        post.posterDetails = poster.value;
+                        poster.value = null;
+
+                        const EachInteraction = {
+                            'type': interaction.type,
+                            'postDetails': post
+                        }
+
+                        return EachInteraction;
+                    })
+                );
+            })
+            const resolvedPosts = await Promise.all(promises);
+            store.viwedProfile.interactions = resolvedPosts.flat()
+            isinteractionsLoading.value = false
+        } catch (error) {
+            //
+        }
+    }
+    else {
+        return;
+    }
+}
 
 function back() {
     router.go(-1)
@@ -18,9 +155,25 @@ function back() {
 
 function changeSection(value: string) {
     store.section = value
+    if (value === 'interaction' && store.userId !== '' && store.userId !== undefined) {
+        getPosts(store.viwedProfile.interactions)
+    }
 }
 
-const isLoading: Ref<boolean> = ref(true)
+function routeToPost(postId: string) {
+    router.push(`/post/${postId}`)
+}
+
+function routeToProfile(userId: string) {
+    if (userId === store.signedUser.id) {
+        return router.push('/userProfile')
+    }
+    else {
+        router.push(`/chatterUser/${userId}`)
+    }
+}
+
+
 
 let id = setTimeout(() => {
     if (store.signedUser.id === undefined && store.authenticated === false) {
@@ -36,18 +189,16 @@ let id = setTimeout(() => {
             store.authenticated = false
             router.push('/login')
         }
-        else {
-            isLoading.value = false
-        }
-    }
-    else {
-        isLoading.value = false
     }
 }, 5000)
 
 onUnmounted(() => {
     clearTimeout(id)
+    const warning = document.getElementById('warningShow') as HTMLDivElement
+    warning.style.display = 'none'
 })
+
+
 </script>
 <template>
     <useLoadingPage v-if="isLoading" action-name="Loading profile..." />
@@ -62,15 +213,13 @@ onUnmounted(() => {
         <div class="body">
             <div class="imageCon">
                 <div class="imgCon">
-                    <img :src="store.signedUser.profilePicture" height="40"
+                    <img :src="store.viwedProfile.profilePicture" height="40"
                         :alt="store.signedUser.fullName + 'profile pic'" /> <!-- profilePic -->
                 </div>
             </div>
 
             <section class="sectionFoImage">
                 <h3>{{ store.signedUser.fullName }}</h3> <!--fullname--> <!-- username -->
-                <p v-if="store.asReader">Reader</p> <!--Acoount mode: -->
-                <p v-else>Author</p>
                 <div class="follow">
                     <P>{{ store.signedUser.followers.total }} Followers</P>
                     <p>||</p>
@@ -85,43 +234,67 @@ onUnmounted(() => {
             <div class="readerSec">
                 <!--section to show personal info and other interaction for reader mode -->
                 <div class="btnSection">
-                    <button @click="changeSection('personal')" :class="{active: store.section === 'personal'}">Personal</button>
-                    <button @click="changeSection('interaction')" :class="{active: store.section === 'interaction'}">Interactions</button>
+                    <button @click="changeSection('personal')"
+                        :class="{ active: store.section === 'personal' }">Personal</button>
+                    <button @click="changeSection('interaction')"
+                        :class="{ active: store.section === 'interaction' }">Interactions</button>
                 </div>
                 <div :class="{ show: store.section === 'personal', none: store.section !== 'personal', personal: true }">
                     <!--personal details -->
                     <p><span>Full Name:</span> {{ store.signedUser.fullName }} </p>
-                    <p><span>User Name:</span> @{{ store.signedUser.username }}</p>
-                    <p><span>Biography:</span> {{ store.signedUser.bio }}</p>
-                    <p v-if="store.signedUser.settings.privacySettings.showEmail"><span>Email:</span> {{ store.signedUser.email }}</p>
+                    <p><span>User Name:</span> {{ store.signedUser.username }}</p>
+                    <p><span>Blog Name:</span> {{ store.signedUser.blogName }}</p>
+                    <p v-if="store.signedUser.bio.length > 0"><span>Biography:</span> {{ store.signedUser.bio }}</p>
+                    <p v-if="store.signedUser.settings.privacySettings.showEmail"><span>Email:</span> {{
+                        store.signedUser.email }}</p>
                     <p><span>Location:</span> {{ store.signedUser.location }}</p>
                     <p><span>Birthday:</span> {{ store.signedUser.dateOfBirth }}</p>
                     <p><span>Gender:</span> {{ store.signedUser.gender }}</p>
-                    <p v-if="store.signedUser.interests.length > 0"><span>Interests:</span> {{ store.signedUser.interests.join(',') }} </p>
+                    <p v-if="store.signedUser.interests.length > 0"><span>Interests:</span> {{
+                        store.signedUser.interests.join(',') }} </p>
                     <!-- <p>Last Active: {{ store.signedUser.lastActive }}</p>
                     <p>Relationship Status: {{ store.signedUser.relationshipStatus }}</p> -->
                 </div>
-                <div
-                    :class="{ show: store.section === 'interaction', none: store.section !== 'interaction', section: true }">
+                <div v-if="store.section === 'interaction'"
+                    :class="{ show: store.section === 'interaction', none: store.section !== 'interaction', interaction: true }">
                     <!--interaction details -->
-                    <p v-if="store.signedUser.interactions.length === 0">No interactions yet.</p>
+                    <p v-if="isinteractionsLoading" class="loading">Loading...</p>
                     <div v-else>
-                        <div v-for="(interaction, index) in store.signedUser.interactions" :key="index">
-                            <p>{{ interaction.type }}</p>
-                            <p>{{ interaction.details.followerId }}</p>
-                            <p>{{ interaction.details.time }}</p>
+                        <div v-for="(interaction, index) in store.viwedProfile.interactions" :key="index">
+                            <div class="type">
+                                {{ interaction.type }}
+                            </div>
+                            <div class="result-item">
+                                <img :src="interaction.postDetails.posterDetails.img"
+                                    :alt="interaction.postDetails.posterDetails.username + 'profile picture'"
+                                    class="result-item-image"
+                                    @click.prevent="routeToProfile(interaction.postDetails.posterId)" />
+                                <div class="result-item-other">
+                                    <div class="result-item-header">
+                                        <span @click.prevent="routeToProfile(interaction.postDetails.posterId)">{{
+                                            store.signedUser.blogName
+                                        }}</span>
+                                        <span>{{ useCalculateTime(interaction.postDetails.postTime.seconds) }}</span>
+                                    </div>
+                                    <div v-html="interaction.postDetails.postContain" id="divContent"
+                                        @click.prevent="routeToPost(interaction.postDetails.postId)"></div>
+                                    <useDetailButtons :post="interaction.postDetails" />
+                                </div>
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </div>
-        </div>
 
-        <section id="navigators">
-            <RouterLink to="/home"><button>Home</button></RouterLink>
-            <RouterLink to="/search"><button>Search</button></RouterLink>
-            <RouterLink to="/notification"><button id="notification-button">Notification<span class="dot"></span></button>
-            </RouterLink>
-        </section>
+            <section id="navigators">
+                <RouterLink to="/home"><button>Home</button></RouterLink>
+                <RouterLink to="/search"><button>Search</button></RouterLink>
+                <RouterLink to="/notification"><button id="notification-button">Notification<span
+                            class="dot"></span></button>
+                </RouterLink>
+            </section>
+        </div>
     </main>
 </template>
 <style scoped>
@@ -154,7 +327,7 @@ header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 1rem;
+    padding: 1rem 0;
     width: 320px;
     height: 90%;
 }
@@ -169,6 +342,7 @@ header {
     height: 80px;
     overflow: hidden;
     border-radius: 50%;
+    background-color: #fff;
 }
 
 .imgCon img {
@@ -183,9 +357,11 @@ header {
     text-align: center;
     width: 100%;
 }
+
 .sectionFoImage h3 {
     font-size: 1.5rem;
 }
+
 .sectionFoImage p {
     margin: 0.5rem 0;
     font-size: 15px;
@@ -195,26 +371,31 @@ header {
     padding: 0.5rem;
     align-self: center;
 }
-.sectionFoImage .follow{
+
+.sectionFoImage .follow {
     display: flex;
     align-items: center;
     justify-content: space-between;
     width: 100%;
 }
-.follow p{
+
+.follow p {
     border: none;
     margin-top: 0;
 }
-.follow p:first-child{
-    width: 50%;
-}
-.follow p:last-child{
+
+.follow p:first-child {
     width: 50%;
 }
 
-.follow p:nth-child(2){
+.follow p:last-child {
+    width: 50%;
+}
+
+.follow p:nth-child(2) {
     width: 10%;
 }
+
 .btns {
     display: flex;
     justify-content: space-around;
@@ -223,13 +404,12 @@ header {
     width: 100%;
 }
 
-.readerSec{
+.readerSec {
     display: flex;
     flex-direction: column;
-    align-items: center;
     width: 100%;
     overflow-y: scroll;
-    padding-bottom: 1rem ;
+    padding-bottom: 1rem;
 }
 
 .btnSection {
@@ -239,6 +419,7 @@ header {
     width: 100%;
     border-bottom: 1px solid #ccc;
 }
+
 .btnSection button {
     border: none;
     background-color: transparent;
@@ -246,18 +427,25 @@ header {
     cursor: pointer;
     font-weight: bold;
 }
-.btnSection .active{
+
+.btnSection .active {
     border-bottom: 3px solid blue;
 }
-.personal{
+
+.personal,
+.interaction {
     overflow-y: scroll;
+    position: relative;
 }
+
 .personal p {
     margin-bottom: 0.5rem;
 }
-.personal p span{
+
+.personal p span {
     font-weight: bold;
 }
+
 .personal p,
 .interaction div {
     margin-bottom: 0.5rem;
@@ -305,9 +493,72 @@ header {
 
 ::-webkit-scrollbar {
     width: 2px;
-  }
-  
-  ::-webkit-scrollbar-thumb {
+}
+
+::-webkit-scrollbar-thumb {
     background-color: blue;
-  }
+}
+
+.result-item-image {
+    width: 50px;
+    height: 50px;
+    margin-left: 5px;
+    border-radius: 50%;
+    background-color: #efefef;
+}
+
+.result-item {
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    flex-direction: row;
+}
+
+.result-item-other {
+    width: 260px;
+    margin-left: 5px;
+    padding-right: 5px;
+}
+
+#divContent {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 10;
+    -webkit-box-orient: vertical;
+    border: 1px solid #ccc;
+    padding: 5px 5px 0 5px;
+    border-radius: 5px;
+}
+
+.result-item-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    font-size: smaller;
+    margin-bottom: 5px;
+}
+
+.result-item-header span:first-of-type {
+    font-weight: bolder;
+    font-size: medium;
+    cursor: pointer;
+}
+
+.personal {
+    padding: 0 0.5rem;
+}
+
+.type {
+    margin: 0 10px;
+    font-weight: bolder;
+    border: 1px solid #ccc;
+    padding: 5px;
+    border-radius: 10px;
+}
+
+.loading {
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
 </style>

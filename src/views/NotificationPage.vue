@@ -7,6 +7,8 @@ import useCalculateTime from '@/composables/useCalculateTime.vue';
 const store = useChatterStore()
 const router = useRouter()
 
+store.sidebar = false
+
 if (store.signedUser.isLogined) {
     store.signedUser.notifications.sort((a: Record<string, any>, b: Record<string, any>) => b.details.time.seconds - a.details.time.seconds)
 }

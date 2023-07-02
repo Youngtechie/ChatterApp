@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import useAuthentication from './useAuth.vue';
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc, type DocumentData } from 'firebase/firestore'
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore'
 import router from '@/router';
 import { useChatterStore } from '@/stores/store';
 
@@ -20,32 +20,23 @@ const PostQ = query(collection(db, 'posts'), where('postId', '==', `${props.view
 
 onMounted(() => {
     try {
-        getDocs(PostQ).then((doc2) => {
+        onSnapshot(PostQ, (doc2) => {
             const post = doc2.docs[0].data()
             if (post.postLikes.ids.includes(store.signedUser.id)) {
-                    (document.querySelector(`#btnLike${props.viewPostId} svg path`) as SVGPathElement).style.fill = 'red';
-                    (document.querySelector(`#btnLike${props.viewPostId} span`) as HTMLSpanElement).textContent = `${post.postLikes.total}`;
+                (document.querySelector(`#btnLike${props.viewPostId} svg path`) as SVGPathElement).style.fill = 'red';
+                (document.querySelector(`#btnLike${props.viewPostId} span`) as HTMLSpanElement).textContent = `${post.postLikes.total}`;
             }
-            else if (!post.postLikes.ids.includes(store.signedUser.id)){
+            else if (!post.postLikes.ids.includes(store.signedUser.id)) {
                 (document.querySelector(`#btnLike${props.viewPostId} svg path`) as SVGPathElement).style.fill = 'none';
                 (document.querySelector(`#btnLike${props.viewPostId} span`) as HTMLSpanElement).textContent = `${post.postLikes.total}`;
             }
         })
     } catch (error) {
-       //
+        //
     }
 })
 
-async function updateStore() {
-    const postRef = doc(db, "posts", (props.viewPostId as string))
-    await getDoc(postRef)
-        .then((doc) => {
-            (document.querySelector(`#btnLike${props.viewPostId} span`) as HTMLSpanElement).textContent = `${doc.data()?.postLikes.total}`;
-            store.viwedPost = doc.data() as DocumentData
-        }).catch((error) => {
-            console.log(error)
-        })
-}
+
 
 async function likeButton(userId: string, postId: string, posterId: string) {
 
@@ -127,23 +118,33 @@ async function likeButton(userId: string, postId: string, posterId: string) {
                                         })
                                     }
                                     else {
-                                        updateDoc(doc(db, 'users', `${posterId}`), {
-                                            ['likes.in']: [...poster.likes.in, {
-                                                postid: postId,
-                                                time: new Date()
-                                            }],
-                                            ['likes.total.in']: poster.likes.total.in + 1,
-                                            ['notifications']: [...poster.notifications, {
-                                                type: `You got a like from <b>${user.fullName}</b> on a post`,
-                                                details: {
-                                                    'postId': postId,
-                                                    'time': new Date()
-                                                }
-                                            }]
-                                        })
+                                        if(posterId === userId){
+                                            updateDoc(doc(db, 'users', `${posterId}`), {
+                                                ['likes.in']: [...poster.likes.in, {
+                                                    postid: postId,
+                                                    time: new Date()
+                                                }],
+                                                ['likes.total.in']: poster.likes.total.in + 1,
+                                            })
+                                        }
+                                        else{
+                                            updateDoc(doc(db, 'users', `${posterId}`), {
+                                                ['likes.in']: [...poster.likes.in, {
+                                                    postid: postId,
+                                                    time: new Date()
+                                                }],
+                                                ['likes.total.in']: poster.likes.total.in + 1,
+                                                ['notifications']: [...poster.notifications, {
+                                                    type: `You got a like from <b>${user.fullName}</b> on a post`,
+                                                    details: {
+                                                        'postId': postId,
+                                                        'time': new Date()
+                                                    }
+                                                }]
+                                            })
+                                        }
                                     }
 
-                                    updateStore();
                                     (document.getElementById(`btnLike${postId}`) as HTMLButtonElement).removeAttribute('disabled');
                                 })
                         })
@@ -172,7 +173,8 @@ span {
     font-weight: bold;
     font-size: smaller;
 }
-svg path{
+
+svg path {
     fill: none;
 }
 </style>

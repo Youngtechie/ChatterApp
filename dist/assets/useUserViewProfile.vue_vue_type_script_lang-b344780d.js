@@ -1,0 +1,1 @@
+import{P as a,R as e,b as r,_ as c,d as n}from"./index.esm2017-96b642a7.js";import{u as i,a as d}from"./useAuth.vue_vue_type_script_lang-298818ca.js";const{app:h}=i(),u=d(),f=a(h);async function m(t){const o=e(c(f,"users"),r("id","==",`${t}`));try{await n(o).then(s=>{u.viwedProfile=s.docs[0].data()})}catch(s){console.log(s)}}export{m as g};

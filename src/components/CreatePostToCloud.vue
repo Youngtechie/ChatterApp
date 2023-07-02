@@ -4,6 +4,7 @@ import { getStorage, ref as storageRef, uploadBytes, deleteObject } from 'fireba
 import { doc, getFirestore, collection, addDoc, serverTimestamp, updateDoc, getDoc } from 'firebase/firestore'
 import { type Ref, ref } from 'vue';
 import useAuthentication from '@/composables/useAuth.vue';
+import router from '@/router';
 
 const { app } = useAuthentication()
 
@@ -147,7 +148,7 @@ export default async function CreatePostToCloud(rawDocument: string, document: s
         const Post = store.createPost()
         Post.postTitle = title
         Post.postSettings.disableComments = disableComment
-        Post.postTag = tag
+        Post.postTag = tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()
         Post.posterId = store.signedUser.id
 
         if (postId !== "") {
@@ -218,8 +219,12 @@ export default async function CreatePostToCloud(rawDocument: string, document: s
                     disableComments: disableComment,
                     allowReposts: true
                 },
-                postTag: tag
+                postTag: tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()
+            }).then(()=>{
+                router.push(`/post/${postId}`)
             })
+
+
         }
         else {
             const newPost = await addDoc(collection(db, 'posts'), { ...Post })
@@ -287,6 +292,8 @@ export default async function CreatePostToCloud(rawDocument: string, document: s
                     postMedia: mediaFullPaths.value
                 })
             }
+            
+            await router.push(`/post/${newPost.id}`)
         }
     }
 }

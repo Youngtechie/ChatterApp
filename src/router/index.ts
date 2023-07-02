@@ -26,6 +26,18 @@ const router = createRouter({
           component: ()=> import('../views/SearchPage.vue'),
           sensitive: true
 
+        },
+        {
+          path: '/explore',
+          name: 'Explore',
+          component: ()=> import('../views/ExplorePage.vue'),
+          sensitive: true
+        },
+        {
+          path: '/bookmarks',
+          name: 'Bookmarks',
+          component: ()=> import('../views/BookMarks.vue'),
+          sensitive: true
         }
       ],
 
@@ -46,12 +58,6 @@ const router = createRouter({
       path: '/userAnalysis',
       name: 'UserAnalysis',
       component: ()=> import('../views/UserAnalysisPage.vue'),
-      sensitive: true
-    },
-    {
-      path: '/test',
-      name: 'Test',
-      component: ()=> import('../views/TestPage.vue'),
       sensitive: true
     },
     {
