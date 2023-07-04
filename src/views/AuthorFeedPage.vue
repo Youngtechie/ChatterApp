@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onUnmounted, watchEffect, onMounted, nextTick } from 'vue'
 import { useChatterStore } from '@/stores/store';
-import { getStorage, ref as storageRef, getDownloadURL, deleteObject, listAll } from 'firebase/storage'
+import { getStorage, ref as storageRef, deleteObject, listAll } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, deleteDoc } from 'firebase/firestore'
 import { useRouter } from 'vue-router';
 import useAuthentication from '@/composables/useAuth.vue'
@@ -64,11 +64,7 @@ onMounted(() => {
 async function getPostContent(post: DocumentData) {
     divContent.value = ''
     try {
-        const postContentRef = storageRef(storage, post.postContain)
-        const contentUrl = await getDownloadURL(postContentRef)
-            .catch((error) => {
-                console.log(error)
-            })
+        const contentUrl = post.postContain
         await axios.post('/postContent', { contentUrl })
             .then(response => {
                 const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
@@ -79,12 +75,9 @@ async function getPostContent(post: DocumentData) {
             })
     }
     catch (err) {
-        const error = document.getElementById('ErrorShow') as HTMLDivElement
-        error.style.display = 'flex'
+        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
         error.textContent = 'Something went wrong, check your internet connection'
-        timeOut = setTimeout(() => {
-            error.style.display = 'none'
-        }, 3000)
     }
 }
 
@@ -92,8 +85,8 @@ async function getPosts() {
     const q = query(collection(db, 'posts'), where('posterId', '==', store.signedUser.id))
     const querySnapshot = await getDocs(q);
     const promises = querySnapshot.docs.map(async (doc) => {
-        const post = doc.data();
-        await getPostContent(post as DocumentData);
+        const post = doc.data() as DocumentData;
+        await getPostContent(post);
 
         const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
         bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {

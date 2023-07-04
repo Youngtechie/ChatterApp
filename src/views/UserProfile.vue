@@ -3,7 +3,6 @@ import { onUnmounted, ref, type Ref, onMounted, nextTick, watchEffect } from 'vu
 import { useChatterStore } from '@/stores/store';
 import { useRouter } from 'vue-router';
 import useLoadingPage from "@/composables/useLoadingPage.vue";
-import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc } from 'firebase/firestore'
 import useUserDetails from '@/composables/useUserDetails.vue'
 import SignOut from '@/composables/useSignOut.vue';
@@ -47,8 +46,6 @@ const poster = ref<Poster | null>()
 
 const { app } = useAuthentication()
 
-const storage = getStorage(app)
-
 const db = getFirestore(app)
 
 const DomParse = new DOMParser()
@@ -60,11 +57,7 @@ const isinteractionsLoading = ref(true)
 
 async function getPostContent(post: DocumentData) {
     divContent.value = ''
-    const postContentRef = storageRef(storage, post.postContain)
-    const contentUrl = await getDownloadURL(postContentRef)
-        .catch((error) => {
-            console.log(error)
-        })
+    const contentUrl = post.postContain
     await axios.post('/postContent', { contentUrl })
         .then(response => {
             const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
@@ -177,8 +170,6 @@ function routeToProfile(userId: string) {
     }
 }
 
-
-
 let id = setTimeout(() => {
     if (store.signedUser.id === undefined && store.authenticated === false) {
         router.push('/home')
@@ -286,9 +277,6 @@ onUnmounted(() => {
             <section id="navigators">
                 <RouterLink to="/home"><button>Home</button></RouterLink>
                 <RouterLink to="/search"><button>Search</button></RouterLink>
-                <RouterLink to="/notification"><button id="notification-button">Notification<span
-                            class="dot"></span></button>
-                </RouterLink>
             </section>
         </div>
     </main>

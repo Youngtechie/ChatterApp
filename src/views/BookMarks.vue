@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onUnmounted, onMounted, nextTick } from 'vue'
 import { useChatterStore } from '@/stores/store';
-import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc } from 'firebase/firestore'
 import { useRouter } from 'vue-router';
 import useUserDetails from '@/composables/useUserDetails.vue'
@@ -21,8 +20,6 @@ const divContent = ref('')
 const DomParse = new DOMParser()
 
 const { app } = useAuthentication()
-
-const storage = getStorage(app)
 
 const store = useChatterStore()
 
@@ -72,11 +69,7 @@ function routeToProfile(userId: string) {
 async function getPostContent(post: DocumentData) {
     divContent.value = ''
     try {
-        const postContentRef = storageRef(storage, post.postContain)
-        const contentUrl = await getDownloadURL(postContentRef)
-            .catch((error) => {
-                console.log(error)
-            })
+        const contentUrl = post.postContain
         await axios.post('/postContent', { contentUrl })
             .then(response => {
                 const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
@@ -87,8 +80,8 @@ async function getPostContent(post: DocumentData) {
             })
     }
     catch (err) {
-        const error = document.getElementById('ErrorShow') as HTMLDivElement
-        error.style.display = 'flex'
+        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
         error.textContent = 'Something went wrong, check your internet connection'
     }
 }
@@ -168,8 +161,8 @@ async function getPosts(bookmarks: string[]) {
         }
     } catch (err) {
         console.log(err);
-        const error = document.getElementById('ErrorShow') as HTMLDivElement;
-        error.style.display = 'flex';
+        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
         error.textContent = 'Something went wrong, check your internet connection';
     }
 }

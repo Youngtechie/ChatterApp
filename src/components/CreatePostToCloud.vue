@@ -1,6 +1,6 @@
 <script lang="ts">
 import { useChatterStore } from '@/stores/store';
-import { getStorage, ref as storageRef, uploadBytes, deleteObject } from 'firebase/storage'
+import { getStorage, ref as storageRef, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage'
 import { doc, getFirestore, collection, addDoc, serverTimestamp, updateDoc, getDoc } from 'firebase/firestore'
 import { type Ref, ref } from 'vue';
 import useAuthentication from '@/composables/useAuth.vue';
@@ -143,7 +143,7 @@ type DeepFileC = {
 //     // }
 // }
 
-export default async function CreatePostToCloud(rawDocument: string, document: string, title: string[], tag: string, type: string, disableComment: boolean, postId: string, lastMediaId: number, allMedias: DeepFileC[]) {
+export default async function CreatePostToCloud(rawDocument: string, docContent: string, title: string[], tag: string, type: string, disableComment: boolean, postId: string, lastMediaId: number, allMedias: DeepFileC[]) {
     if (type === "post") {
         const Post = store.createPost()
         Post.postTitle = title
@@ -159,141 +159,188 @@ export default async function CreatePostToCloud(rawDocument: string, document: s
             const cloudPostContain = storageRef(FullStorage, `posts/${postID}/postContent`)
             const cloudPostRawContain = storageRef(FullStorage, `posts/${postID}/postRawContent`)
 
-            const fileBolb = new Blob([document], { type: "text/plain" });
+            const fileBolb = new Blob([docContent], { type: "text/plain" });
             const rawFileBolb = new Blob([rawDocument], { type: "text/plain" });
 
             const UploadTask = uploadBytes(cloudPostContain, fileBolb)
             const UploadRawTask = uploadBytes(cloudPostRawContain, rawFileBolb)
 
-            UploadTask.then(() => {
-                updateDoc(postRef, {
-                    postContain: cloudPostContain.fullPath
+            try {
+                UploadTask.then(() => {
+                    const contentRef = storageRef(FullStorage, `posts/${postID}/postContent`)
+                    getDownloadURL(contentRef).then((url) => {
+                        updateDoc(postRef, {
+                            postContain: url
+                        })
+                    })
                 })
-            })
 
-            UploadRawTask.then(() => {
-                updateDoc(postRef, {
-                    postRawContent: cloudPostRawContain.fullPath
+                UploadRawTask.then(() => {
+                    const rawContentRef = storageRef(FullStorage, `posts/${postID}/postRawContent`)
+                    getDownloadURL(rawContentRef).then((url) => {
+                        updateDoc(postRef, {
+                            postRawContent: url
+                        })
+                    })
                 })
-            })
 
-            const postLastMedias = post.data()?.postMedia as mediaFullPaths[]
+                const postLastMedias = post.data()?.postMedia as mediaFullPaths[]
 
-            const mediaFullPaths = ref<mediaFullPaths[]>([])
+                const mediaFullPaths = ref<mediaFullPaths[]>([])
 
-            postLastMedias.forEach((media) => {
-                const match = allMedias.find(med => med.id === media.id)
-                if (match && match !== undefined) {
-                    mediaFullPaths.value.push(media);
-                }
-                else {
-                    const nameType = media.mediaFullPath.split('/')[3]
-                    const fileName = media.mediaFullPath.split('/')[4]
-
-                    const mediaRef = storageRef(storage, `ChatterAppFiles/posts/${postID}/${nameType}/${fileName}`);
-                    deleteObject(mediaRef);
-                }
-            })
-
-            if (store.fileInputs.length > 0) {
-                for (const element of allMedias) {
-                    if (element.id > lastMediaId) {
-                        const inputFile = store.uploadFiles(element.id);
-                        const cloudStorage = storageRef(FullStorage, `posts/${postID}/${element.nameType}/${inputFile?.file.name}`);
-                        mediaFullPaths.value.push({
-                            id: element.id,
-                            mediaFullPath: `ChatterAppFiles/posts/${postID}/${element.nameType}/${inputFile?.file.name}`
-                        });
-                        uploadBytes(cloudStorage, inputFile?.file as File).catch(error => {
-                            console.log(error);
-                        });
+                postLastMedias.forEach((media) => {
+                    const match = allMedias.find(med => med.id === media.id)
+                    if (match && match !== undefined) {
+                        mediaFullPaths.value.push(media);
                     }
+                    else {
+                        const nameType = media.mediaFullPath.split('/')[3]
+                        const fileName = media.mediaFullPath.split('/')[4]
+
+                        const mediaRef = storageRef(storage, `ChatterAppFiles/posts/${postID}/${nameType}/${fileName}`);
+                        deleteObject(mediaRef);
+                    }
+                })
+
+                if (store.fileInputs.length > 0) {
+                    await Promise.all(allMedias.map(async (element) => {
+                        if (element.id > lastMediaId) {
+                            const inputFile = store.uploadFiles(element.id);
+                            const cloudStorage = storageRef(FullStorage, `posts/${postID}/${element.nameType}/${inputFile?.file.name}`);
+                            uploadBytes(cloudStorage, inputFile?.file as File).then(() => {
+                                getDownloadURL(cloudStorage).then((url) => {
+                                    mediaFullPaths.value.push({
+                                        id: element.id,
+                                        mediaFullPath: url
+                                    })
+                                })
+                            })
+                        }
+                    })
+                    )
                 }
+
+                if (store.coverImageFile !== null) {
+                    const coverImage = store.coverImageFile
+                    const coverImageStorage = storageRef(FullStorage, `posts/${postID}/${postID}CoverImage`);
+                    uploadBytes(coverImageStorage, coverImage as File).then(() => {
+                        getDownloadURL(coverImageStorage).then((url) => {
+                            updateDoc(postRef, {
+                                postCoverImage: url
+                            })
+                        })
+                    })
+                }
+
+                await updateDoc(postRef, {
+                    postMedia: mediaFullPaths.value,
+                    postLastModified: new Date(),
+                    postTitle: title,
+                    postSettings: {
+                        disableComments: disableComment,
+                        allowReposts: true
+                    },
+                    postTag: tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()
+                })
+
+                await router.push(`/post/${postId}`)
+            } catch (err) {
+                const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+                error.style.display = 'flex'
+                error.textContent = 'Something went wrong, check your internet connection and try again.'
             }
-
-            await updateDoc(postRef, {
-                postMedia: mediaFullPaths.value,
-                postLastModified: new Date(),
-                postTitle: title,
-                postSettings: {
-                    disableComments: disableComment,
-                    allowReposts: true
-                },
-                postTag: tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()
-            }).then(()=>{
-                router.push(`/post/${postId}`)
-            })
-
-
         }
         else {
             const newPost = await addDoc(collection(db, 'posts'), { ...Post })
 
-            await updateDoc(doc(db, 'posts', newPost.id), {
-                postTime: serverTimestamp(),
-                postId: newPost.id
-            })
-
-            const posterRef = doc(db, 'users', store.signedUser.id);
-            const documentSnapshot = await getDoc(posterRef);
-            const currentArray = documentSnapshot.data()?.posts
-
-            const updatedArray = [...currentArray, newPost.id];
-
-            await updateDoc(posterRef, {
-                ['posts']: updatedArray
-            })
-
-            const cloudPostContain = storageRef(FullStorage, `posts/${newPost.id}/postContent`)
-            const cloudPostRawContain = storageRef(FullStorage, `posts/${newPost.id}/postRawContent`)
-
-            const fileBolb = new Blob([document], { type: "text/plain" });
-            const rawFileBolb = new Blob([rawDocument], { type: "text/plain" });
-
-            const UploadTask = uploadBytes(cloudPostContain, fileBolb)
-            const UploadRawTask = uploadBytes(cloudPostRawContain, rawFileBolb)
-
-            UploadTask.then(() => {
-                const postRef = doc(db, 'posts', newPost.id)
-                updateDoc(postRef, {
-                    postContain: cloudPostContain.fullPath
+            try {
+                await updateDoc(doc(db, 'posts', newPost.id), {
+                    postTime: serverTimestamp(),
+                    postId: newPost.id
                 })
-            })
 
-            UploadRawTask.then(() => {
-                const postRef = doc(db, 'posts', newPost.id)
-                updateDoc(postRef, {
-                    postRawContent: cloudPostRawContain.fullPath
+                const posterRef = doc(db, 'users', store.signedUser.id);
+                const documentSnapshot = await getDoc(posterRef);
+                const currentArray = documentSnapshot.data()?.posts
+
+                const updatedArray = [...currentArray, newPost.id];
+
+                await updateDoc(posterRef, {
+                    ['posts']: updatedArray
                 })
-            })
 
-            if (store.fileInputs.length > 0) {
+                const cloudPostContain = storageRef(FullStorage, `posts/${newPost.id}/postContent`)
+                const cloudPostRawContain = storageRef(FullStorage, `posts/${newPost.id}/postRawContent`)
 
-                const mediaFullPaths: Ref<mediaFullPaths[]> = ref([])
+                const fileBolb = new Blob([docContent], { type: "text/plain" });
+                const rawFileBolb = new Blob([rawDocument], { type: "text/plain" });
 
-                const postRef = doc(db, 'posts', newPost.id)
+                const UploadTask = uploadBytes(cloudPostContain, fileBolb)
+                const UploadRawTask = uploadBytes(cloudPostRawContain, rawFileBolb)
 
-                store.fileInputs.forEach((f) => {
-                    const inputFile = store.uploadFiles(f.id)
-                    const cloudStorage = storageRef(FullStorage, `posts/${newPost.id}/${f.nameType}s/${inputFile?.file.name}`)
-                    mediaFullPaths.value.push({
-                        'id': f.id,
-                        'mediaFullPath': `ChatterAppFiles/posts/${newPost.id}/${f.nameType}s/${inputFile?.file.name}` as string
-                    })
-                    uploadBytes(cloudStorage, inputFile?.file as File)
-                        .catch((error) => {
-                            if (error) {
-                                console.log(error)
-                            }
+                UploadTask.then(() => {
+                    const postRef = doc(db, 'posts', newPost.id)
+                    const contentRef = storageRef(FullStorage, `posts/${newPost.id}/postContent`)
+                    getDownloadURL(contentRef).then((url) => {
+                        updateDoc(postRef, {
+                            postContain: url
                         })
+                    })
                 })
 
-                await updateDoc(postRef, {
-                    postMedia: mediaFullPaths.value
+                UploadRawTask.then(() => {
+                    const postRef = doc(db, 'posts', newPost.id)
+                    const rawContentRef = storageRef(FullStorage, `posts/${newPost.id}/postRawContent`)
+                    getDownloadURL(rawContentRef).then((url) => {
+                        updateDoc(postRef, {
+                            postRawContent: url
+                        })
+                    })
                 })
+
+                if (store.fileInputs.length > 0) {
+
+                    const mediaFullPaths: Ref<mediaFullPaths[]> = ref([])
+
+                    const postRef = doc(db, 'posts', newPost.id)
+
+                    await Promise.all(store.fileInputs.map(async (f) => {
+                        const inputFile = store.uploadFiles(f.id)
+                        const cloudStorage = storageRef(FullStorage, `posts/${newPost.id}/${f.nameType}s/${inputFile?.file.name}`)
+                        uploadBytes(cloudStorage, inputFile?.file as File).then(() => {
+                            getDownloadURL(cloudStorage).then((url) => {
+                                mediaFullPaths.value.push({
+                                    id: f.id,
+                                    mediaFullPath: url
+                                })
+                            })
+                        })
+                    }))
+
+                    await updateDoc(postRef, {
+                        postMedia: mediaFullPaths.value
+                    })
+
+                    await router.push(`/post/${newPost.id}`)
+                }
+
+                if (store.coverImageFile !== null) {
+                    const postRef = doc(db, 'posts', newPost.id)
+                    const coverImage = store.coverImageFile
+                    const coverImageStorage = storageRef(FullStorage, `posts/${newPost.id}/${newPost.id}CoverImage`);
+                    uploadBytes(coverImageStorage, coverImage as File).then(() => {
+                        getDownloadURL(coverImageStorage).then((url) => {
+                            updateDoc(postRef, {
+                                postCoverImage: url
+                            })
+                        })
+                    })
+                }
+            } catch (err) {
+                const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+                error.style.display = 'flex'
+                error.textContent = 'Something went wrong, check your internet connection and try again.'
             }
-            
-            await router.push(`/post/${newPost.id}`)
         }
     }
 }

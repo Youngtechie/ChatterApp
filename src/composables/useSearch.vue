@@ -23,8 +23,6 @@ const db = getFirestore(app)
 
 const router = useRouter()
 
-const storage = getStorage(app)
-
 const store = useChatterStore()
 
 const searchValue = ref('')
@@ -65,11 +63,7 @@ watchEffect(() => {
 
 async function getPostContent(post: DocumentData) {
     try {
-        const postContentRef = storageRef(storage, post.postContain)
-        const contentUrl = await getDownloadURL(postContentRef)
-            .catch((error) => {
-                console.log(error)
-            })
+        const contentUrl = post.postContain
         await axios.post('/postContent', { contentUrl })
             .then(response => {
                 const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
@@ -125,13 +119,13 @@ async function getPoster(posterID: string) {
     }
 }
 async function Search(type: string, value: string) {
-    const error = document.getElementById('ErrorShow') as HTMLDivElement
+    const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
     users.value = []
     posts.value = []
     console.log(type, value)
 
-    if (value === '') {
-        error.style.display = 'flex'
+    if (value === '') {;
+        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
         error.textContent = 'Search input is empty'
         timeOut = setTimeout(() => {
             error.style.display = 'none'
@@ -149,8 +143,8 @@ async function Search(type: string, value: string) {
             await getDocs(postsQuery)
                 .then((docs) => {
                     if (docs.docs.length === 0) {
-                        newDiv.remove()
-                        error.style.display = 'flex'
+                        newDiv.remove();
+                        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
                         error.textContent = 'No post with this tag found'
                         timeOut = setTimeout(() => {
                             error.style.display = 'none'
@@ -185,8 +179,8 @@ async function Search(type: string, value: string) {
                         })
                     }
                 }).catch((error) => {
-                    newDiv.remove()
-                    error.style.display = 'flex'
+                    newDiv.remove();
+                    (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
                     error.textContent = 'Something went wrong'
                     timeOut = setTimeout(() => {
                         error.style.display = 'none'
@@ -195,13 +189,9 @@ async function Search(type: string, value: string) {
                 })
         } catch (err) {
             newDiv.remove()
-            const error = document.getElementById('ErrorShow') as HTMLDivElement
-            error.style.display = 'flex'
+            const error = document.querySelector('#ErrorShow span') as HTMLSpanElement;
+            (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
             error.textContent = 'Something went wrong'
-            timeOut = setTimeout(() => {
-                error.style.display = 'none'
-                document.getElementById('searchBtn')?.removeAttribute('disabled')
-            }, 3000)
         }
     }
     else if (type === 'Users') {
@@ -217,7 +207,7 @@ async function Search(type: string, value: string) {
                 .then((docs) => {
                     newDiv.remove()
                     if (docs.docs.length === 0) {
-                        error.style.display = 'flex'
+                        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
                         error.textContent = 'No user with this username found'
                         timeOut = setTimeout(() => {
                             error.style.display = 'none'
@@ -231,8 +221,8 @@ async function Search(type: string, value: string) {
                         })
                     }
                 }).catch(() => {
-                    newDiv.remove()
-                    error.style.display = 'flex'
+                    newDiv.remove();
+                    (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
                     error.textContent = 'Something went wrong'
                     timeOut = setTimeout(() => {
                         error.style.display = 'none'
@@ -241,13 +231,9 @@ async function Search(type: string, value: string) {
                 })
         } catch (err) {
             newDiv.remove()
-            const error = document.getElementById('ErrorShow') as HTMLDivElement
-            error.style.display = 'flex'
+            const error = document.querySelector('#ErrorShow span') as HTMLSpanElement;
+            (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
             error.textContent = 'Something went wrong'
-            timeOut = setTimeout(() => {
-                error.style.display = 'none'
-                document.getElementById('searchBtn')?.removeAttribute('disabled')
-            }, 3000)
         }
     }
 }

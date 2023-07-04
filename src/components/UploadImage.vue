@@ -1,5 +1,13 @@
 <script lang="ts">
 import { useChatterStore } from '@/stores/store'
+import { onUnmounted } from 'vue';
+
+
+let timeOut: ReturnType<typeof setTimeout>;
+
+onUnmounted(() => {
+    clearTimeout(timeOut)
+})
 
 const store = useChatterStore()
 
@@ -53,7 +61,8 @@ export default function displayImage(event: Event, id: number, fileNameContainer
     const img = document.createElement("img");
     img.id = `image_${id}`;
     img.style.display = 'block';
-    img.style.maxWidth = '250px'; // Adjust the width as needed
+    img.style.maxWidth = '300px'; // Adjust the width as needed
+    img.style.maxHeight = '300px'; // Adjust the height as needed
     img.style.height = 'auto';
     img.contentEditable = "false";
     const button = document.createElement("input");
@@ -84,25 +93,46 @@ export default function displayImage(event: Event, id: number, fileNameContainer
             }
         };
 
-        insertAtCursor(p)
+        const alt = prompt('Please enter an alt text for the image') as string
 
-        input.value = ''
+        if (alt) {
+            img.alt = alt
 
-        const insert: FileC = {
-            'id': id,
-            'fileName': file.name as string,
-            "nameType": 'images'
+            insertAtCursor(p)
+
+            input.value = ''
+
+            const insert: FileC = {
+                'id': id,
+                'fileName': file.name as string,
+                "nameType": 'images'
+            }
+
+            fileNameContainer.push(insert)
+
+            store.addFileInput(file, id, 'image')
+
+            const addMedia = document.querySelector('.addMedia') as HTMLDivElement;
+            addMedia.style.display = 'none';
         }
-
-        fileNameContainer.push(insert)
-
-        store.addFileInput(file, id, 'image')
+        else {
+            if (img && button) {
+                p.remove()
+                input.value = ''
+                console.log('Please enter an alt text for the image')
+            }
+        }
     }
     else {
         if (img && button) {
             p.remove()
             input.value = ''
-            console.log('Please select a valid image file (max 1MB)')
+            const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+            (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
+            error.textContent = 'Please select a valid image file (max 1MB) and no duplicate image allowed'
+            timeOut = setTimeout(() => {
+                (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'none'
+            }, 3000)
         }
     }
 

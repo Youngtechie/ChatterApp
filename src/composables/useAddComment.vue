@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import useAuthentication from './useAuth.vue';
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc, type DocumentData } from 'firebase/firestore'
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
 import router from '@/router';
-import { useChatterStore } from '@/stores/store';
 
 const props = defineProps({
     currentUserId: String,
@@ -13,27 +12,15 @@ const props = defineProps({
 
 const { app } = useAuthentication()
 
-const store = useChatterStore()
-
 const db = getFirestore(app)
 
 const commentValue = ref('')
-
-async function updateStoreComments(){
-    const postRef = doc(db, "posts", (props.viewPostId as string))
-    await getDoc(postRef)
-    .then((doc)=>{
-        store.viwedPost = doc.data() as DocumentData
-    }).catch((error)=>{
-        console.log(error)
-    })
-}
 
 async function addCommentButton(userId: string, postId: string, posterId: string, commentString: string) {
     if (userId === '' || userId === undefined) {
         return router.push('/login');
     }
-    else if(commentString.trim() === ""){
+    else if (commentString.trim() === "") {
         console.log('comment cannot be empty')
     }
     else {
@@ -93,15 +80,6 @@ async function addCommentButton(userId: string, postId: string, posterId: string
                                                 details: {
                                                     commentId: post.postComments.count,
                                                     postId: postId,
-                                                    text: newcomment.details,
-                                                    time: newcomment.time
-                                                }
-                                            }],
-                                            ['interactions']: [...user.interactions, {
-                                                type: 'Commented on this post',
-                                                details: {
-                                                    commentId: post.postComments.count,
-                                                    postid: postId,
                                                     text: newcomment.details,
                                                     time: newcomment.time
                                                 }
@@ -186,10 +164,9 @@ async function addCommentButton(userId: string, postId: string, posterId: string
                                             }]
                                         })
                                     }
-                                    
+
                                     commentValue.value = "";
                                     (document.getElementById('btnAddcomment') as HTMLButtonElement).removeAttribute('disabled');
-                                    updateStoreComments();
                                 })
                         })
 
@@ -203,12 +180,46 @@ async function addCommentButton(userId: string, postId: string, posterId: string
 
 </script>
 <template>
-    <div>
-        <div>
-            <textarea v-model="commentValue"></textarea>
-            <button
-                @click.prevent="addCommentButton((props.currentUserId as string), (props.viewPostId as string), (props.viewPostPosterId as string), commentValue)" id="btnAddcomment">Add the
-                <span>{{store.viwedPost.postComments.total + 1}}</span> Comment</button>
-        </div>
+    <div class="commentAdd">
+        <textarea v-model="commentValue" minlength="1" maxlength="1000"></textarea>
+        <button
+            @click.prevent="addCommentButton((props.currentUserId as string), (props.viewPostId as string), (props.viewPostPosterId as string), commentValue)"
+            id="btnAddcomment">Add Comment</button>
     </div>
 </template>
+<style scoped>
+.commentAdd {
+    align-self: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 320px;
+    margin-top: 10px;
+}
+textarea{
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    margin-bottom: 10px;
+    resize: none;
+    height: 50px;
+    width: 250px;
+    outline: auto;
+    background-color: transparent;
+    overflow-y: scroll;
+}
+.NightApp textarea{
+    color: #fff;
+}
+
+button{
+    border: 2px outset #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    background-color: transparent;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    width: 150px;
+}
+</style>

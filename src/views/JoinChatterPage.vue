@@ -77,8 +77,8 @@ function LoginWithGmail() {
             const credential = GoogleAuthProvider.credentialFromResult(result);
             getUserDetails(credential?.accessToken, result)
         }).catch(() => {
-            const error = document.getElementById('ErrorShow') as HTMLDivElement
-            error.style.display = 'flex'
+            const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+            (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
             error.textContent = 'Something went wrong, check your internet connection and try again.'
         })
 }

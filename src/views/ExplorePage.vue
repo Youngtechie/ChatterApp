@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, watchEffect, onMounted, nextTick, onUnmounted } from 'vue'
 import { useChatterStore } from '@/stores/store';
-import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { getFirestore, collection, query, getDocs, type DocumentData, limit, orderBy, startAfter, doc, getDoc } from 'firebase/firestore'
 import { useRouter } from 'vue-router';
 import useUserDetails from '@/composables/useUserDetails.vue'
@@ -31,8 +30,6 @@ const router = useRouter()
 
 const { app } = useAuthentication()
 
-const storage = getStorage(app)
-
 const db = getFirestore(app)
 
 const store = useChatterStore()
@@ -61,11 +58,7 @@ onMounted(() => {
 async function getPostContent(post: DocumentData) {
     divContent.value = ''
     try {
-        const postContentRef = storageRef(storage, post.postContain)
-        const contentUrl = await getDownloadURL(postContentRef)
-            .catch((error) => {
-                console.log(error)
-            })
+        const contentUrl = post.postContain
         await axios.post('/postContent', { contentUrl })
             .then(response => {
                 const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
@@ -76,8 +69,8 @@ async function getPostContent(post: DocumentData) {
             })
     }
     catch (err) {
-        const error = document.getElementById('ErrorShow') as HTMLDivElement
-        error.style.display = 'flex'
+        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
         error.textContent = 'Something went wrong, check your internet connection and reload page'
     }
 }
@@ -106,8 +99,8 @@ async function getPoster(posterID: string) {
 async function getPosts(query: any) {
     const querySnapshot = await getDocs(query);
     const promises = querySnapshot.docs.map(async (doc) => {
-        const post = doc.data();
-        await getPostContent(post as DocumentData);
+        const post = doc.data() as DocumentData;
+        await getPostContent(post);
 
         const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
         bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {

@@ -3,7 +3,6 @@ import { onUnmounted, ref, type Ref } from 'vue';
 import { useChatterStore } from '@/stores/store';
 import { useRouter } from 'vue-router';
 import useLoadingPage from "@/composables/useLoadingPage.vue";
-import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData } from 'firebase/firestore'
 import getUser from '@/composables/useUserViewProfile.vue';
 import useUserDetails from '@/composables/useUserDetails.vue'
@@ -18,8 +17,6 @@ const router = useRouter();
 
 const { app } = useAuthentication()
 
-const storage = getStorage(app)
-
 const db = getFirestore(app)
 
 const DomParse = new DOMParser()
@@ -32,11 +29,7 @@ const divContent = ref('')
 
 async function getPostContent(post: DocumentData) {
     divContent.value = ''
-    const postContentRef = storageRef(storage, post.postContain)
-    const contentUrl = await getDownloadURL(postContentRef)
-        .catch((error) => {
-            console.log(error)
-        })
+    const contentUrl = post.postContain
     await axios.post('/postContent', { contentUrl })
         .then(response => {
             const newHTML = DomParse.parseFromString(response.data as string, 'text/html')

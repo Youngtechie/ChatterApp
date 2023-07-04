@@ -4,9 +4,9 @@ import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 import router from '@/router/index';
 import displayImage from '@/components/UploadImage.vue'
-import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { getFirestore, type DocumentData, doc, getDoc, getDocs, collection, query } from 'firebase/firestore'
 import displayVideo from '../components/UploadVideo.vue'
+import displayCoverImage from '@/components/UploadCoverImage.vue';
 import { useChatterStore } from '@/stores/store';
 import useUserDetails from '@/composables/useUserDetails.vue'
 import CreatePostToCloud from '@/components/CreatePostToCloud.vue';
@@ -40,8 +40,6 @@ type mediaFullPaths = {
 
 const { app } = useAuthentication()
 
-const storage = getStorage(app)
-
 const db = getFirestore(app)
 
 const store = useChatterStore()
@@ -52,6 +50,8 @@ const blogHTML = ref('')
 const mediaId = ref(0)
 const ToEditLastId = ref(0)
 const mediaTime = ref(false)
+const toAddImage = ref(false)
+const toAddVideo = ref(false)
 const title = ref('')
 const titleArr = ref<string[]>([])
 const collector: Ref<string[]> = ref([])
@@ -83,9 +83,7 @@ const observer = new MutationObserver((mutationsList) => {
 
 async function getPostContent(post: DocumentData) {
     try {
-        const postContentRef = storageRef(storage, post.postRawContent);
-        const contentUrl = await getDownloadURL(postContentRef);
-
+        const contentUrl = post.postRawContent
         const response = await axios.post('/postContent', { contentUrl });
         const newHTML = DomParse.parseFromString(response.data as string, 'text/html');
 
@@ -102,13 +100,9 @@ async function getPostContent(post: DocumentData) {
     } catch (error) {
         console.error(error);
 
-        const errorDiv = document.getElementById('ErrorShow') as HTMLDivElement;
+        const errorDiv = document.querySelector('#ErrorShow span') as HTMLSpanElement
         errorDiv.style.display = 'flex';
         errorDiv.textContent = 'Something went wrong. Please check your internet connection.';
-
-        timeOut = setTimeout(() => {
-            errorDiv.style.display = 'none';
-        }, 3000);
     }
 }
 
@@ -149,13 +143,9 @@ async function getPost() {
     }
     else {
         clearTimeout(timeOut)
-        const error = document.getElementById('ErrorShow') as HTMLDivElement;
-        error.innerText = `Can't find a post with ${id} id`
-        error.style.display = 'flex'
-        timeOut = setTimeout(() => {
-            error.style.display = 'none'
-            router.push('/write')
-        }, 3000)
+        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+        error.innerText = `Can't find a post with ${id} id`;
+        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
     }
 }
 
@@ -217,9 +207,9 @@ onUnmounted(() => {
     warning.style.display = 'none'
 });
 
-watchEffect(() => {
-
-})
+function handleBlur(){
+    (document.querySelector('.toolbar') as HTMLDivElement).style.display = 'none'
+}
 
 function removeImage(event: Event) {
     event.preventDefault();
@@ -293,6 +283,22 @@ function setSrcToEmptyString(htmlString: string) {
     return doc.documentElement.innerHTML;
 }
 
+function handleCoverImage(event: Event){
+    displayCoverImage(event)
+}
+
+function removeCoverImage(){
+    const img = document.querySelector('#displayCoverImage img') as HTMLDivElement
+    const btn = document.querySelector('.removeCover') as HTMLButtonElement
+    const label = document.querySelector('.coverImageAdd label') as HTMLLabelElement
+
+    if(img && btn){
+        img.remove()
+        btn.style.display = 'none'
+        label.innerText = 'Add Cover Image'
+        store.coverImageFile = null
+    }
+}
 
 function addVideo(event: Event) {
     mediaId.value += 1
@@ -403,8 +409,9 @@ function handleKeyDown(event: KeyboardEvent) {
     else if (event.ctrlKey && event.key === 'y') {
         event.preventDefault();
         redo();
-    } else if (event.key === 'Backspace') {
-        if ((event.target as HTMLDivElement).textContent?.trim() === '') {
+    }
+    else if (event.key === 'Backspace') {
+        if ((event.target as HTMLDivElement).textContent === '') {
             event.preventDefault()
         }
     }
@@ -416,7 +423,6 @@ function handleInput(event: Event) {
     }
     else {
         mediaTime.value = false
-
     }
     store.textarea = [{
         "title": title.value,
@@ -599,47 +605,191 @@ function handlePaste(event: ClipboardEvent) {
         });
 }
 
+function insertTextAtCursor(text: string) {
+    if (!textarea.value) return;
+
+    const selection = window.getSelection();
+    if (selection) {
+        const range = selection.getRangeAt(0);
+        range.deleteContents();
+
+        const textNode = document.createTextNode(text);
+        range.insertNode(textNode);
+
+        if (text === '**' || text === '_' || text === '~~' || text === '\n```\n') {
+            const cursorNode = document.createTextNode('');
+            range.insertNode(cursorNode);
+
+            const cloneNode = textNode.cloneNode();
+            range.insertNode(cloneNode);
+
+            range.setStartAfter(cursorNode);
+            range.setEndAfter(cursorNode);
+        }
+
+        range.collapse(false);
+        selection.removeAllRanges();
+        selection.addRange(range);
+    }
+}
+
+function makeBold() {
+    insertTextAtCursor('**');
+}
+
+function makeItalic() {
+    insertTextAtCursor('_');
+}
+
+function insertLink() {
+    const url = prompt('Enter the URL:');
+    if (url) {
+        insertTextAtCursor(`[Link Text](${url})`);
+    }
+}
+
+function insertTable() {
+    insertTextAtCursor(
+        '\n| Header 1 | Header 2 |\n| -------- | -------- |\n| Cell 1 | Cell 2 |\n| Cell 3 | Cell 4 |\n'
+    );
+}
+
+function insertCodeBlock() {
+    insertTextAtCursor('\n```\n');
+}
+
+function insertHeader() {
+    const headerLevel = prompt('Enter the header level (1-6):');
+    if (headerLevel) {
+        insertTextAtCursor(`\n ${'#'.repeat(parseInt(headerLevel))} \n`);
+    }
+}
+
+function insertHorizontalRule() {
+    insertTextAtCursor('\n --- \n ');
+}
+
+function insertStrikeThrough() {
+    insertTextAtCursor('~~');
+}
+
+function insertImage() {
+    const addMedia = document.querySelector('.addMedia') as HTMLDivElement;
+    addMedia.style.display = 'flex';
+    toAddImage.value = true
+    toAddVideo.value = false
+}
+
+function insertImageUrl(){
+    const url = prompt('Enter the URL:');
+    if (url) {
+        insertTextAtCursor(`\n![Image](${url})\n`);
+        closeAddMedia();
+    }
+}
+
+function insertVideo() {
+    const addMedia = document.querySelector('.addMedia') as HTMLDivElement;
+    addMedia.style.display = 'flex';
+    toAddVideo.value = true
+    toAddImage.value = false
+}
+
+function closeAddMedia(){
+    const addMedia = document.querySelector('.addMedia') as HTMLDivElement;
+    addMedia.style.display = 'none';
+}
+
+function handleFocus(event: Event){
+    (document.querySelector('.toolbar') as HTMLDivElement).style.display = 'flex';
+    if ((event.target as HTMLDivElement).innerText.trim() !== '') {
+        mediaTime.value = true
+    }
+    else {
+        mediaTime.value = false
+    }
+}
 
 </script>
 <template>
+    <header>
+        <RouterLink to="/"><button>Home</button></RouterLink>
+        <button :title="store.themeDetails.title" id="themeBtn" @click="store.changeTheme">
+            <div id="themeImgContainer"><img :src="store.themeDetails.img" /></div>
+        </button>
+    </header>
+
     <div :class="[{ none: postSection !== 'edit-section' }, { editorsection: true }]">
-        <header>
-            <RouterLink to="/"><button>Home</button></RouterLink>
-            <button :title="store.themeDetails.title" id="themeBtn" @click="store.changeTheme">
-                <div id="themeImgContainer"><img :src="store.themeDetails.img" /></div>
-            </button>
-        </header>
 
-        <div id="mediaAddCon">
-            <div v-if="mediaTime" class="mediaAddClass">
-                <label for="inputImg" class="custom-file-input">Choose Image</label>
-                <input type="file" @change.prevent="addImage" id="inputImg" />
-            </div>
-
-            <div v-if="mediaTime" class="mediaAddClass">
-                <label for="inputVideo" class="custom-file-input">Choose Video</label>
-                <input type="file" @change.prevent="addVideo" id="inputVideo" />
-            </div>
+        <div class="coverImageAdd">
+            <div id="displayCoverImage"></div>
+            <label for="coverImage">Add Cover Image</label>
+            <input type="file" @change="handleCoverImage" id="coverImage" style="display: none;"/>
+            <button class="removeCover" @click="removeCoverImage">Remove Cover Image</button>
         </div>
-
+        
         <button @click="preview" id="previewBtn">Preview</button>
 
         <div id="writeEditor">
             <input type="text" v-model="title" placeholder="Post Title" @focus="handleMediaTimechange" />
-            <div ref="textarea" contenteditable="true" id="textarea" @keydown="handleKeyDown" @input="handleInput"
-                @paste="handlePaste">
+            <div class="toolbar">
+                <button @click="makeBold">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/bold.png" height="15" />
+                </button>
+                <button @click="makeItalic">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/italic.png" height="15" />
+                </button>
+                <button @click="insertLink">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/link.png" height="15" />
+                </button>
+                <button @click="insertHeader">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/header.png" height="15" />
+                </button>
+                <button @click="insertStrikeThrough">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/strikethrough.png" height="15" />
+                </button>
+                <button @click="insertTable">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/table.png" height="15" />
+                </button>
+                <button @click="insertCodeBlock">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/code.png" height="15" />
+                </button>
+                <button @click="insertHorizontalRule">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/horizontal-line.png" height="15" />
+                </button>
+                <button @click="insertImage" v-show="mediaTime">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/image.png" height="15" />
+                </button>
+                <button @click="insertVideo" v-show="mediaTime">
+                    <img src="https://img.icons8.com/ios-filled/50/000000/video.png" height="15" />
+                </button>
             </div>
+            <div ref="textarea" contenteditable="true" id="textarea" @keydown="handleKeyDown" @input="handleInput"
+                @paste="handlePaste" @blur="handleBlur" @focus="handleFocus">
+            </div>
+        </div>
+
+        <div class="addMedia">
+            <div class="imageAdd" v-if="toAddImage">
+                <div class="mediaAddClass">
+                    <label class="custom-file-input">Choose Image</label>
+                    <input type="file" id="inputImg" @change.prevent="addImage" />
+                </div>
+                <button @click="insertImageUrl" class="imageUrl">Add Image using URL</button>
+            </div>
+            <div class="videoAdd" v-if="toAddVideo">
+                <div class="mediaAddClass">
+                    <label class="custom-file-input">Choose Video</label>
+                    <input type="file" @change.prevent="addVideo" id="inputVideo" />
+                </div>
+            </div>
+
+            <button @click="closeAddMedia" class="close">X</button>
         </div>
 
     </div>
 
     <div :class="[{ none: postSection !== 'preview-section' }, { previewsection: true }]">
-        <header>
-            <RouterLink to="/"><button>Home</button></RouterLink>
-            <button :title="store.themeDetails.title" id="themeBtn" @click="store.changeTheme">
-                <div id="themeImgContainer"><img :src="store.themeDetails.img" /></div>
-            </button>
-        </header>
 
         <div>
             <button @click.prevent="changeSection('edit-section')">Edit Post</button>
@@ -650,12 +800,6 @@ function handlePaste(event: ClipboardEvent) {
     </div>
 
     <div :class="[{ none: postSection !== 'publish-section' }, { publishsection: true }]">
-        <header>
-            <RouterLink to="/"><button>Home</button></RouterLink>
-            <button :title="store.themeDetails.title" id="themeBtn" @click="store.changeTheme">
-                <div id="themeImgContainer"><img :src="store.themeDetails.img" /></div>
-            </button>
-        </header>
         <button @click.prevent="changeSection('edit-section')">Edit Post</button>
         <form @submit.prevent="createPost()">
 
@@ -673,8 +817,8 @@ function handlePaste(event: ClipboardEvent) {
                     <option v-for="tag in suggestedTags" :key="tag" :value="tag">{{ tag }}</option>
                 </select>
 
-                <input v-model="postTag" pattern="[^\d]+" v-show="tagOption === 'option2'"
-                    placeholder="Write your tag here" required />
+                <input v-model="postTag" pattern="[^\d]+" v-show="tagOption === 'option2'" placeholder="Write your tag here"
+                    required />
             </div>
             <div>
                 <p>
@@ -689,28 +833,72 @@ function handlePaste(event: ClipboardEvent) {
     </div>
 </template>
 <style scoped>
-header,
-.previewsection header {
+header {
+    position: fixed;
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
-    height: 5%;
+    height: 50px;
+    width: 100%;
     padding: 0 20px;
+    background-color: #333333;
+}
+
+.previewsection,
+.publishsection, .editorsection {
+    height: 100vh;
+}
+
+.coverImageAdd{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-top: 10px;
+    width: 100%;
+}
+.coverImageAdd label, .removeCover, #previewBtn{
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+.editorsection{
+    overflow-y: scroll;
+    padding: 35px 5px 0 5px;
+}
+.editorsection header{
+    height: 25px;
 }
 
 .editorsection,
 .previewsection,
 .publishsection {
-    height: 100vh;
     width: 100%;
-    padding: 5px;
     display: flex;
     flex-direction: column;
 }
+.previewsection, .publishsection{
+    padding: 55px 5px 0 5px;
+}
+.removeCover{
+    display: none;
+}
 
-#writeEditor {
-    height: 70%;
+#writeEditor{
+    height: 500px;
+}
+
+#displayCoverImage{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    background-color: #ccc;
+    margin: 10px 0;
 }
 
 .themeBtn {
@@ -722,8 +910,11 @@ header,
 
 .mediaAddClass {
     display: flex;
-    flex-flow: row wrap;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     margin-bottom: 10px;
+    width: 100%;
 }
 
 .themeBtn img {
@@ -731,12 +922,40 @@ header,
     height: 24px;
 }
 
-#mediaAddCon {
+.addMedia{
+    position: absolute;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100%;
+    top: 0;
+    background-color: grey;
+}
+
+.imageAdd, .videoAdd{
     display: flex;
     flex-direction: column;
-    align-self: center;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    align-self: center;
+}
+
+.addMedia button.close{
+    cursor: pointer;
+    padding: 5px 20px;
+    font-size: 20px;
+    margin-top: 20px;
+    border-radius: 20px;
+}
+
+.addMedia button.imageUrl{
+    cursor: pointer;
+    padding: 5px 10px;
+    font-size: 20px;
+    margin-top: 20px;
+    border-radius: 20px;
 }
 
 .media-item {
@@ -749,9 +968,9 @@ header,
     border: none;
     padding: 4px 8px;
     cursor: pointer;
-    font-size: 10px;
+    font-size: medium;
     display: inline;
-    margin-right: 0px;
+    margin-bottom: 10px;
 }
 
 .editorsection input[type="text"] {
@@ -762,21 +981,25 @@ header,
     border-radius: 4px;
     outline: none;
     font-weight: bold;
+    margin-bottom: 10px;
 }
 
 #textarea,
 #previewer {
     width: 100%;
-    border: 1px solid #ccc;
+    border: 2px solid #ccc;
     border-radius: 4px;
     padding: 10px;
     font-size: 17px;
     line-height: 1.5;
     outline: none;
-    height: 90%;
+    height: 95%;
     overflow-y: scroll;
     overflow-x: hidden;
     white-space: break-spaces;
+}
+#textarea{
+    height: 350px;
 }
 
 #previewBtn {
@@ -802,9 +1025,20 @@ header,
     display: none;
 }
 
-@media (max-width: 320px) {
-    #mediaAddCon {
-        height: 15%;
-    }
+.toolbar {
+    display: flex;
+    flex-flow: row wrap;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+    width: 100%;
 }
-</style>
+
+.toolbar button {
+    margin-right: 5px;
+    padding: 2px;
+}
+.NightApp .toolbar button img{
+    filter: invert(1);
+}
+@media (max-width: 320px) {}</style>

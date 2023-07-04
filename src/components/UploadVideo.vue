@@ -1,6 +1,15 @@
 <script lang="ts">
 import { useChatterStore } from '@/stores/store';
 
+import { onUnmounted } from 'vue';
+
+
+let timeOut: ReturnType<typeof setTimeout>;
+
+onUnmounted(() => {
+    clearTimeout(timeOut)
+})
+
 const store = useChatterStore()
 
 function isVideoFile(file: File): boolean {
@@ -8,9 +17,9 @@ function isVideoFile(file: File): boolean {
 }
 
 type FileC = {
-  id: number;
-  fileName: string;
-  nameType: string;
+    id: number;
+    fileName: string;
+    nameType: string;
 };
 
 function insertAtCursor(tag: HTMLElement) {
@@ -52,9 +61,9 @@ export default function displayVideo(event: Event, id: number, fileNameContainer
     const video = document.createElement("video");
     video.id = `video_${id}`;
     video.style.display = "block";
-    video.style.maxWidth = "250px";
+    video.style.maxWidth = "300px";
+    video.style.maxHeight = "300px";
     video.style.height = "auto";
-    video.style.maxHeight = "250px"
     video.contentEditable = "false";
     video.controls = true
     const button = document.createElement("input");
@@ -84,7 +93,7 @@ export default function displayVideo(event: Event, id: number, fileNameContainer
         };
 
         insertAtCursor(videoContainer);
-        
+
         input.value = "";
 
         fileNameContainer.push({
@@ -93,15 +102,23 @@ export default function displayVideo(event: Event, id: number, fileNameContainer
             'nameType': 'videos'
         })
 
-        store.addFileInput(file, id, 'video')
-        
+        store.addFileInput(file, id, 'video');
+
+        const addMedia = document.querySelector('.addMedia') as HTMLDivElement;
+        addMedia.style.display = 'none';
+
     } else {
         if (video && button) {
             videoContainer.remove();
-            input.value = "";
-            console.log("Please select a valid video file (max 5MB)");
+            const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+            (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
+            error.textContent = 'Please select a valid Video file (max 8MB) and no duplicate video allowed'
+            timeOut = setTimeout(() => {
+                (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'none'
+            }, 3000)
         }
     }
+
     if (file) {
         reader.readAsDataURL(file as Blob);
     }

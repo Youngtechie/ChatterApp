@@ -139,6 +139,15 @@ async function deleteComment(userId: string, postId: string, posterId: string, c
 }
 </script>
 <template>
-    <button
+    <button class="delBtn"
         @click.prevent="deleteComment((props.currentUserId as string), (props.viewPostId as string), (props.viewPostPosterId as string), (commentId as number), (commentText as string))">Delete</button>
 </template>
+<style scoped>
+.delBtn {
+    color: red;
+}
+.delBtn {
+    background-color: red;
+    color: white;
+}
+</style>

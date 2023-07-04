@@ -17,7 +17,7 @@ function closeError() {
 
 <template>
   <RouterView />
-  <div id="ErrorShow"><button @click="closeError">X</button></div>
+  <div id="ErrorShow"><button @click="closeError">X</button><span></span></div>
   <div id="warningShow"></div>
 </template>
 <style scoped>
@@ -47,7 +47,11 @@ function closeError() {
   color: white;
   font-weight: bolder;
 }
-
+#ErrorShow span{
+  width: 100%;
+  height: 100%;
+  margin-top: 10px;
+}
 #warningShow {
   position: absolute;
   top: 50%;

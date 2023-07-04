@@ -22,6 +22,7 @@ export const useChatterStore = defineStore('chatter', () => {
   const viwedPost: DocumentData = {}
   const viwedProfile: DocumentData = {}
   const fileInputs = [] as FileInput[]
+  const coverImageFile = ref<File | null>(null)
   const viwedPosterFollowed = ref(false)
   const textarea: textarea[] = []
 
@@ -192,6 +193,7 @@ export const useChatterStore = defineStore('chatter', () => {
     section,
     sidebar,
     signedUser,
+    coverImageFile,
     themeDetails,
     authenticated,
     userId,

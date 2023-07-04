@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onUnmounted, onMounted, nextTick } from 'vue'
 import { useChatterStore } from '@/stores/store';
-import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc, limit, orderBy } from 'firebase/firestore'
 import { useRouter } from 'vue-router';
 import useUserDetails from '@/composables/useUserDetails.vue'
@@ -10,10 +9,7 @@ import axios from 'axios'
 import useDetailButtons from '@/composables/useDetailButtons.vue'
 import useCalculateTime from '@/composables/useCalculateTime.vue'
 
-let timeOut: ReturnType<typeof setTimeout>;
-
 onUnmounted(() => {
-    clearTimeout(timeOut)
     const warning = document.getElementById('warningShow') as HTMLDivElement
     warning.style.display = 'none'
 })
@@ -24,8 +20,6 @@ const DomParse = new DOMParser()
 useUserDetails()
 
 const { app } = useAuthentication()
-
-const storage = getStorage(app)
 
 const store = useChatterStore()
 
@@ -53,7 +47,6 @@ const followings = ref<DocumentData[] | null>([])
 const stopNoData = ref(0)
 
 onMounted(() => {
-    clearTimeout(timeOut)
     nextTick(() => {
         const warningShow = document.getElementById('warningShow');
         if (warningShow) {
@@ -107,11 +100,7 @@ store.signedUser.interests.forEach((interest: string) => {
 async function getPostContent(post: DocumentData) {
     divContent.value = ''
     try {
-        const postContentRef = storageRef(storage, post.postContain)
-        const contentUrl = await getDownloadURL(postContentRef)
-            .catch((error) => {
-                console.log(error)
-            })
+        const contentUrl = post.postContain
         await axios.post('/postContent', { contentUrl })
             .then(response => {
                 const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
@@ -122,12 +111,9 @@ async function getPostContent(post: DocumentData) {
             })
     }
     catch (err) {
-        const error = document.getElementById('ErrorShow') as HTMLDivElement
-        error.style.display = 'flex'
+        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement;
+        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
         error.textContent = 'Something went wrong, check your internet connection'
-        timeOut = setTimeout(() => {
-            error.style.display = 'none'
-        }, 3000)
     }
 }
 
@@ -205,13 +191,9 @@ async function getPostsByTag(tags: string[]) {
             })
         }
     } catch (err) {
-        console.log(err);
-        const error = document.getElementById('ErrorShow') as HTMLDivElement;
-        error.style.display = 'flex';
+        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
         error.textContent = 'Something went wrong, check your internet connection';
-        timeOut = setTimeout(() => {
-            error.style.display = 'none';
-        }, 3000);
     }
 }
 
@@ -281,14 +263,12 @@ async function getFollowings() {
             }
         })
     } catch (error) {
-        const errorDiv = document.getElementById('ErrorShow') as HTMLDivElement;
+        const errorDiv = document.querySelector('#ErrorShow span') as HTMLSpanElement
         errorDiv.style.display = 'flex';
         errorDiv.textContent = 'Something went wrong, check your internet connection';
-        timeOut = setTimeout(() => {
-            errorDiv.style.display = 'none';
-        }, 3000);
     }
 }
+
 
 </script>
 <template>
@@ -424,4 +404,5 @@ async function getFollowings() {
     font-weight: bolder;
     font-size: medium;
     cursor: pointer;
-}</style>
+}
+</style>

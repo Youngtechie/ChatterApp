@@ -172,7 +172,7 @@ function cancelEdit(){
 
 </script>
 <template>
-    <button v-if="!toEdit" @click.prevent="enableEditor(props.divEditId as string)">Edit</button>
+    <button v-if="!toEdit" @click.prevent="enableEditor(props.divEditId as string)" class="editBTn">Edit</button>
     <div id="editContainer" v-else>
         <div id="centerContainer">
             <textarea v-model="editCommentValue"></textarea>
