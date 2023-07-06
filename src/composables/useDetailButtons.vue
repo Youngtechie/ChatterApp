@@ -80,8 +80,4 @@ span{
 .NightApp button:nth-of-type(3) svg *{
     fill: #fff;
 }
-
-button:last-of-type{
-    cursor: not-allowed;
-}
 </style>

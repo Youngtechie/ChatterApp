@@ -71,6 +71,8 @@ const store = useChatterStore()
     flex-direction: column;
     width: 100%;
     height: 100%;
+    padding-top: 50px;
+    overflow-y: scroll;
 }
 
 #section1 {
@@ -78,7 +80,6 @@ const store = useChatterStore()
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 100%;
     height: 200px;
     text-align: center;
     position: relative;
@@ -86,7 +87,7 @@ const store = useChatterStore()
 
 #section1 #img {
     width: 100%;
-    height: 200px;
+    height: 100%;
     background-image: url('/public/section1Url.png');
     background-repeat: no-repeat;
     background-size: cover;
@@ -110,6 +111,7 @@ const store = useChatterStore()
     border-radius: 5px;
     background-color: #FFC700;
     cursor: pointer;
+    color: #000;
 }
 
 #section1 #text a button:hover{
@@ -118,7 +120,7 @@ const store = useChatterStore()
 }
 
 section {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     text-align: center;
 }
 
@@ -147,7 +149,6 @@ section h2 {
     border-radius: 8px;
     text-align: left;
     width: 200px;
-    height: 250px;
     padding: 10px;
     display: flex;
     flex-direction: column;
@@ -174,6 +175,7 @@ section h2 {
     display: flex;
     flex-direction: row;
     align-items: center;
+    margin-bottom: 35px;
 }
 
 #section4 img {
@@ -189,4 +191,49 @@ section h2 {
 
 #section4 blockquote {
     margin-bottom: 30px;
-}</style>
+}
+section p:not(#section3 section p){
+    padding: 5px;
+}
+
+@media screen and (max-width: 787px) {
+    #section3Parts section{
+        height: 250px;
+    }
+}
+@media screen and (min-width: 768px) {   
+}
+@media screen and (min-width: 768px) and (max-width: 991px) {
+    #section1{
+        height: 300px;
+    }
+    #section3Parts section{
+        height: 250px;
+    }
+    #section4 {
+        margin-bottom: 40px;
+    }
+}
+
+@media screen and (min-width: 992px) {
+    #section1{
+        height: 400px;
+    }
+    #section3Parts section{
+        height: 300px;
+    }
+    #section4 {
+        margin-bottom: 45px;
+    }
+}
+
+@media screen and (min-width: 1200px) {
+    #section1{
+        height: 500px;
+    }
+    #section3Parts section{
+        height: 350px;
+        width: 250px;
+    }
+}
+</style>

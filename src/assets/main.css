@@ -20,11 +20,7 @@ body {
   background-color: black;
   color: white;
 }
-.router-link-exact-active button {
-  background-color: purple;
-  cursor: not-allowed;
-  color: white;
-}
+
 #textarea {
   display: inline-block;
   position: relative;
@@ -70,6 +66,7 @@ body {
     display: flex;
     align-items: center;
     width: 50%;
+    height: 100%;
     border-radius: 10px;
     position: absolute;
 }
@@ -177,4 +174,190 @@ a, a:active, a:hover{
 .router-link-active button{
   background-color: blue;
   color: white
+}
+
+nav .otherNavDetails a.router-link-active button{
+  background-color: purple;
+  fill: black;
+}
+
+button{
+  border: 2px solid #ccc;
+}
+
+@media screen and (mix-width: 767px) {
+  .lineContainer{
+    display: none;
+  }
+}
+
+@media screen and (max-width: 767px) {
+  body, button, input{
+    font-size: 16px;
+  }
+  h1{
+    font-size: 24px;
+  }
+  h2{
+    font-size: 23px;
+  }
+  h3{
+    font-size: 22px;
+  }
+  h4{
+    font-size: 21px;
+  }
+  h5{
+    font-size: 20px;
+  }
+  h6{
+    font-size: 19px;
+  }
+  .lineContainer {
+    height: 30px;
+    width: 30px;
+    border-radius: 50%;
+}
+  
+}
+@media screen and (min-width: 768px) and (max-width: 991px) {
+  body, button, input{
+    font-size: 18px;
+  }
+  h1{
+    font-size: 30px;
+  }
+  h2{
+    font-size: 29px;
+  }
+  h3{
+    font-size: 28px;
+  }
+  h4{
+    font-size: 27px;
+  }
+  h5{
+    font-size: 26px;
+  }
+  h6{
+    font-size: 25px;
+  }
+  #themeBtn{
+    width: 50px;
+    height: 25px;
+    border-radius: 20px;
+  }
+  #themeImgContainer img{
+    height: 20px;
+  }
+  #themeImgContainer{
+    border-radius: 20px;
+  }
+  .lineContainer {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+}
+
+.line {
+    position: absolute;
+    width: 2px;
+    height: 40%;
+    background-color: #E5E5E5;
+}
+
+.line:nth-child(2) {
+    right: 14px;
+}
+
+.line:nth-child(1) {
+    transform: rotate(90deg);
+    right: 14px;
+}
+}
+
+@media screen and (min-width: 992px) {
+  body, button, input{
+    font-size: 20px;
+  }
+  h1{
+    font-size: 36px;
+  }
+  h2{
+    font-size: 34px;
+  }
+  h3{
+    font-size: 32px;
+  }
+  h4{
+    font-size: 30px;
+  }
+  h5{
+    font-size: 28px;
+  }
+  h6{
+    font-size: 26px;
+  }
+  #themeBtn{
+    width: 60px;
+    height: 30px;
+    border-radius: 30px;
+  }
+  #themeImgContainer img{
+    height: 25px;
+  }
+  #themeImgContainer{
+    border-radius: 30px;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  body{
+    font-size: 22px;
+  }
+  h1{
+    font-size: 48px;
+  }
+  h2{
+    font-size: 45px;
+  }
+  h3{
+    font-size: 42px;
+  }
+  h4{
+    font-size: 39px;
+  }
+  h5{
+    font-size: 36px;
+  }
+  h6{
+    font-size: 33px;
+  }
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table th,
+table td {
+  padding: 8px;
+  text-align: left;
+  border: 1px solid #ccc;
+}
+
+table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+#previewer strong, #previewer em, #previewer a{
+  width: fit-content;
+  display: contents;
+}
+.imgCon{
+  cursor: pointer;
+}
+#divContent{
+  cursor: pointer;
 }

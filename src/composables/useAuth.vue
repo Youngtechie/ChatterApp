@@ -31,7 +31,7 @@ export default function useAuthentication() {
             else {
                 store.authenticated = false
             }
-        });   
+        })
     }
 
     return { auth, provider, app, getAuthentication }

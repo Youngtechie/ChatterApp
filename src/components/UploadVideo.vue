@@ -1,15 +1,6 @@
 <script lang="ts">
 import { useChatterStore } from '@/stores/store';
 
-import { onUnmounted } from 'vue';
-
-
-let timeOut: ReturnType<typeof setTimeout>;
-
-onUnmounted(() => {
-    clearTimeout(timeOut)
-})
-
 const store = useChatterStore()
 
 function isVideoFile(file: File): boolean {
@@ -113,7 +104,7 @@ export default function displayVideo(event: Event, id: number, fileNameContainer
             const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
             (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
             error.textContent = 'Please select a valid Video file (max 8MB) and no duplicate video allowed'
-            timeOut = setTimeout(() => {
+            setTimeout(() => {
                 (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'none'
             }, 3000)
         }

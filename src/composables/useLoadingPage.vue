@@ -39,8 +39,4 @@ const props = defineProps({
       transform: rotate(360deg);
     }
   }
-  
-  h1 {
-    font-size: 24px;
-  }
   </style>

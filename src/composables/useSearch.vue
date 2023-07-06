@@ -124,7 +124,8 @@ async function Search(type: string, value: string) {
     posts.value = []
     console.log(type, value)
 
-    if (value === '') {;
+    if (value === '') {
+        ;
         (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
         error.textContent = 'Search input is empty'
         timeOut = setTimeout(() => {
@@ -289,7 +290,7 @@ function routeToProfile(userId: string) {
             </div>
         </div>
         <div v-if="users.length > 0" class="results-container">
-            <button v-for="(user, index) in users" :key="index" class="result-item">
+            <button v-for="(user, index) in users" :key="index" class="result-item" @click="routeToProfile(user.id)">
                 <h3>{{ user.fullName }}</h3>
                 <p>@{{ user.username }}</p>
             </button>
@@ -311,16 +312,13 @@ function routeToProfile(userId: string) {
     display: flex;
     flex-flow: column wrap;
     align-items: center;
-    height: 90vh;
-    overflow: hidden;
+    width: 100%;
 }
 
 .search-container {
     display: flex;
-    flex-flow: column wrap;
+    flex-direction: column;
     align-items: center;
-    overflow: hidden;
-    height: 20%;
 }
 
 .firstSection {
@@ -364,7 +362,7 @@ function routeToProfile(userId: string) {
     padding-top: 10px;
     overflow-y: scroll;
     height: 70%;
-    max-width: 320px;
+    width: 100%;
 }
 
 .result-item {
@@ -375,7 +373,7 @@ function routeToProfile(userId: string) {
     display: flex;
     flex-flow: column wrap;
     align-items: center;
-    width: 200px;
+    width: 100%;
 }
 
 #loading {
@@ -395,20 +393,14 @@ function routeToProfile(userId: string) {
     border-radius: 5px;
 }
 
-.result-item-image {
-    width: 50px;
-    height: 50px;
-    margin-left: 5px;
-    border-radius: 50%;
-    background-color: #efefef;
-}
-
 .result-item-post {
     margin-bottom: 10px;
     border-bottom: 1px solid #ccc;
     display: flex;
     flex-direction: row;
-    width: 320px;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
 }
 
 .result-item-other {
@@ -421,12 +413,29 @@ function routeToProfile(userId: string) {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    font-size: smaller;
     margin-bottom: 5px;
 }
 
 .result-item-header span:first-of-type {
     font-weight: bolder;
+    cursor: pointer;
+}
+
+.result-item-header span:last-of-type {
     font-size: medium;
 }
+
+@media screen and (min-width: 768px) and (max-width: 991px) {}
+
+@media screen and (min-width: 992px) {
+    .result-item-other {
+        width: 300px;
+    }
+    .imgCon {
+        width: 70px;
+        height: 70px;
+    }
+}
+
+@media screen and (min-width: 1200px) {}
 </style>

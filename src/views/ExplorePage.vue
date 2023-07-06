@@ -187,6 +187,7 @@ onUnmounted(() => {
         </div>
 
         <button @click.prevent="next" v-if="posts?.length === 15">See More ....</button>
+        <div id="warningShow"></div>
     </main>
 </template>
 <style scoped>
@@ -195,7 +196,8 @@ h2 {
     margin-bottom: 10px;
     height: 5vh;
 }
-.imgCon{
+
+.imgCon {
     width: 50px;
     height: 50px;
     background-color: #efefef;
@@ -209,8 +211,10 @@ h2 {
     overflow-y: scroll;
     display: flex;
     flex-direction: column;
-    padding-top: 20px;
-    height: 80vh;
+    width: 100%;
+    height: 100vh;
+    padding-top: 55px;
+    position: relative;
 }
 
 .resultsContainer {
@@ -220,15 +224,19 @@ h2 {
     align-items: center;
     padding-top: 10px;
     overflow-y: scroll;
-    max-width: 320px;
+    max-width: 100%;
     border-top: 2px solid blue;
+    margin-top: 10px;
 }
+
 .result-item {
     margin-bottom: 10px;
     border-bottom: 1px solid #ccc;
     display: flex;
     flex-direction: row;
-    width: 320px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
 }
 
 .result-item-other {
@@ -251,13 +259,59 @@ h2 {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    font-size: smaller;
     margin-bottom: 5px;
 }
 
 .result-item-header span:first-of-type {
     font-weight: bolder;
-    font-size: medium;
     cursor: pointer;
 }
+
+.result-item-header span:last-of-type {
+    font-size: medium;
+}
+
+#warningShow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border: 1px outset #efefef;
+    display: none;
+    text-align: center;
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+    font-weight: bolder;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .DayApp #warningShow {
+    color: #efefef;
+    background-color: black;
+  }
+  
+  .NightApp #warningShow {
+    color: black;
+    background-color: #efefef;
+  }
+
+  @media screen and (min-width: 992px) {
+    .result-item-other {
+        width: 300px;
+    }
+    .imgCon {
+        width: 70px;
+        height: 70px;
+    }
+    
+}
+@media screen and (min-width: 768px) {
+    #warningShow{
+      width: 300px;
+      height: 300px;
+    }
+  }
 </style>

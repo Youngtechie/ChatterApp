@@ -177,15 +177,15 @@ async function deleteFolder(folderPath: string) {
 </template>
 <style scoped>
 .resultsContainer {
-    border-top: 1px solid #ccc;
+    position: relative;
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding-top: 10px;
     overflow-y: scroll;
-    height: 80vh;
-    max-width: 320px;
+    height: 100%;
+    width: 100%;
 }
 .imgCon{
     width: 50px;
@@ -202,7 +202,11 @@ async function deleteFolder(folderPath: string) {
     border-bottom: 1px solid #ccc;
     display: flex;
     flex-direction: row;
-    width: 320px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
 }
 
 .result-item-other {
@@ -234,13 +238,11 @@ async function deleteFolder(folderPath: string) {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    font-size: smaller;
     margin-bottom: 5px;
 }
 
 .result-item-header span:first-of-type {
     font-weight: bolder;
-    font-size: medium;
     cursor: pointer;
 }
 
@@ -258,5 +260,14 @@ async function deleteFolder(folderPath: string) {
 .editSectionbtn button:last-of-type:hover {
     background-color: red;
     color: white;
+}
+@media screen and (min-width: 992px) {
+    .result-item-other {
+        width: 300px;
+    }
+    .imgCon {
+        width: 70px;
+        height: 70px;
+    }
 }
 </style>

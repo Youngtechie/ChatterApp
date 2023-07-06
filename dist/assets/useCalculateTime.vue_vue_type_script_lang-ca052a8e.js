@@ -1,0 +1,1 @@
+function r(t){const e=Math.floor(Date.now()/1e3)-t;if(e<60)return e+" seconds ago";if(e<3600)return Math.floor(e/60)+" minutes ago";if(e<86400)return Math.floor(e/3600)+" hours ago";if(e<2592e3){const o=Math.floor(e/86400);return o===1?o+" day ago":o+" days ago"}else return new Date(t*1e3).toLocaleString()}export{r as c};

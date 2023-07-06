@@ -95,8 +95,8 @@ button {
     position: absolute;
     top: 10px;
     left: 10px;
+    padding: 5px;
 }
-
 .analysisPage {
     display: flex;
     flex-direction: column;
@@ -109,7 +109,6 @@ button {
 }
 
 .analysisPage h1 {
-    font-size: 24px;
     margin-bottom: 10px;
     text-align: center;
 }

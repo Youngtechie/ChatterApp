@@ -91,13 +91,12 @@ function Signout() {
                     <path d="M3 18h18v-2H3v2zM3 13h18v-2H3v2zM3 6v2h18V6H3z" />
                 </svg>
             </button>
+            <RouterLink to="/write" class="writeBtn"><button>Write</button></RouterLink>
             <h1>Chatter</h1>
             <button :title="store.themeDetails.title" id="themeBtn" @click="store.changeTheme">
                 <div id="themeImgContainer"><img :src="store.themeDetails.img" /></div>
             </button>
         </header>
-
-        <RouterView></RouterView>
 
         <nav v-if="store.sidebar" class="sidebar">
             <button @click.prevent="store.toggleSidebar()" id="togglebtn" title="Close sidebar"><svg
@@ -109,7 +108,7 @@ function Signout() {
             <section class="profileSection" v-if="store.signedUser.isLogined">
                 <RouterLink to="/userProfile" id="userProfile">
                     <button>
-                        <div class="imgCon" :style="{backgroundImage: `url(${store.signedUser.profilePicture})`}"></div>
+                        <div class="imgCon" :style="{ backgroundImage: `url(${store.signedUser.profilePicture})` }"></div>
                         <span>{{ (store.signedUser.username) }}</span>
                     </button>
                 </RouterLink>
@@ -135,9 +134,9 @@ function Signout() {
                 <section id="loginSection">
                     <RouterLink to="/login"><button>Join/Login</button></RouterLink>
                 </section>
-    
-                <RouterLink to="/explore" id="exploreBtn" v-if="!store.signedUser.isLogined"> <button> <svg
-                            height="24px" width="24px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+
+                <RouterLink to="/explore" id="exploreBtn" v-if="!store.signedUser.isLogined"> <button> <svg height="24px"
+                            width="24px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
                             xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-41.56 -41.56 498.71 498.71"
                             xml:space="preserve" fill="#000000">
                             <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
@@ -160,7 +159,7 @@ function Signout() {
                                 </g>
                             </g>
                         </svg>
-    
+
                         Explore
                     </button>
                 </RouterLink>
@@ -193,31 +192,9 @@ function Signout() {
                         User Analysis
                     </button>
                 </RouterLink>
-                <RouterLink to="/explore"> <button> <svg height="24px" width="24px" version="1.1" id="Capa_1"
-                            xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-                            viewBox="-41.56 -41.56 498.71 498.71" xml:space="preserve" fill="#000000">
-                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
-                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
-                            <g id="SVGRepo_iconCarrier">
-                                <g>
-                                    <path style="fill:none;"
-                                        d="M207.795,24C106.451,24,24,106.45,24,207.793c0,101.346,82.451,183.797,183.795,183.797 c101.344,0,183.795-82.451,183.795-183.797C391.59,106.45,309.139,24,207.795,24z M322.508,109.027l-0.098,0.181 c-0.137,0.283-0.287,0.558-0.445,0.83l-72.305,134.701c-1.115,2.073-2.814,3.773-4.889,4.887l-135.131,72.572 c-0.048,0.026-0.096,0.053-0.145,0.078l-0.051,0.027l-0.002-0.003c-3.391,1.735-7.548,1.836-11.156-0.105 c-1.06-0.569-2-1.275-2.809-2.085c-3.648-3.648-4.648-9.389-2.08-14.166l72.596-135.034c1.114-2.073,2.813-3.773,4.887-4.888 l135.065-72.625c5.838-3.139,13.113-0.952,16.252,4.887c1.861,3.463,1.836,7.427,0.299,10.738L322.508,109.027z">
-                                    </path>
-                                    <polygon style="fill:none;" points="133.371,282.278 219.172,236.141 179.502,196.47 ">
-                                    </polygon>
-                                    <path style="fill:#fff;"
-                                        d="M207.795,0C93.217,0,0,93.216,0,207.793C0,322.372,93.217,415.59,207.795,415.59 c114.578,0,207.795-93.218,207.795-207.797C415.59,93.216,322.374,0,207.795,0z M207.795,391.59 C106.451,391.59,24,309.139,24,207.793C24,106.45,106.451,24,207.795,24C309.139,24,391.59,106.45,391.59,207.793 C391.59,309.139,309.139,391.59,207.795,391.59z">
-                                    </path>
-                                    <polygon style="fill:#0b63d5;" points="236.153,219.179 282.282,133.371 196.48,179.507 ">
-                                    </polygon>
-                                    <path style="fill:#fff;"
-                                        d="M322.198,98.284c-3.139-5.839-10.414-8.025-16.252-4.887l-135.065,72.625 c-2.073,1.115-3.773,2.814-4.887,4.888L93.398,305.945c-2.568,4.777-1.568,10.518,2.08,14.166c0.809,0.81,1.748,1.516,2.809,2.085 c3.608,1.94,7.766,1.84,11.156,0.105l0.002,0.003l0.051-0.027c0.049-0.025,0.097-0.052,0.145-0.078l135.131-72.572 c2.074-1.114,3.773-2.813,4.889-4.887l72.305-134.701c0.158-0.272,0.309-0.547,0.445-0.83l0.098-0.181l-0.012-0.004 C324.034,105.711,324.059,101.747,322.198,98.284z M133.371,282.278l46.131-85.808l39.67,39.671L133.371,282.278z M236.153,219.179 l-39.672-39.672l85.801-46.136L236.153,219.179z">
-                                    </path>
-                                </g>
-                            </g>
-                        </svg>
-
-                        Explore
+                <RouterLink to="/explore"> <button>
+                    <img src="/trending.png" height="24px" width="24px"/>
+                        Trending
                     </button>
                 </RouterLink>
                 <RouterLink to="/bookmarks">
@@ -245,13 +222,139 @@ function Signout() {
             </section>
         </nav>
 
+        <nav class="sidebar2">
+            <section class="profileSection" v-if="store.signedUser.isLogined">
+                <RouterLink to="/userProfile" id="userProfile">
+                    <button>
+                        <div class="imgCon" :style="{ backgroundImage: `url(${store.signedUser.profilePicture})` }"></div>
+                        <span>{{ (store.signedUser.username) }}</span>
+                    </button>
+                </RouterLink>
+
+                <button v-if="store.signedUser.isLogined" @click.prevent="toggleSeeMore" id="moreOptionbtn">
+                    <svg fill="#ffffff" height="15px" width="15px" version="1.1" id="Layer_1"
+                        xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 330 330"
+                        xml:space="preserve">
+
+                        <g id="SVGRepo_bgCarrier" stroke-width="0" />
+
+                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round" />
+
+                        <g id="SVGRepo_iconCarrier">
+                            <path id="XMLID_225_"
+                                d="M325.607,79.393c-5.857-5.857-15.355-5.858-21.213,0.001l-139.39,139.393L25.607,79.393 c-5.857-5.857-15.355-5.858-21.213,0.001c-5.858,5.858-5.858,15.355,0,21.213l150.004,150c2.813,2.813,6.628,4.393,10.606,4.393 s7.794-1.581,10.606-4.394l149.996-150C331.465,94.749,331.465,85.251,325.607,79.393z" />
+                        </g>
+                    </svg>
+                </button> <!-- buttton for more accounts option -->
+            </section>
+
+            <div v-else class="nav-nologined-btn">
+                <section id="loginSection">
+                    <RouterLink to="/login"><button>Join/Login</button></RouterLink>
+                </section>
+
+                <RouterLink to="/explore" id="exploreBtn" v-if="!store.signedUser.isLogined"> <button> <svg height="24px"
+                            width="24px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg"
+                            xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="-41.56 -41.56 498.71 498.71"
+                            xml:space="preserve" fill="#000000">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <g>
+                                    <path style="fill:none;"
+                                        d="M207.795,24C106.451,24,24,106.45,24,207.793c0,101.346,82.451,183.797,183.795,183.797 c101.344,0,183.795-82.451,183.795-183.797C391.59,106.45,309.139,24,207.795,24z M322.508,109.027l-0.098,0.181 c-0.137,0.283-0.287,0.558-0.445,0.83l-72.305,134.701c-1.115,2.073-2.814,3.773-4.889,4.887l-135.131,72.572 c-0.048,0.026-0.096,0.053-0.145,0.078l-0.051,0.027l-0.002-0.003c-3.391,1.735-7.548,1.836-11.156-0.105 c-1.06-0.569-2-1.275-2.809-2.085c-3.648-3.648-4.648-9.389-2.08-14.166l72.596-135.034c1.114-2.073,2.813-3.773,4.887-4.888 l135.065-72.625c5.838-3.139,13.113-0.952,16.252,4.887c1.861,3.463,1.836,7.427,0.299,10.738L322.508,109.027z">
+                                    </path>
+                                    <polygon style="fill:none;" points="133.371,282.278 219.172,236.141 179.502,196.47 ">
+                                    </polygon>
+                                    <path style="fill:#fff;"
+                                        d="M207.795,0C93.217,0,0,93.216,0,207.793C0,322.372,93.217,415.59,207.795,415.59 c114.578,0,207.795-93.218,207.795-207.797C415.59,93.216,322.374,0,207.795,0z M207.795,391.59 C106.451,391.59,24,309.139,24,207.793C24,106.45,106.451,24,207.795,24C309.139,24,391.59,106.45,391.59,207.793 C391.59,309.139,309.139,391.59,207.795,391.59z">
+                                    </path>
+                                    <polygon style="fill:#0b63d5;" points="236.153,219.179 282.282,133.371 196.48,179.507 ">
+                                    </polygon>
+                                    <path style="fill:#fff;"
+                                        d="M322.198,98.284c-3.139-5.839-10.414-8.025-16.252-4.887l-135.065,72.625 c-2.073,1.115-3.773,2.814-4.887,4.888L93.398,305.945c-2.568,4.777-1.568,10.518,2.08,14.166c0.809,0.81,1.748,1.516,2.809,2.085 c3.608,1.94,7.766,1.84,11.156,0.105l0.002,0.003l0.051-0.027c0.049-0.025,0.097-0.052,0.145-0.078l135.131-72.572 c2.074-1.114,3.773-2.813,4.889-4.887l72.305-134.701c0.158-0.272,0.309-0.547,0.445-0.83l0.098-0.181l-0.012-0.004 C324.034,105.711,324.059,101.747,322.198,98.284z M133.371,282.278l46.131-85.808l39.67,39.671L133.371,282.278z M236.153,219.179 l-39.672-39.672l85.801-46.136L236.153,219.179z">
+                                    </path>
+                                </g>
+                            </g>
+                        </svg>
+
+                        Explore
+                    </button>
+                </RouterLink>
+            </div>
+
+            <!--If more accounts button is clicked-->
+            <section v-if="showMoreAccount" id="MoreAccounts">
+                <section>
+                    <span>Reader</span>
+                    <span v-if="store.asReader === true">Current</span>
+                </section>
+
+                <section>
+                    <span>Author</span>
+                    <span v-if="store.asReader === false">Current</span>
+                </section>
+
+                <button @click.prevent="store.toggleAccountType" id="switchBtn">Switch Account</button>
+            </section>
+
+            <!--To be shown if signedUser is login-->
+            <section class="otherNavDetails" v-if="store.signedUser.isLogined">
+                <RouterLink to="/userAnalysis">
+                    <button>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ffff" width="24px" height="24px">
+                            <path d="M0 0h24v24H0z" fill="none" />
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-.5-10h-3v2h3v-2zm0 4h-3v6h3v-6z" />
+                        </svg>
+                        User Analysis
+                    </button>
+                </RouterLink>
+                <RouterLink to="/explore"> <button>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trending-up">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                        <polyline points="17 6 23 6 23 12"></polyline>
+                      </svg>
+                        Trending
+                    </button>
+                </RouterLink>
+                <RouterLink to="/bookmarks">
+                    <button>
+                        <svg width="24px" height="24px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                            <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                            <g id="SVGRepo_iconCarrier">
+                                <path
+                                    d="M15.75 5H8.25C7.55964 5 7 5.58763 7 6.3125V19L12 15.5L17 19V6.3125C17 5.58763 16.4404 5 15.75 5Z"
+                                    stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </g>
+                        </svg>
+                        Bookmarks
+                    </button>
+                </RouterLink>
+
+                <button id="signOutBtn" @click.prevent="Signout()">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ffff" width="24px" height="24px">
+                        <path d="M0 0h24v24H0z" fill="none" />
+                        <path d="M14 5l-1.41 1.41L16.17 11H4v2h12.17l-3.58 3.59L14 19l6-6z" />
+                    </svg>
+                    Sign Out
+                </button>
+            </section>
+        </nav>
+
+        <RouterView></RouterView>
+
         <section id="navigators">
             <RouterLink to="/home"><button>Home</button></RouterLink>
             <RouterLink to="/search"><button>Search</button></RouterLink>
-            <RouterLink to="/notification" v-show="!store.signedUser.isLogined"><button id="notification-button">Notification<span class="dot"
+            <RouterLink to="/notification" v-show="!store.signedUser.isLogined"><button
+                    id="notification-button">Notification<span class="dot"
                         v-show="!store.signedUser.isLogined"></span></button>
             </RouterLink>
         </section>
+
+
     </main>
 </template>
 <style scoped>
@@ -263,20 +366,33 @@ function Signout() {
     position: relative;
 }
 
+.sidebar2 {
+    display: none;
+    max-width: 250px;
+    align-items: center;
+    justify-content: center;
+    padding-top: 0;
+}
+
 header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 1rem;
-    height: 10vh;
+    height: 50px;
     background-color: #333333;
     color: #efefef;
+    width: 100vw;
+    position: fixed;
+    border-bottom: 1px solid #ccc;
+    z-index: 9999;
 }
 
 header #sidebarOpenBtn {
     background-color: transparent;
 }
-.imgCon{
+
+.imgCon {
     width: 50px;
     height: 50px;
     background-color: #efefef;
@@ -296,7 +412,9 @@ nav {
     width: 200px;
     top: 0;
     background-color: #333333;
-    padding-top: 2rem;
+    padding-top: 55px;
+    z-index: 999;
+    max-width: 30%;
 }
 
 #loginSection button,
@@ -307,7 +425,6 @@ nav {
     padding: 0.5rem 1rem;
     margin: 0.5rem 0;
     cursor: pointer;
-    font-size: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -315,7 +432,8 @@ nav {
     border: 5px outset #3333;
     font-weight: 600;
 }
-.nav-nologined-btn{
+
+.nav-nologined-btn {
     align-self: center;
     position: absolute;
     top: 50%;
@@ -344,22 +462,24 @@ nav #navFooter {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    height: 2rem;
     width: 100%;
     position: fixed;
     bottom: 0;
     background-color: #333333;
-    border-top: 1px solid white;
-    z-index: 91;
+    border-top: 1px solid #ccc;
+    z-index: 9999;
+    padding: 10px 0;
 }
 
 #navigators button {
     border: none;
     padding: 4px 8px;
     cursor: pointer;
-    font-size: 10px;
     display: inline;
     margin-right: 0px;
+    display: inline-block;
+    border: none;
+    border-radius: 5px;
 }
 
 #navigators button:hover {
@@ -374,11 +494,6 @@ nav #navFooter {
 
 #notification-button {
     position: relative;
-    display: inline-block;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
 }
 
 #notification-button .dot {
@@ -391,38 +506,31 @@ nav #navFooter {
     border-radius: 50%;
 }
 
-.sidebar button {
+nav button {
     background-color: #eaeaea;
     color: #333333;
     padding: 5px;
     border: none;
     border-radius: 5px;
     margin-bottom: 10px;
-    font-size: 16px;
     cursor: pointer;
 }
 
-.sidebar button:hover {
-    background-color: #dddddd;
-}
-
-.sidebar #togglebtn {
+nav #togglebtn {
     background-color: transparent;
     border: none;
     border-radius: 5px;
     border: 2px outset #333333;
     padding: 5px;
-    font-size: 16px;
     margin-bottom: 30px;
 
 }
 
-.sidebar #togglebtn:hover {
+nav #togglebtn:hover {
     background-color: #5555;
 }
 
-.sidebar p {
-    font-size: 12px;
+nav p {
     color: #aaaaaa;
     margin-top: 20px;
     text-align: center;
@@ -440,8 +548,8 @@ nav #navFooter {
     align-self: flex-start;
     justify-self: flex-start;
 }
+
 .profileSection span {
-    font-size: 12px;
     color: #fff;
     text-transform: capitalize;
 }
@@ -452,14 +560,13 @@ nav #navFooter {
     border: none;
     border-radius: 5px;
     padding: 5px;
-    font-size: 12px;
     cursor: pointer;
     display: flex;
     align-items: center;
 }
 
 .profileSection a button:hover {
-    background-color: #dddddd;
+    background-color: grey;
 }
 
 .profileSection button:hover svg {
@@ -527,7 +634,6 @@ nav #navFooter {
     border: none;
     border-radius: 0px;
     padding: 10px;
-    font-size: 12px;
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -562,4 +668,65 @@ nav #navFooter {
 .fill:hover {
     fill: #000;
 }
-</style>
+
+@media screen and (max-width: 767px) {
+
+    nav,
+    .sidebar2 {
+        max-width: 250px;
+        z-index: 10000;
+    }
+
+    #navigators {
+        z-index: 10001;
+    }
+
+    .writeBtn {
+        display: none;
+    }
+
+    #sidebarOpenBtn {
+        display: block;
+    }
+
+}
+
+@media screen and (min-width: 768px) {
+    #HomePage {
+        flex-direction: row;
+    }
+
+    .sidebar2 {
+        position: sticky;
+        display: flex;
+        width: 30%;
+    }
+
+    .writeBtn {
+        display: block;
+    }
+
+    .writeBtn button {
+        background-color: transparent;
+        color: #efefef;
+        border: 2px solid #ccc;
+        padding: 0.3rem;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+        font-weight: 600;
+        border-radius: 30%;
+    }
+
+    #sidebarOpenBtn {
+        display: none;
+    }
+}
+
+@media screen and (min-width: 768px) and (max-width: 991px) {}
+
+@media screen and (min-width: 992px) {}
+
+@media screen and (min-width: 1200px) {}</style>

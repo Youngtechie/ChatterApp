@@ -1,16 +1,11 @@
 <script lang="ts">
-import { onUnmounted } from 'vue';
 import { useChatterStore } from '@/stores/store'
 
 const store = useChatterStore()
-let timeOut: ReturnType<typeof setTimeout>;
 
 function isImageFile(file: File): boolean {
     return file.type.startsWith("image")
 }
-onUnmounted(()=>{
-    clearTimeout(timeOut)
-})
 function isFileSizeValid(file: File, maxSizeInMB: number): boolean {
     const maxSize = maxSizeInMB * 1024 * 1024
     return file.size <= maxSize
@@ -35,7 +30,7 @@ export default function displayCoverImage(event: Event): void {
                 img.alt = 'Cover image'
                 img.style.maxWidth = '100%'; // Adjust the width as needed
                 img.style.maxHeight = '200px'; // Adjust the height as needed
-                if (div.children.length > 0) {
+                if (div.firstChild) {
                     div.removeChild(div.firstChild as Node)
                 }
                 div.appendChild(img)
@@ -49,14 +44,13 @@ export default function displayCoverImage(event: Event): void {
         btn.style.display = 'block'
 
         label.innerText = 'Change Cover Image'
-
     }
     else {
         input.value = ''
         const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
         (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
         error.textContent = 'Please select a valid image file (max 1MB)'
-        timeOut = setTimeout(() => {
+        setTimeout(() => {
             (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'none'
         }, 3000)
     }

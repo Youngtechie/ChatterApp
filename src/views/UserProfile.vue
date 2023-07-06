@@ -36,8 +36,8 @@ onMounted(() => {
     store.section = 'personal'
 })
 
-watchEffect(()=>{
-    if(store.signedUser.id !== undefined){
+watchEffect(() => {
+    if (store.signedUser.id !== undefined) {
         isLoading.value = false
     }
 })
@@ -212,6 +212,7 @@ onUnmounted(() => {
 
             <section class="sectionFoImage">
                 <h3>{{ store.signedUser.fullName }}</h3>
+                <p v-if="store.signedUser.bio.length > 0">{{ store.signedUser.bio }}</p>
                 <div class="follow">
                     <p>{{ store.signedUser.followers.total }} Followers</p>
                     <p>||</p>
@@ -231,23 +232,25 @@ onUnmounted(() => {
                         :class="{ active: store.section === 'interaction' }">Interactions</button>
                 </div>
                 <div :class="{ show: store.section === 'personal', none: store.section !== 'personal', personal: true }">
-                    <p><span>Full Name:</span> {{ store.signedUser.fullName }} </p>
-                    <p><span>User Name:</span> {{ store.signedUser.username }}</p>
-                    <p><span>Blog Name:</span> {{ store.signedUser.blogName }}</p>
-                    <p v-if="store.signedUser.bio.length > 0"><span>Biography:</span> {{ store.signedUser.bio }}</p>
-                    <p v-if="store.signedUser.settings.privacySettings.showEmail"><span>Email:</span> {{
-                        store.signedUser.email }}</p>
-                    <p><span>Location:</span> {{ store.signedUser.location }}</p>
-                    <p><span>Birthday:</span> {{ store.signedUser.dateOfBirth }}</p>
-                    <p><span>Gender:</span> {{ store.signedUser.gender }}</p>
-                    <p v-if="store.signedUser.interests.length > 0"><span>Interests:</span> {{
-                        store.signedUser.interests.join(',') }} </p>
+                    <div class="personalDetails">
+                        <p><span>Full Name:</span> {{ store.signedUser.fullName }} </p>
+                        <p><span>User Name:</span> {{ store.signedUser.username }}</p>
+                        <p><span>Blog Name:</span> {{ store.signedUser.blogName }}</p>
+                        <p v-if="store.signedUser.settings.privacySettings.showEmail"><span>Email:</span> {{
+                            store.signedUser.email }}</p>
+                        <p><span>Location:</span> {{ store.signedUser.location }}</p>
+                        <p><span>Birthday:</span> {{ store.signedUser.dateOfBirth }}</p>
+                        <p><span>Gender:</span> {{ store.signedUser.gender }}</p>
+                        <p v-if="store.signedUser.interests.length > 0"><span>Interests:</span> {{
+                            store.signedUser.interests.join(',') }} </p>
+                    </div>
                 </div>
                 <div v-if="store.section === 'interaction'"
                     :class="{ show: store.section === 'interaction', none: store.section !== 'interaction', interaction: true }">
-                    <p v-if="isinteractionsLoading" class="loading">Loading...</p>
+                    <div v-if="isinteractionsLoading" id="warningShow">Loading ...</div>
                     <div v-else>
-                        <div v-for="(interaction, index) in store.signedUser.interactions" :key="index">
+                        <div v-for="(interaction, index) in store.signedUser.interactions" :key="index"
+                            class="resultContainer">
                             <div class="type">
                                 {{ interaction.type }}
                             </div>
@@ -270,7 +273,6 @@ onUnmounted(() => {
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -315,6 +317,12 @@ header {
     padding: 1rem;
     width: 100%;
     height: 10%;
+    background-color: #333333;
+}
+
+header button:first-of-type {
+    border-radius: 10px;
+    padding: 0 10px;
 }
 
 .body {
@@ -322,7 +330,7 @@ header {
     flex-direction: column;
     align-items: center;
     padding: 1rem 0;
-    width: 320px;
+    width: 100%;
     height: 90%;
 }
 
@@ -334,21 +342,16 @@ header {
 .sectionFoImage {
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
     text-align: center;
     width: 100%;
 }
 
-.sectionFoImage h3 {
-    font-size: 1.5rem;
-}
-
 .sectionFoImage p {
     margin: 0.5rem 0;
-    font-size: 15px;
-    border: 1px solid #ccc;
     border-radius: 5px;
-    width: 40%;
-    padding: 0.5rem;
+    width: 100%;
     align-self: center;
 }
 
@@ -357,6 +360,7 @@ header {
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    max-width: 320px;
 }
 
 .follow p {
@@ -381,7 +385,11 @@ header {
     justify-content: space-around;
     align-items: center;
     margin-bottom: 1rem;
-    width: 100%;
+}
+
+.btns button {
+    padding: 5px;
+    border-radius: 10px;
 }
 
 .readerSec {
@@ -394,18 +402,18 @@ header {
 
 .btnSection {
     display: flex;
+    align-items: center;
     justify-content: space-around;
-    margin-bottom: 1rem;
-    width: 100%;
-    border-bottom: 1px solid #ccc;
+    width: 320px;
+    align-self: center;
 }
 
 .btnSection button {
     border: none;
     background-color: transparent;
-    font-size: 1rem;
     cursor: pointer;
     font-weight: bold;
+    padding: 5px;
 }
 
 .btnSection .active {
@@ -416,10 +424,33 @@ header {
 .interaction {
     overflow-y: scroll;
     position: relative;
+    border-top: 1px solid #ccc;
+}
+
+.interaction {
+    padding: 15px 0;
+    display: grid;
 }
 
 .personal p {
     margin-bottom: 0.5rem;
+    align-items: center;
+    justify-content: center;
+}
+
+.personalDetails {
+    width: 300px;
+    overflow-y: scroll;
+    padding: 15px;
+    overflow-x: hidden;
+}
+
+.resultContainer {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .personal p span {
@@ -435,21 +466,24 @@ header {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    height: 2rem;
     width: 100%;
     position: fixed;
     bottom: 0;
     background-color: #333333;
-    border-top: 1px solid white;
+    border-top: 1px solid #ccc;
+    z-index: 9999;
+    padding: 10px 0;
 }
 
 #navigators button {
     border: none;
     padding: 4px 8px;
     cursor: pointer;
-    font-size: 10px;
     display: inline;
     margin-right: 0px;
+    display: inline-block;
+    border: none;
+    border-radius: 5px;
 }
 
 #navigators button:hover {
@@ -462,14 +496,6 @@ header {
     color: #000;
 }
 
-#notification-button {
-    position: relative;
-    display: inline-block;
-    padding: 10px;
-    border: none;
-    border-radius: 5px;
-    font-size: 16px;
-}
 
 ::-webkit-scrollbar {
     width: 2px;
@@ -492,6 +518,9 @@ header {
     border-bottom: 1px solid #ccc;
     display: flex;
     flex-direction: row;
+    width: 100%;
+    align-items: center;
+    justify-content: center;
 }
 
 .result-item-other {
@@ -525,7 +554,8 @@ header {
 }
 
 .personal {
-    padding: 0 0.5rem;
+    align-items: center;
+    justify-content: center;
 }
 
 .type {
@@ -534,11 +564,37 @@ header {
     border: 1px solid #ccc;
     padding: 5px;
     border-radius: 10px;
+    width: 300px;
 }
 
-.loading {
-    height: 100%;
+#warningShow {
+    padding: 10px;
+    border: 1px outset #efefef;
+    text-align: center;
+    height: 150px;
+    width: 150px;
+    border-radius: 10px;
+    font-weight: bolder;
     align-items: center;
+    display: flex;
     justify-content: center;
+    align-self: center;
+    justify-self: center;
+}
+
+.DayApp #warningShow {
+    color: #efefef;
+    background-color: black;
+}
+
+.NightApp #warningShow {
+    color: black;
+    background-color: #efefef;
+}
+
+@media screen and (min-width: 1200px) {
+    .personalDetails{
+        width: 350px;
+    }
 }
 </style>

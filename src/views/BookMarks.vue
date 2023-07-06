@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onUnmounted, onMounted, nextTick } from 'vue'
+import { ref, onUnmounted, onMounted, nextTick, watchEffect } from 'vue'
 import { useChatterStore } from '@/stores/store';
 import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc } from 'firebase/firestore'
 import { useRouter } from 'vue-router';
@@ -39,6 +39,7 @@ interface Poster {
     blogname: string,
 }
 
+
 const posts = ref<DocumentData[] | null>([])
 const poster = ref<Poster | null>()
 
@@ -51,6 +52,12 @@ onMounted(() => {
         }
     })
     getPosts(store.signedUser.bookmarks)
+})
+
+watchEffect(()=>{
+    if(store.signedUser.bookmarks.length === 0){
+        posts.value = []
+    }
 })
 
 function routeToPost(postId: string) {
@@ -140,7 +147,7 @@ async function getPosts(bookmarks: string[]) {
 
                     post.posterDetails = poster.value;
                     poster.value = null;
-                    
+
                     return post;
                 })
             );
@@ -169,37 +176,47 @@ async function getPosts(bookmarks: string[]) {
 
 </script>
 <template>
-    <h2>Bookmarks</h2>
-    <div class="bookmarksCon">
-        <div v-if="posts?.length as number > 0 && isLoading === false" :class="{ resultsContainer: true }">
-            <div v-for="(post, index) in posts" :key="index" class="result-item">
-                <div class="imgCon" @click.prevent="routeToProfile(post.posterId)"
-                    :style="{ backgroundImage: `url(${post?.posterDetails.img})` }"></div>
-                <div class="result-item-other">
-                    <div class="result-item-header">
-                        <span @click.prevent="routeToProfile(post.posterId)">{{ post?.posterDetails.blogname }}</span>
-                        <span>{{ useCalculateTime(post.postTime.seconds) }}</span>
+    <div id="warningShow" v-if="isLoading"></div>
+    <section class="bookmarksPage" v-else>
+        <h2>Bookmarks</h2>
+        <div class="bookmarksCon">
+            <div v-if="posts?.length as number > 0 && isLoading === false" :class="{ resultsContainer: true }">
+                <div v-for="(post, index) in posts" :key="index" class="result-item">
+                    <div class="imgCon" @click.prevent="routeToProfile(post.posterId)"
+                        :style="{ backgroundImage: `url(${post?.posterDetails.img})` }"></div>
+                    <div class="result-item-other">
+                        <div class="result-item-header">
+                            <span @click.prevent="routeToProfile(post.posterId)">{{ post?.posterDetails.blogname }}</span>
+                            <span>{{ useCalculateTime(post.postTime.seconds) }}</span>
+                        </div>
+                        <div v-html="post.postContain" id="divContent" @click.prevent="routeToPost(post.postId)"></div>
+                        <useDetailButtons :post="post" />
                     </div>
-                    <div v-html="post.postContain" id="divContent" @click.prevent="routeToPost(post.postId)"></div>
-                    <useDetailButtons :post="post" />
                 </div>
             </div>
+            <div v-if="store.signedUser.bookmarks.length === 0 && isLoading === false" class="noBookmarks">
+                No Bookmarks yet.
+            </div>
         </div>
-        <div v-if="store.signedUser.bookmarks.length === 0 && isLoading === false" class="noBookmarks">
-            No Bookmarks yet.
-        </div>
-    </div>
+    </section>
 </template>
 <style scoped>
 h2 {
     text-align: center;
     margin: 10px 0;
-    height: 5vh;
 }
-
+.bookmarksPage{
+    overflow-y: scroll;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    padding-top: 55px;
+    position: relative;
+}
 .bookmarksCon {
     width: 100%;
-    height: 80vh;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -225,14 +242,26 @@ h2 {
 
 .resultsContainer {
     border-top: 1px solid #ccc;
+    padding-top: 10px;
+    position: relative;
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px 0;
     overflow-y: scroll;
-    max-width: 320px;
-    height: 80vh;
+    height: 100%;
+}
+
+.result-item {
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
 }
 
 .result-item-image {
@@ -241,14 +270,6 @@ h2 {
     margin-left: 5px;
     border-radius: 50%;
     background-color: #efefef;
-}
-
-.result-item {
-    margin-bottom: 10px;
-    border-bottom: 1px solid #ccc;
-    display: flex;
-    flex-direction: row;
-    width: 320px;
 }
 
 .result-item-other {
@@ -271,13 +292,54 @@ h2 {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    font-size: smaller;
     margin-bottom: 5px;
 }
 
 .result-item-header span:first-of-type {
     font-weight: bolder;
-    font-size: medium;
     cursor: pointer;
+}
+.result-item-header span:last-of-type {
+    font-size: medium;
+}
+
+#warningShow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border: 1px outset #efefef;
+    display: none;
+    text-align: center;
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+    font-weight: bolder;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .DayApp #warningShow {
+    color: #efefef;
+    background-color: black;
+  }
+  
+  .NightApp #warningShow {
+    color: black;
+    background-color: #efefef;
+  }
+  @media screen and (min-width: 992px) {
+    .result-item-other {
+        width: 300px;
+    }
+    .imgCon {
+        width: 70px;
+        height: 70px;
+    }
+    #warningShow{
+        width: 300px;
+        height: 300px;
+    }
 }
 </style>

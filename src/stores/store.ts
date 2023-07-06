@@ -19,7 +19,7 @@ export const useChatterStore = defineStore('chatter', () => {
   const section = 'personal' 
   const sidebar = ref(false) 
   const signedUser: DocumentData = {}
-  const viwedPost: DocumentData = {}
+  const viwedPost: DocumentData = ref({})
   const viwedProfile: DocumentData = {}
   const fileInputs = [] as FileInput[]
   const coverImageFile = ref<File | null>(null)

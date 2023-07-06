@@ -1,13 +1,6 @@
 <script lang="ts">
 import { useChatterStore } from '@/stores/store'
-import { onUnmounted } from 'vue';
 
-
-let timeOut: ReturnType<typeof setTimeout>;
-
-onUnmounted(() => {
-    clearTimeout(timeOut)
-})
 
 const store = useChatterStore()
 
@@ -130,7 +123,7 @@ export default function displayImage(event: Event, id: number, fileNameContainer
             const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
             (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
             error.textContent = 'Please select a valid image file (max 1MB) and no duplicate image allowed'
-            timeOut = setTimeout(() => {
+            setTimeout(() => {
                 (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'none'
             }, 3000)
         }

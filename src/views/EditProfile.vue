@@ -185,9 +185,9 @@ onUnmounted(() => {
             <div class="bio">
                 <div>
                     <label for="bio">Bio:</label>
-                    <textarea id="bio" v-model="bio" maxlength="300" minlength="50"></textarea>
+                    <textarea id="bio" v-model="bio" maxlength="300" minlength="30"></textarea>
                 </div>
-                <span class="required-note">Minimum of 50 characters and maximum of 300 characters **</span>
+                <span class="required-note">Minimum of 30 characters and maximum of 300 characters **</span>
             </div>
             <div class="blogname section">
                 <label for="blogname">Blog Name:</label>
@@ -239,6 +239,7 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: relative;
 }
 
 header {
@@ -247,6 +248,8 @@ header {
     justify-content: space-between;
     width: 100%;
     padding: 10px;
+    position: fixed;
+    background-color: #333333;
 }
 
 .registration-form {
@@ -254,7 +257,7 @@ header {
     flex-direction: column;
     padding: 20px;
     border-radius: 10px;
-    width: 320px;
+    padding-top: 55px;
 }
 
 .section {
@@ -356,8 +359,10 @@ label {
 
 .radioGroup {
     display: flex;
-    gap: 1rem;
+    align-items: center;
+    justify-content: space-between;
     margin-top: 0.5rem;
+    width: 280px;
 }
 
 .radioGroup input[type="radio"] {
@@ -366,7 +371,6 @@ label {
 
 .required-note {
     color: red;
-    font-size: 12px;
     align-self: flex-start;
     margin-top: 5px;
     font-weight: bolder;
@@ -391,7 +395,6 @@ label {
     border: none;
     padding: 4px 8px;
     cursor: pointer;
-    font-size: 15px;
     display: inline;
     margin: 10px 0;
 }
@@ -410,5 +413,10 @@ label {
     border-radius: 5px;
     font-weight: bold;
     align-self: center;
+}
+@media screen and (min-width: 992px) {
+    .radioGroup{
+        width: 350px;
+    }
 }
 </style>

@@ -32,6 +32,12 @@ const router = createRouter({
           name: 'Bookmarks',
           component: ()=> import('../views/BookMarks.vue'),
           sensitive: true
+        },
+        {
+          path: '/notification',
+          name: 'Notifications',
+          component: ()=> import('../views/NotificationPage.vue'),
+          sensitive: true
         }
       ],
 

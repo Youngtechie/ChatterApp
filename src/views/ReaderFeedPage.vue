@@ -316,7 +316,7 @@ async function getFollowings() {
 <style scoped>
 .btns {
     height: 5%;
-    width: 320px;
+    width: 100%;
 }
 
 .noFollower {
@@ -348,7 +348,6 @@ async function getFollowings() {
     border-top: none;
     outline: none;
     cursor: pointer;
-    font-size: 1.0rem;
     font-weight: bold;
 }
 
@@ -357,7 +356,6 @@ async function getFollowings() {
 }
 
 .resultsContainer {
-    border-top: 1px solid #ccc;
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -365,7 +363,6 @@ async function getFollowings() {
     padding-top: 10px;
     overflow-y: scroll;
     height: 80vh;
-    max-width: 320px;
 }
 
 .result-item {
@@ -373,7 +370,10 @@ async function getFollowings() {
     border-bottom: 1px solid #ccc;
     display: flex;
     flex-direction: row;
-    width: 320px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .result-item-other {
@@ -396,13 +396,23 @@ async function getFollowings() {
     display: flex;
     flex-direction: row;
     justify-content: space-between;
-    font-size: smaller;
     margin-bottom: 5px;
 }
 
 .result-item-header span:first-of-type {
     font-weight: bolder;
-    font-size: medium;
     cursor: pointer;
+}
+.result-item-header span:last-of-type {
+    font-size: medium;
+}
+@media screen and (min-width: 992px) {
+    .result-item-other {
+        width: 300px;
+    }
+    .imgCon {
+        width: 70px;
+        height: 70px;
+    }
 }
 </style>

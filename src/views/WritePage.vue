@@ -64,13 +64,17 @@ const suggestedTags: Ref<string[]> = ref([])
 const postTag = ref('')
 const disableComments = ref(false)
 const postContentToBePosted = ref('')
-const postSection = ref('edit-section')
+const postSection1 = ref('edit-section')
+const postSection2 = ref('')
+const postSection3 = ref('')
 const parser = new DOMParser();
 const undoStack = ref<{ content: string; cursor: number }[]>([]);
 const redoStack = ref<{ content: string; cursor: number }[]>([]);
 let timeOut: ReturnType<typeof setTimeout>;
 const DomParse = new DOMParser()
 const tagOption = ref('option1')
+const imageDeleted = ref(false)
+const toolbar = ref<HTMLDivElement | null>(null)
 
 const observer = new MutationObserver((mutationsList) => {
     // Handle the changes here
@@ -120,10 +124,19 @@ async function getPost() {
     const post = await getDoc(doc(db, 'posts', id as string))
     if (post.data() && post.data()?.postTag !== undefined && post.data()?.postTag !== '') {
         await getPostContent(post.data() as DocumentData)
+        store.viwedPost = post.data() as DocumentData
+        if (store.viwedPost.postCoverImage !== undefined && store.viwedPost.postCoverImage !== '') {
+            const btn = document.querySelector('.removeCover') as HTMLButtonElement
+            const label = document.querySelector('.coverImageAdd label') as HTMLLabelElement
+            btn.style.display = 'block'
+            label.innerText = 'Change Cover Image'
+        }
         title.value = post.data()?.postTitle.join(' ')
         postTag.value = post.data()?.postTag
         disableComments.value = post.data()?.postSettings.disableComments
-        postSection.value = 'edit-section'
+
+        changeSection('edit-section')
+
         if (post.data()?.postMedia.length > 0) {
             currentMedia.value = post.data()?.postMedia
             if (currentMedia.value.length > 0) {
@@ -160,6 +173,25 @@ async function getTags() {
 }
 
 onMounted(() => {
+    // Add event listener for window resize
+    window.addEventListener('resize', handleResize);
+
+    const browserWidth = window.innerWidth;
+    if (browserWidth as number >= 768 && browserWidth as number <= 991) {
+        postSection1.value = 'edit-section'
+        postSection2.value = 'preview-section'
+        postSection3.value = ''
+    }
+    else if (browserWidth as number > 991) {
+        postSection1.value = 'edit-section'
+        postSection2.value = 'preview-section'
+        postSection3.value = 'publish-section'
+    }
+    if(browserWidth as number >= 768){
+        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+        (document.getElementById('ErrorShow') as HTMLDivElement).style.display = 'flex'
+        error.textContent = 'Add images and videos only after done typing your post!!!'
+    }
 
     getTags()
 
@@ -204,11 +236,56 @@ onUnmounted(() => {
     observer.disconnect();
     clearTimeout(timeOut)
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    warning.style.display = 'none'
+    warning.style.display = 'none';
+    (document.getElementById('ErrorShow') as HTMLDivElement).style.display = 'none'
 });
 
-function handleBlur(){
-    (document.querySelector('.toolbar') as HTMLDivElement).style.display = 'none'
+watchEffect(() => {
+    if (postSection1.value) {
+        if (textarea.value !== document.activeElement) {
+            if (toolbar.value) {
+                (toolbar.value as HTMLDivElement).style.display = 'none';
+            }
+        }
+    }
+})
+
+function handleBlur() {
+    timeOut = setTimeout(function () {
+        if (textarea.value !== document.activeElement) {
+            if (toolbar.value) {
+                console.log(toolbar.value);
+                (toolbar.value as HTMLDivElement).style.display = 'none';
+            }
+        }
+    }, 200);
+}
+
+function handleResize() {
+    const browserWidth = window.innerWidth;
+    if (browserWidth as number >= 768 && browserWidth as number <= 991) {
+        postSection1.value = 'edit-section'
+        postSection2.value = 'preview-section'
+        postSection3.value = ''
+    }
+    else if (browserWidth as number > 991) {
+        postSection1.value = 'edit-section'
+        postSection2.value = 'preview-section'
+        postSection3.value = 'publish-section'
+    }
+    else {
+        postSection1.value = 'edit-section'
+        postSection2.value = ''
+        postSection3.value = ''
+    }
+    if (browserWidth as number >= 768) {
+        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+        (document.getElementById('ErrorShow') as HTMLDivElement).style.display = 'flex'
+        error.textContent = 'Add images and videos only after done typing your post!!!'
+    }
+    else{
+        (document.getElementById('ErrorShow') as HTMLDivElement).style.display = 'none'
+    }
 }
 
 function removeImage(event: Event) {
@@ -283,20 +360,26 @@ function setSrcToEmptyString(htmlString: string) {
     return doc.documentElement.innerHTML;
 }
 
-function handleCoverImage(event: Event){
+function handleCoverImage(event: Event) {
+
     displayCoverImage(event)
+
 }
 
-function removeCoverImage(){
+function removeCoverImage() {
     const img = document.querySelector('#displayCoverImage img') as HTMLDivElement
     const btn = document.querySelector('.removeCover') as HTMLButtonElement
     const label = document.querySelector('.coverImageAdd label') as HTMLLabelElement
 
-    if(img && btn){
+    if (img && btn) {
+        if (store.viwedPost.postCoverImage !== '') {
+            imageDeleted.value = true
+        }
         img.remove()
         btn.style.display = 'none'
         label.innerText = 'Add Cover Image'
         store.coverImageFile = null
+
     }
 }
 
@@ -331,7 +414,11 @@ function preview() {
         "content": textarea.value as HTMLDivElement
     }]
 
-    changeSection('preview-section')
+    const browserWidth = window.innerWidth;
+
+    if (browserWidth as number < 768) {
+        changeSection('preview-section')
+    }
 
     titleArr.value = title.value.split(" ")
 
@@ -342,7 +429,7 @@ function preview() {
             if (element.nodeName === 'P') {
                 if (element.firstChild?.nodeName === 'IMG' || element.firstChild?.nodeName === 'VIDEO') {
                     collector.value.push((element.firstChild as HTMLElement).outerHTML as string)
-
+                    console.log()
                     const textNode = doc.createTextNode('\n' + (element.firstChild as HTMLElement).id + '\n');
                     element.parentNode?.replaceChild(textNode, element);
 
@@ -376,9 +463,38 @@ function preview() {
 }
 
 function changeSection(value: string) {
-    postSection.value = value
-    title.value = store.textarea[0].title;
-    textarea.value = store.textarea[0].content;
+    const browserWidth = window.innerWidth;
+
+    if (value === 'preview-section') {
+        postSection1.value = ''
+        postSection2.value = 'preview-section'
+        postSection3.value = ''
+    }
+    else if (value === 'edit-section') {
+        postSection1.value = 'edit-section'
+        postSection2.value = ''
+        postSection3.value = ''
+        if (browserWidth as number >= 768 && browserWidth as number <= 991) {
+            postSection1.value = 'edit-section'
+            postSection2.value = 'preview-section'
+            postSection3.value = ''
+        }
+        else if (browserWidth as number > 991) {
+            postSection1.value = 'edit-section'
+            postSection2.value = 'preview-section'
+            postSection3.value = 'publish-section'
+        }
+    }
+    else if (value === 'publish-section') {
+        postSection1.value = ''
+        postSection2.value = ''
+        postSection3.value = 'publish-section'
+    }
+
+    if (store.textarea[0]) {
+        title.value = store.textarea[0].title;
+        textarea.value = store.textarea[0].content;
+    }
 }
 
 function changeSettingsComment() {
@@ -387,13 +503,13 @@ function changeSettingsComment() {
 
 function createPost() {
     if (postContentToBePosted.value !== '') {
+        (document.getElementById('publishBtn') as HTMLInputElement).setAttribute('disabled', 'true');
         const id = router.currentRoute.value.params.postId ? router.currentRoute.value.params.postId : '';
-        CreatePostToCloud(rawDocument.value as string, postContentToBePosted.value as string, titleArr.value, postTag.value, 'post', disableComments.value, id as string, ToEditLastId.value as number, allMedias.value)
+        CreatePostToCloud(rawDocument.value as string, postContentToBePosted.value as string, titleArr.value, postTag.value, 'post', disableComments.value, id as string, ToEditLastId.value as number, allMedias.value, imageDeleted.value)
     }
     else {
         console.log('No empty post')
     }
-
 }
 
 function handleKeyDown(event: KeyboardEvent) {
@@ -428,6 +544,8 @@ function handleInput(event: Event) {
         "title": title.value,
         "content": textarea.value as HTMLDivElement
     }]
+
+    updateDom()
 
     const content = textarea.value?.innerHTML as string;
     const cursor = getCursorPosition();
@@ -661,12 +779,12 @@ function insertCodeBlock() {
 function insertHeader() {
     const headerLevel = prompt('Enter the header level (1-6):');
     if (headerLevel) {
-        insertTextAtCursor(`\n ${'#'.repeat(parseInt(headerLevel))} \n`);
+        insertTextAtCursor(`\n ${'#'.repeat(parseInt(headerLevel))} `);
     }
 }
 
 function insertHorizontalRule() {
-    insertTextAtCursor('\n --- \n ');
+    insertTextAtCursor('\n\n --- \n ');
 }
 
 function insertStrikeThrough() {
@@ -680,7 +798,7 @@ function insertImage() {
     toAddVideo.value = false
 }
 
-function insertImageUrl(){
+function insertImageUrl() {
     const url = prompt('Enter the URL:');
     if (url) {
         insertTextAtCursor(`\n![Image](${url})\n`);
@@ -695,12 +813,12 @@ function insertVideo() {
     toAddImage.value = false
 }
 
-function closeAddMedia(){
+function closeAddMedia() {
     const addMedia = document.querySelector('.addMedia') as HTMLDivElement;
     addMedia.style.display = 'none';
 }
 
-function handleFocus(event: Event){
+function handleFocus(event: Event) {
     (document.querySelector('.toolbar') as HTMLDivElement).style.display = 'flex';
     if ((event.target as HTMLDivElement).innerText.trim() !== '') {
         mediaTime.value = true
@@ -709,6 +827,22 @@ function handleFocus(event: Event){
         mediaTime.value = false
     }
 }
+
+function updateDom() {
+    const browserWidth = window.innerWidth;
+    if (browserWidth as number >= 768) {
+        preview()
+    }
+}
+
+function handleInputLast(event: Event) {
+    const inputValue = event.target as HTMLInputElement;
+    const sanitizedValue = inputValue.value.replace(/[0-9\s]/g, '');
+
+    if (inputValue.value !== sanitizedValue) {
+        postTag.value = sanitizedValue;
+    }
+};
 
 </script>
 <template>
@@ -719,117 +853,128 @@ function handleFocus(event: Event){
         </button>
     </header>
 
-    <div :class="[{ none: postSection !== 'edit-section' }, { editorsection: true }]">
+    <div class="sectionContainers">
+        <div :class="[{ none: postSection1 !== 'edit-section' }, { editorsection: true }]">
 
-        <div class="coverImageAdd">
-            <div id="displayCoverImage"></div>
-            <label for="coverImage">Add Cover Image</label>
-            <input type="file" @change="handleCoverImage" id="coverImage" style="display: none;"/>
-            <button class="removeCover" @click="removeCoverImage">Remove Cover Image</button>
-        </div>
-        
-        <button @click="preview" id="previewBtn">Preview</button>
-
-        <div id="writeEditor">
-            <input type="text" v-model="title" placeholder="Post Title" @focus="handleMediaTimechange" />
-            <div class="toolbar">
-                <button @click="makeBold">
-                    <img src="https://img.icons8.com/ios-filled/50/000000/bold.png" height="15" />
-                </button>
-                <button @click="makeItalic">
-                    <img src="https://img.icons8.com/ios-filled/50/000000/italic.png" height="15" />
-                </button>
-                <button @click="insertLink">
-                    <img src="https://img.icons8.com/ios-filled/50/000000/link.png" height="15" />
-                </button>
-                <button @click="insertHeader">
-                    <img src="https://img.icons8.com/ios-filled/50/000000/header.png" height="15" />
-                </button>
-                <button @click="insertStrikeThrough">
-                    <img src="https://img.icons8.com/ios-filled/50/000000/strikethrough.png" height="15" />
-                </button>
-                <button @click="insertTable">
-                    <img src="https://img.icons8.com/ios-filled/50/000000/table.png" height="15" />
-                </button>
-                <button @click="insertCodeBlock">
-                    <img src="https://img.icons8.com/ios-filled/50/000000/code.png" height="15" />
-                </button>
-                <button @click="insertHorizontalRule">
-                    <img src="https://img.icons8.com/ios-filled/50/000000/horizontal-line.png" height="15" />
-                </button>
-                <button @click="insertImage" v-show="mediaTime">
-                    <img src="https://img.icons8.com/ios-filled/50/000000/image.png" height="15" />
-                </button>
-                <button @click="insertVideo" v-show="mediaTime">
-                    <img src="https://img.icons8.com/ios-filled/50/000000/video.png" height="15" />
-                </button>
-            </div>
-            <div ref="textarea" contenteditable="true" id="textarea" @keydown="handleKeyDown" @input="handleInput"
-                @paste="handlePaste" @blur="handleBlur" @focus="handleFocus">
-            </div>
-        </div>
-
-        <div class="addMedia">
-            <div class="imageAdd" v-if="toAddImage">
-                <div class="mediaAddClass">
-                    <label class="custom-file-input">Choose Image</label>
-                    <input type="file" id="inputImg" @change.prevent="addImage" />
-                </div>
-                <button @click="insertImageUrl" class="imageUrl">Add Image using URL</button>
-            </div>
-            <div class="videoAdd" v-if="toAddVideo">
-                <div class="mediaAddClass">
-                    <label class="custom-file-input">Choose Video</label>
-                    <input type="file" @change.prevent="addVideo" id="inputVideo" />
-                </div>
-            </div>
-
-            <button @click="closeAddMedia" class="close">X</button>
-        </div>
-
-    </div>
-
-    <div :class="[{ none: postSection !== 'preview-section' }, { previewsection: true }]">
-
-        <div>
-            <button @click.prevent="changeSection('edit-section')">Edit Post</button>
-            <button @click.prevent="changeSection('publish-section')">Proceed to publish</button>
-        </div>
-
-        <div v-html="blogHTML" id="previewer"></div>
-    </div>
-
-    <div :class="[{ none: postSection !== 'publish-section' }, { publishsection: true }]">
-        <button @click.prevent="changeSection('edit-section')">Edit Post</button>
-        <form @submit.prevent="createPost()">
-
-            <div>
-                <h2>Select a tag for your post</h2>
-                <div>
-                    <input type="radio" value="option1" id="opt1" name="tag" required v-model="tagOption" />
-                    <label for="opt1">Choose from available tags</label>
-                    <input type="radio" value="option2" name="tag" id="opt2" required v-model="tagOption" />
-                    <label for="opt2">Create a new tag</label>
+            <div class="coverImageAdd">
+                <div id="displayCoverImage">
+                    <img :src="store.viwedPost.postCoverImage" alt="Cover Image"
+                        v-if="store.viwedPost.postCoverImage !== '' && store.viwedPost.postCoverImage !== undefined"
+                        style="max-width: 100%; max-height: 200px;" />
                 </div>
 
-                <select id="tags" v-model="postTag" v-show="tagOption === 'option1'" required>
-                    <option value="" disabled>Select a tag for your post</option>
-                    <option v-for="tag in suggestedTags" :key="tag" :value="tag">{{ tag }}</option>
-                </select>
-
-                <input v-model="postTag" pattern="[^\d]+" v-show="tagOption === 'option2'" placeholder="Write your tag here"
-                    required />
+                <label for="coverImage">Add Cover Image</label>
+                <input type="file" @change="handleCoverImage" id="coverImage" style="display: none;" />
+                <button class="removeCover" @click="removeCoverImage">Remove Cover Image</button>
             </div>
-            <div>
-                <p>
-                    <span>Disable Comments </span>
-                    <button @click.prevent="changeSettingsComment">
-                        {{ disableComments }}
+
+            <button @click="preview" id="previewBtn">Preview</button>
+
+            <div id="writeEditor">
+                <input type="text" v-model="title" placeholder="Post Title" @focus="handleMediaTimechange"
+                    @input="updateDom" />
+                <div class="toolbar" ref="toolbar">
+                    <button @click.prevent="makeBold">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/bold.png" height="15" />
                     </button>
-                </p>
+                    <button @click.prevent="makeItalic">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/italic.png" height="15" />
+                    </button>
+                    <button @click.prevent="insertLink">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/link.png" height="15" />
+                    </button>
+                    <button @click.prevent="insertHeader">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/header.png" height="15" />
+                    </button>
+                    <button @click.prevent="insertStrikeThrough">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/strikethrough.png" height="15" />
+                    </button>
+                    <button @click.prevent="insertTable">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/table.png" height="15" />
+                    </button>
+                    <button @click.prevent="insertCodeBlock">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/code.png" height="15" />
+                    </button>
+                    <button @click.prevent="insertHorizontalRule">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/horizontal-line.png" height="15" />
+                    </button>
+                    <button @click.prevent="insertImage" v-show="mediaTime">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/image.png" height="15" />
+                    </button>
+                    <button @click.prevent="insertVideo" v-show="mediaTime">
+                        <img src="https://img.icons8.com/ios-filled/50/000000/video.png" height="15" />
+                    </button>
+                </div>
+                <div ref="textarea" contenteditable="true" id="textarea" @keydown="handleKeyDown" @input="handleInput"
+                    @paste="handlePaste" @focusout="handleBlur" @focus="handleFocus">
+                </div>
             </div>
-            <input type="submit" value="Publish">
-        </form>
+
+            <div class="addMedia">
+                <div class="imageAdd" v-if="toAddImage">
+                    <div class="mediaAddClass">
+                        <label class="custom-file-input">Choose Image</label>
+                        <input type="file" id="inputImg" @change.prevent="addImage" />
+                    </div>
+                    <button @click="insertImageUrl" class="imageUrl">Add Image using URL</button>
+                </div>
+                <div class="videoAdd" v-if="toAddVideo">
+                    <div class="mediaAddClass">
+                        <label class="custom-file-input">Choose Video</label>
+                        <input type="file" @change.prevent="addVideo" id="inputVideo" />
+                    </div>
+                </div>
+
+                <button @click="closeAddMedia" class="close">X</button>
+            </div>
+
+        </div>
+
+        <div :class="[{ none: postSection2 !== 'preview-section' }, { previewsection: true }]">
+
+            <div class="previewBtns">
+                <button @click.prevent="changeSection('edit-section')">Edit Post</button>
+                <button @click.prevent="changeSection('publish-section')">Proceed to publish</button>
+            </div>
+
+            <div v-html="blogHTML" id="previewer"></div>
+        </div>
+
+        <div :class="[{ none: postSection3 !== 'publish-section' }, { publishsection: true }]">
+            <button @click.prevent="changeSection('edit-section')" class="lastEditBtn">Edit Post</button>
+            <form @submit.prevent="createPost()">
+                <div class="firstDiv">
+                    <h2>Select a tag for your post</h2>
+                    <div class="options">
+                        <div class="option">
+                            <input type="radio" value="option1" id="opt1" name="tag" required v-model="tagOption" />
+                            <label for="opt1">Choose from available tags</label>
+                        </div>
+                        <div class="option">
+                            <input type="radio" value="option2" name="tag" id="opt2" required v-model="tagOption" />
+                            <label for="opt2">Create a new tag</label>
+                        </div>
+                    </div>
+
+                    <select id="tags" v-model="postTag" v-show="tagOption === 'option1'" required>
+                        <option value="" disabled>Select a tag for your post</option>
+                        <option v-for="tag in suggestedTags" :key="tag" :value="tag">{{ tag }}</option>
+                    </select>
+
+                    <input type="text" v-model="postTag" v-show="tagOption === 'option2'" placeholder="Write your tag here"
+                        required @input="handleInputLast" />
+                </div>
+                <div class="secondDiv">
+                    <p>
+                        <span>Disable Comments: </span>
+                        <button @click.prevent="changeSettingsComment">
+                            {{ (disableComments).toString().toUpperCase() }}
+                        </button>
+                    </p>
+                </div>
+                <input type="submit" value="Publish" id="publishBtn">
+            </form>
+        </div>
     </div>
 </template>
 <style scoped>
@@ -845,12 +990,27 @@ header {
     background-color: #333333;
 }
 
+header a button {
+    background-color: transparent;
+    color: #efefef;
+    border: 2px solid #ccc;
+    padding: 0.3rem;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    font-weight: 600;
+    border-radius: 30%;
+}
+
 .previewsection,
-.publishsection, .editorsection {
+.publishsection,
+.editorsection {
     height: 100vh;
 }
 
-.coverImageAdd{
+.coverImageAdd {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -858,7 +1018,11 @@ header {
     margin-top: 10px;
     width: 100%;
 }
-.coverImageAdd label, .removeCover, #previewBtn{
+
+.coverImageAdd label,
+.removeCover,
+#previewBtn,
+.removeCover2 {
     cursor: pointer;
     padding: 2px 4px;
     border-radius: 5px;
@@ -866,11 +1030,13 @@ header {
     margin-bottom: 10px;
     font-weight: bold;
 }
-.editorsection{
+
+.editorsection {
     overflow-y: scroll;
     padding: 35px 5px 0 5px;
 }
-.editorsection header{
+
+.editorsection header {
     height: 25px;
 }
 
@@ -881,18 +1047,21 @@ header {
     display: flex;
     flex-direction: column;
 }
-.previewsection, .publishsection{
+
+.previewsection,
+.publishsection {
     padding: 55px 5px 0 5px;
 }
-.removeCover{
+
+.removeCover {
     display: none;
 }
 
-#writeEditor{
+#writeEditor {
     height: 500px;
 }
 
-#displayCoverImage{
+#displayCoverImage {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -900,7 +1069,6 @@ header {
     background-color: #ccc;
     margin: 10px 0;
 }
-
 .themeBtn {
     background: none;
     border: none;
@@ -922,7 +1090,7 @@ header {
     height: 24px;
 }
 
-.addMedia{
+.addMedia {
     position: absolute;
     display: none;
     flex-direction: column;
@@ -934,7 +1102,8 @@ header {
     background-color: grey;
 }
 
-.imageAdd, .videoAdd{
+.imageAdd,
+.videoAdd {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -942,7 +1111,7 @@ header {
     align-self: center;
 }
 
-.addMedia button.close{
+.addMedia button.close {
     cursor: pointer;
     padding: 5px 20px;
     font-size: 20px;
@@ -950,7 +1119,7 @@ header {
     border-radius: 20px;
 }
 
-.addMedia button.imageUrl{
+.addMedia button.imageUrl {
     cursor: pointer;
     padding: 5px 10px;
     font-size: 20px;
@@ -968,7 +1137,6 @@ header {
     border: none;
     padding: 4px 8px;
     cursor: pointer;
-    font-size: medium;
     display: inline;
     margin-bottom: 10px;
 }
@@ -976,7 +1144,6 @@ header {
 .editorsection input[type="text"] {
     width: 100%;
     padding: 5px;
-    font-size: 20px;
     border: 1px solid #ccc;
     border-radius: 4px;
     outline: none;
@@ -990,7 +1157,6 @@ header {
     border: 2px solid #ccc;
     border-radius: 4px;
     padding: 10px;
-    font-size: 17px;
     line-height: 1.5;
     outline: none;
     height: 95%;
@@ -998,7 +1164,8 @@ header {
     overflow-x: hidden;
     white-space: break-spaces;
 }
-#textarea{
+
+#textarea {
     height: 350px;
 }
 
@@ -1008,10 +1175,25 @@ header {
     height: 5%;
 }
 
-.publishsection select {
-    width: 250px;
+.previewBtns {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+    margin-bottom: 10px;
+}
+
+.previewBtns button,
+.publishsection button:first-of-type,
+.publishsection input[type='submit'] {
+    padding: 5px;
+    border-radius: 10px;
+    font-weight: 700;
+}
+
+.publishsection select,
+.publishsection input[type="text"] {
     padding: 8px;
-    font-size: 16px;
+    width: 100%;
     border: 1px solid #ccc;
     border-radius: 4px;
     margin-bottom: 10px;
@@ -1038,7 +1220,123 @@ header {
     margin-right: 5px;
     padding: 2px;
 }
-.NightApp .toolbar button img{
+
+.NightApp .toolbar button img {
     filter: invert(1);
 }
-@media (max-width: 320px) {}</style>
+
+.publishsection button:first-of-type {
+    width: fit-content;
+    align-self: center;
+    padding: 5px;
+}
+
+.publishsection form {
+    padding-top: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+form .firstDiv h2 {
+    margin-bottom: 10px;
+}
+
+.firstDiv .options {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.option label {
+    margin-left: 20px;
+    font-size: larger;
+}
+
+.secondDiv {
+    margin-top: 20px;
+}
+
+.secondDiv span {
+    font-size: larger;
+}
+
+.option:first-of-type {
+    margin-bottom: 5px;
+}
+
+.publishsection input[type='submit'] {
+    margin-top: 30px;
+}
+
+@media screen and (min-width: 768px) and (max-width: 991px) {
+    .sectionContainers {
+        width: 100%;
+        display: flex;
+
+    }
+
+    .editorsection {
+        width: 50%;
+    }
+
+    .previewsection {
+        width: 50%;
+    }
+
+    #previewBtn,
+    .previewBtns button:first-of-type {
+        display: none;
+    }
+
+    #previewer {
+        height: 100vh;
+    }
+
+    .toolbar button {
+        padding: 5px;
+    }
+}
+
+@media screen and (min-width: 992px) {
+    .sectionContainers {
+        width: 100%;
+        display: flex;
+
+    }
+
+    .editorsection {
+        width: 35%;
+    }
+
+    .previewsection {
+        width: 35%;
+    }
+
+    .publishsection {
+        width: 30%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #previewBtn,
+    .previewBtns,
+    .publishsection .lastEditBtn {
+        display: none;
+    }
+
+    #previewer {
+        height: 100vh;
+    }
+
+    .publishsection select {
+        font-size: large;
+    }
+
+    .toolbar button img {
+        height: 25px;
+    }
+}</style>

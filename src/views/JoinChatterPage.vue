@@ -187,8 +187,7 @@ onUnmounted(() => {
 /* Styles for the buttons */
 button {
     padding: 0.5rem 1rem;
-    border: none;
-    border-radius: 4px;
+    border-radius: 10px;
     margin-right: 1rem;
     cursor: pointer;
 }
@@ -202,12 +201,10 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 4px;
+    border-radius: 10px;
     padding: 0.5rem 1rem;
-    font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
-    transition: background-color 0.3s ease;
 }
 
 .google-icon {

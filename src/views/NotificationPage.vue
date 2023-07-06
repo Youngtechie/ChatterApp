@@ -53,11 +53,13 @@ if (store.authenticated === true) {
 <style scoped>
 #notificationPage {
     width: 100%;
-    height: 90vh;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
     overflow-y: scroll;
+    padding-top: 50px;
+    padding: 50px 10px 0px 10px;
 }
 
 #notificationPage section,
@@ -112,4 +114,6 @@ if (store.authenticated === true) {
 .clickNotify p:last-of-type {
     font-size: 0.8rem;
     margin-top: 0.5rem;
-}</style>
+}
+
+</style>

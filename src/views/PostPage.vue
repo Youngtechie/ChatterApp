@@ -89,7 +89,7 @@ async function getData() {
         const doc = await getDoc(postRef);
         // Handle the successful retrieval of the document here
         if (doc.data() !== undefined) {
-            store.viwedPost = doc.data() as DocumentData
+            store.viwedPost = doc.data() as DocumentData;
             getMedias()
             getPostContent()
             getPoster()
@@ -101,7 +101,8 @@ async function getData() {
             })
         }
     } catch (error) {
-        router.push('/error')
+        // router.push('/error')
+        console.error(error);
     }
 }
 
@@ -202,8 +203,9 @@ function back() {
 
         <div v-if="store.viwedPost.posterId !== undefined" class="postBody">
             <h1 v-if="store.viwedPost.postCoverImage === ''">{{ store.viwedPost.postTitle.join(' ') as string }}</h1>
-            <section class="coverImage">
-
+            <section class="coverImage" v-else>
+                <img id="img" :src="store.viwedPost.postCoverImage" />
+                <h1>{{ store.viwedPost.postTitle.join(' ') as string }}</h1>
             </section>
             <div class="section1">
                 <div class="details">
@@ -223,94 +225,7 @@ function back() {
             <div class="timePosted">
                 {{ useCalculateTime(store.viwedPost.postTime.seconds) }}
             </div>
-            <!-- <div v-html="divContent" class="showPost"></div> -->
-            <div class="showPost">
-                <p>Markdown is a lightweight markup language that allows you to easily format and style text. It provides a
-                    simple and intuitive syntax for creating structured documents without the need for complex HTML or
-                    formatting tools. In this article, we'll explore the basics of using Markdown and how you can leverage
-                    its features to enhance your writing and documentation.</p>
-                <h2>Headers</h2>
-                <p>Headers are useful for organizing and structuring your document. Markdown provides different levels of
-                    headers, denoted by the number of hash (#) symbols. For example:</p>
-                <pre><code>
-                # Heading 1
-                ## Heading 2
-                ### Heading 3
-                </code></pre>
-                <h2>Emphasis</h2>
-                <p>You can emphasize text in Markdown using various techniques.</p>
-                <p>To make text <em>italic</em>, simply wrap it with asterisks or underscores (<code>*italic*</code> or
-                    <code>_italic_</code>).
-                </p>
-                <p>To make text <strong>bold</strong>, use double asterisks or underscores (<code>**bold**</code> or
-                    <code>__bold__</code>).
-                </p>
-                <p>You can also use a combination of asterisks and underscores to achieve both <em>italic</em> and
-                    <strong>bold</strong> formatting (<code>***bold and italic***</code> or
-                    <code>___bold and italic___</code>).
-                </p>
-                <h2>Lists</h2>
-                <p>Markdown supports both ordered and unordered lists.</p>
-                <p>To create an unordered list, use asterisks, plus signs, or hyphens:</p>
-                <pre><code>- Item 1
-                - Item 2
-                - Item 3
-                </code></pre>
-                <p>To create an ordered list, use numbers:</p>
-                <pre><code>1. First item
-                2. Second item
-                3. Third item
-                </code></pre>
-                <h2>Links</h2>
-                <p>Adding links to your Markdown document is straightforward. To create a link, use the following syntax:
-                </p>
-                <pre><code>[Link text](URL)
-                </code></pre>
-                <p>For example, <code>[OpenAI](https://www.openai.com)</code> will render as <a
-                        href="https://www.openai.com">OpenAI</a>.</p>
-                <h2>Images</h2>
-                <p>To embed images in Markdown, use a similar syntax as links but with an exclamation mark in front:</p>
-                <pre><code>![Alt text](image.jpg)
-                </code></pre>
-                <p>You can also specify optional alternate text for accessibility purposes:</p>
-                <pre><code>![Alt text](image.jpg "Optional title")
-                </code></pre>
-                <h2>Code Blocks</h2>
-                <p>When sharing code snippets or examples, Markdown allows you to create code blocks with syntax
-                    highlighting. Enclose the code within triple backticks (```) and specify the programming language for
-                    proper highlighting:</p>
-                <pre><code class="language-python">def greet(name):
-                    print(f"Hello, {name}!")
-                </code></pre>
-                <h2>Blockquotes</h2>
-                <p>To create blockquotes, prepend the lines with the greater-than symbol (<code>&amp;gt;</code>):</p>
-                <pre><code>&amp;gt; This is a blockquote.
-                &amp;gt; It can span multiple lines.
-                </code></pre>
-                <h2>Tables</h2>
-                <p>Markdown enables you to create simple tables using pipes and hyphens:</p>
-                <pre><code>| Name  | Age |
-                |-------|-----|
-                | John  | 25  |
-                | Emily | 30  |
-                </code></pre>
-                <h2>Horizontal Rules</h2>
-                <p>To insert a horizontal rule, use three or more hyphens, asterisks, or underscores on a line:</p>
-                <pre><code>---
-                </code></pre>
-                <p>or</p>
-                <pre><code>***
-                </code></pre>
-                <p>or</p>
-                <pre><code>___
-                </code></pre>
-                <h2>Conclusion</h2>
-                <p>Markdown is a versatile and user-friendly markup language that makes writing and formatting text a
-                    breeze. With just a few simple symbols, you can create headers, emphasize text, create lists, add links
-                    and images, highlight code, and much more. Whether you're writing documentation, blog posts, or even
-                    just taking notes, Markdown provides a convenient way to structure and style your content with minimal
-                    effort. Start using Markdown today and unlock a world of easy and elegant document creation!</p>
-            </div>
+            <div v-html="divContent" class="showPost"></div>
             <div class="btnsMore">
                 <useDetailButtons :post="store.viwedPost" />
             </div>
@@ -381,6 +296,7 @@ header {
     background-color: #333333;
     color: #efefef;
     position: fixed;
+    z-index: 99;
 }
 
 #navigators {
@@ -428,8 +344,38 @@ header {
     flex-direction: column;
     align-items: center;
     height: 95vh;
-    width: 100%;
+    max-width: 520px;
     overflow-y: scroll;
+}
+
+.coverImage {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 200px;
+    text-align: center;
+    position: relative;
+    top: -10px;
+}
+
+.coverImage #img {
+    width: 100%;
+    height: 200px;
+    filter: brightness(40%);
+
+}
+
+.coverImage h1 {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #efefef;
+    font-size: 2rem;
+    text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
 }
 
 .postBody {
@@ -450,7 +396,7 @@ h1,
     text-align: center;
 }
 
-h1 {
+h1:not(.coverImage h1) {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 2px;
@@ -459,11 +405,11 @@ h1 {
     padding-bottom: 10px;
 }
 
-.DayApp h1 {
+.DayApp h1:not(.coverImage h1) {
     text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.5);
 }
 
-.NightApp h1 {
+.NightApp h1:not(.coverImage h1) {
     text-shadow: 4px 4px 8px rgba(255, 255, 255, 0.5);
 }
 
@@ -542,4 +488,6 @@ h5 {
     width: 100%;
     text-align: center;
     align-self: center;
-}</style>
+}
+
+</style>
