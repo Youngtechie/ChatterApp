@@ -38,6 +38,12 @@ const router = createRouter({
           name: 'Notifications',
           component: ()=> import('../views/NotificationPage.vue'),
           sensitive: true
+        },
+        {
+          path: '/trendings',
+          name: 'Trendings',
+          component: ()=> import('../views/TrendingsPage.vue'),
+          sensitive: true
         }
       ],
 

@@ -9,11 +9,6 @@ const router = useRouter()
 
 store.sidebar = false
 
-if (store.signedUser.isLogined) {
-    store.signedUser.notifications.sort((a: Record<string, any>, b: Record<string, any>) => b.details.time.seconds - a.details.time.seconds)
-    console.log(store.signedUser.notifications)
-}
-
 if (store.authenticated === true) {
     if (store.signedUser.id === undefined && store.signedUser.username === undefined) {
         router.push({ name: 'NetworkError', query: { redirect: `${router.currentRoute.value.path}` } })
@@ -46,7 +41,9 @@ if (store.authenticated === true) {
             <h1>Write, read and connect with great minds on chatter</h1>
             <p>Share people your great ideas, and also write-ups based on your interests. Connect with people of same
                 interests and goals.</p>
-            <button>Get started</button>
+                <RouterLink to="/login">
+                    <button>Get started</button>
+                </RouterLink>
         </section>
     </div>
 </template>

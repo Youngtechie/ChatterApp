@@ -151,7 +151,6 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  width: 300px;
   padding: 10px;
 }
 
@@ -213,7 +212,6 @@ input[type="date"] {
 
 .submit-button,
 .delete-button {
-  width: 120px;
   padding: 0.5rem;
   text-align: center;
   background-color: #007bff;
@@ -223,9 +221,13 @@ input[type="date"] {
   cursor: pointer;
 }
 
-.submit-button:hover,
-.delete-button:hover {
+.submit-button:hover {
   background-color: #0056b3;
+}
+
+.delete-button:hover{
+  background-color: red;
+
 }
 
 .submit-button:active,

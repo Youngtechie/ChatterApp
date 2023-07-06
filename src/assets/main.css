@@ -22,7 +22,7 @@ body {
 }
 
 #textarea {
-  display: inline-block;
+  display: block;
   position: relative;
 }
 #textarea button {
@@ -32,16 +32,24 @@ body {
   flex-flow: column wrap;
   align-items: center;
 }
-#previewer ul, #previewer ol {
-  padding: 20px;
+
+#previewer ul,
+#previewer ol {
+  padding: 0 10px;
 }
-#previewer p, .showPost p {
+#previewer p,
+.showPost p {
   display: flex;
-  flex-flow: column wrap;
+  flex-flow: column;
   width: 100%;
 }
 
-#previewer p > img, #previewer p > video, #textarea p > video, #textarea p > img, .showPost p > img, .showPost p > video  {
+#previewer p > img,
+#previewer p > video,
+#textarea p > video,
+#textarea p > img,
+.showPost p > img,
+.showPost p > video {
   /* CSS properties for the paragraph containing an image followed by a video */
   align-self: center;
   width: 100%;
@@ -54,40 +62,40 @@ body {
   display: block;
   align-self: center;
 }
-#themeBtn{
-    display: flex;
-    align-items: center;
-    width: 40px;
-    height: 20px;
-    border-radius: 10px;
-    position: relative;
+#themeBtn {
+  display: flex;
+  align-items: center;
+  width: 40px;
+  height: 20px;
+  border-radius: 10px;
+  position: relative;
 }
-#themeImgContainer{
-    display: flex;
-    align-items: center;
-    width: 50%;
-    height: 100%;
-    border-radius: 10px;
-    position: absolute;
+#themeImgContainer {
+  display: flex;
+  align-items: center;
+  width: 50%;
+  height: 100%;
+  border-radius: 10px;
+  position: absolute;
 }
-.NightApp #themeImgContainer{
-    right: 0;
-    background-color: #efefef;
+.NightApp #themeImgContainer {
+  right: 0;
+  background-color: #efefef;
 }
-.DayApp #themeImgContainer img{
-    filter: brightness(0) invert(1);
+.DayApp #themeImgContainer img {
+  filter: brightness(0) invert(1);
 }
-.DayApp #themeImgContainer{
-    background-color: black;
-    left: 0;
+.DayApp #themeImgContainer {
+  background-color: black;
+  left: 0;
 }
-.DayApp #themeBtn{
-    background-color: #efefef;
-    border: 2px solid black;
+.DayApp #themeBtn {
+  background-color: #efefef;
+  border: 2px solid black;
 }
-.NightApp #themeBtn{
-    background-color: black;
-    border: 2px solid #efefef;
+.NightApp #themeBtn {
+  background-color: black;
+  border: 2px solid #efefef;
 }
 ::-webkit-scrollbar {
   width: 0;
@@ -107,15 +115,16 @@ code {
   background-color: #282c34;
   color: #abb2bf;
   font-family: 'Courier New', Courier, monospace;
-  font-size: 14px;
-  line-height: 1.5;
   border-radius: 5px;
   overflow: auto;
+  line-height: 1;
+  height: 100%;
 }
 
 pre {
-  margin:0;
+  margin: 0;
   overflow: auto;
+  white-space: pre-wrap;
 }
 
 code::-webkit-scrollbar {
@@ -135,35 +144,37 @@ code::selection {
   background-color: #abb2bf;
   color: #282c34;
 }
-a, a:active, a:hover{
+a,
+a:active,
+a:hover {
   text-decoration: none;
 }
-#previewer h1:first-of-type{
+#previewer h1:first-of-type {
   text-align: center;
 }
-.DayApp button{
+.DayApp button {
   background-color: #efefef;
   color: black;
 }
-.NightApp button{
+.NightApp button {
   background-color: black;
   color: white;
 }
-.DayApp .analysesDisplay svg path{
-    stroke: black;
-    stroke-width: 1px;
+.DayApp .analysesDisplay svg path {
+  stroke: black;
+  stroke-width: 1px;
 }
 
-.NightApp .analysesDisplay svg path{
+.NightApp .analysesDisplay svg path {
   stroke: #fff;
   stroke-width: 1px;
 }
 
-.DayApp .clickNotify{
+.DayApp .clickNotify {
   background-color: ghostwhite;
   border: 5px outset white;
 }
-.NightApp .clickNotify{
+.NightApp .clickNotify {
   background-color: #282c34;
   border: 5px inset #333;
 }
@@ -171,193 +182,206 @@ a, a:active, a:hover{
   fill: red;
 }
 
-.router-link-active button{
+.router-link-active button {
   background-color: blue;
-  color: white
+  color: white;
 }
 
-nav .otherNavDetails a.router-link-active button{
+nav .otherNavDetails a.router-link-active button {
   background-color: purple;
   fill: black;
 }
 
-button{
+button {
   border: 2px solid #ccc;
 }
 
 @media screen and (mix-width: 767px) {
-  .lineContainer{
+  .lineContainer {
     display: none;
   }
 }
 
 @media screen and (max-width: 767px) {
-  body, button, input{
+  body,
+  button,
+  input {
     font-size: 16px;
   }
-  h1{
+  h1 {
     font-size: 24px;
   }
-  h2{
+  h2 {
     font-size: 23px;
   }
-  h3{
+  h3 {
     font-size: 22px;
   }
-  h4{
+  h4 {
     font-size: 21px;
   }
-  h5{
+  h5 {
     font-size: 20px;
   }
-  h6{
+  h6 {
     font-size: 19px;
   }
   .lineContainer {
     height: 30px;
     width: 30px;
     border-radius: 50%;
-}
-  
+  }
 }
 @media screen and (min-width: 768px) and (max-width: 991px) {
-  body, button, input{
+  body,
+  button,
+  input {
     font-size: 18px;
   }
-  h1{
+  h1 {
     font-size: 30px;
   }
-  h2{
+  h2 {
     font-size: 29px;
   }
-  h3{
+  h3 {
     font-size: 28px;
   }
-  h4{
+  h4 {
     font-size: 27px;
   }
-  h5{
+  h5 {
     font-size: 26px;
   }
-  h6{
+  h6 {
     font-size: 25px;
   }
-  #themeBtn{
+  #themeBtn {
     width: 50px;
     height: 25px;
     border-radius: 20px;
   }
-  #themeImgContainer img{
+  #themeImgContainer img {
     height: 20px;
   }
-  #themeImgContainer{
+  #themeImgContainer {
     border-radius: 20px;
   }
   .lineContainer {
     height: 50px;
     width: 50px;
     border-radius: 50%;
-}
+  }
 
-.line {
+  .line {
     position: absolute;
     width: 2px;
     height: 40%;
-    background-color: #E5E5E5;
-}
+    background-color: #e5e5e5;
+  }
 
-.line:nth-child(2) {
+  .line:nth-child(2) {
     right: 14px;
-}
+  }
 
-.line:nth-child(1) {
+  .line:nth-child(1) {
     transform: rotate(90deg);
     right: 14px;
-}
+  }
 }
 
 @media screen and (min-width: 992px) {
-  body, button, input{
+  body,
+  button,
+  input {
     font-size: 20px;
   }
-  h1{
+  h1 {
     font-size: 36px;
   }
-  h2{
+  h2 {
     font-size: 34px;
   }
-  h3{
+  h3 {
     font-size: 32px;
   }
-  h4{
+  h4 {
     font-size: 30px;
   }
-  h5{
+  h5 {
     font-size: 28px;
   }
-  h6{
+  h6 {
     font-size: 26px;
   }
-  #themeBtn{
+  #themeBtn {
     width: 60px;
     height: 30px;
     border-radius: 30px;
   }
-  #themeImgContainer img{
+  #themeImgContainer img {
     height: 25px;
   }
-  #themeImgContainer{
+  #themeImgContainer {
     border-radius: 30px;
   }
 }
 
 @media screen and (min-width: 1200px) {
-  body{
+  body {
     font-size: 22px;
   }
-  h1{
+  h1 {
     font-size: 48px;
   }
-  h2{
+  h2 {
     font-size: 45px;
   }
-  h3{
+  h3 {
     font-size: 42px;
   }
-  h4{
+  h4 {
     font-size: 39px;
   }
-  h5{
+  h5 {
     font-size: 36px;
   }
-  h6{
+  h6 {
     font-size: 33px;
   }
 }
 
+#previewer table {
+  overflow-x: visible;
+}
 table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
 }
 
 table th,
 table td {
-  padding: 8px;
+  padding: 10px;
   text-align: left;
   border: 1px solid #ccc;
+  white-space: nowrap;
+  overflow-x: scroll;
 }
 
 table th {
   background-color: #f2f2f2;
   font-weight: bold;
 }
-#previewer strong, #previewer em, #previewer a{
+#previewer strong,
+#previewer em,
+#previewer a {
   width: fit-content;
   display: contents;
 }
-.imgCon{
+.imgCon {
   cursor: pointer;
 }
-#divContent{
+#divContent {
   cursor: pointer;
 }

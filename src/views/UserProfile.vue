@@ -120,15 +120,14 @@ async function getPosts(interactions: Record<string, any>) {
                         divContent.value = bodyImgRemove.body.innerHTML;
                         post.postContain = divContent.value;
 
-                        await getPoster(post.posterId);
-
-                        post.posterDetails = poster.value;
-                        poster.value = null;
+                        await getPoster(post.posterId).then(()=>{
+                            post.posterDetails = poster.value
+                        })
 
                         const EachInteraction = {
-                            'type': interaction.type,
-                            'postDetails': post
-                        }
+                                'type': interaction.type,
+                                'postDetails': post
+                            }
 
                         return EachInteraction;
                     })
@@ -136,7 +135,6 @@ async function getPosts(interactions: Record<string, any>) {
             })
             const resolvedPosts = await Promise.all(promises);
             store.signedUser.interactions = resolvedPosts.flat()
-            isinteractionsLoading.value = false
         } catch (error) {
             //
         }
@@ -153,7 +151,10 @@ function back() {
 function changeSection(value: string) {
     store.section = value
     if (value === 'interaction' && store.userId !== '' && store.userId !== undefined) {
-        getPosts(store.signedUser.interactions)
+        getPosts(store.signedUser.interactions).finally(()=>{
+            console.log(store.signedUser.interactions)
+            isinteractionsLoading.value = false
+        })
     }
 }
 

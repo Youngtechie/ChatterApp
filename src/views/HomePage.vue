@@ -39,10 +39,7 @@ function toggleSeeMore() {
 
 let id = setTimeout(() => {
     if (store.authenticated === true) {
-        if (store.signedUser.id === undefined && store.signedUser.username === undefined) {
-            router.push({ name: 'NetworkError', query: { redirect: `${router.currentRoute.value.path}` } })
-        }
-        else if (store.signedUser.id !== undefined && store.signedUser.username === '') {
+        if (store.signedUser.id !== undefined && store.signedUser.username === '') {
             console.log('User registration not finished... Logging out user.....')
             SignOut()
             store.authenticated = false
@@ -192,8 +189,11 @@ function Signout() {
                         User Analysis
                     </button>
                 </RouterLink>
-                <RouterLink to="/explore"> <button>
-                    <img src="/trending.png" height="24px" width="24px"/>
+                <RouterLink to="/trendings"> <button>
+                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trending-up">
+                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                        <polyline points="17 6 23 6 23 12"></polyline>
+                      </svg>
                         Trending
                     </button>
                 </RouterLink>
@@ -310,7 +310,7 @@ function Signout() {
                         User Analysis
                     </button>
                 </RouterLink>
-                <RouterLink to="/explore"> <button>
+                <RouterLink to="/trendings"> <button>
                     <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trending-up">
                         <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
                         <polyline points="17 6 23 6 23 12"></polyline>
