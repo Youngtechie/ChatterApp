@@ -2,12 +2,6 @@ import { defineStore } from 'pinia'
 import {ref} from 'vue'
 import type { DocumentData } from 'firebase/firestore'
 
-interface FileInput {
-  file: File;
-  id: number;
-  nameType: string;
-}
-
 interface textarea{
   title: string;
   content: HTMLDivElement;
@@ -21,23 +15,9 @@ export const useChatterStore = defineStore('chatter', () => {
   const signedUser: DocumentData = {}
   const viwedPost: DocumentData = ref({})
   const viwedProfile: DocumentData = {}
-  const fileInputs = [] as FileInput[]
   const coverImageFile = ref<File | null>(null)
   const viwedPosterFollowed = ref(false)
   const textarea: textarea[] = []
-
-    function addFileInput(file: File, id: number, nameType: string) {
-      fileInputs.push({file, id, nameType});
-    }
-    function removeFileInput(name: string) {
-      fileInputs.splice(fileInputs.findIndex((fileInput) => fileInput.file.name === name), 1);
-    }
-    function clearFileInputs() {
-      fileInputs.splice(0, fileInputs.length) ;
-    }
-    function uploadFiles(id: number) {
-      return fileInputs.find((fileInput) => fileInput.id === id);
-    }
 
   const themeDetails = ref({
     theme: 'light',
@@ -198,7 +178,6 @@ export const useChatterStore = defineStore('chatter', () => {
     authenticated,
     userId,
     viwedPost,
-    fileInputs,
     viwedPosterFollowed,
     viwedProfile,
     textarea,
@@ -206,10 +185,6 @@ export const useChatterStore = defineStore('chatter', () => {
     toggleSidebar,
     createUser,
     toggleAccountType,
-    addFileInput,
-    removeFileInput,
-    clearFileInputs,
-    uploadFiles,
     createPost
   }
 })

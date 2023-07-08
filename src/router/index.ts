@@ -92,12 +92,6 @@ const router = createRouter({
       sensitive: true
     },
     {
-      path: '/NetworkError',
-      name: 'NetworkError',
-      component: ()=> import('../views/NetworkErrorPage.vue'),
-      sensitive: true
-    },
-    {
       path: '/:catchAll(.*)',
       name: 'Error',
       component: ()=> import('../views/ErrorPage.vue'),
