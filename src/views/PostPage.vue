@@ -183,9 +183,7 @@ useSeoMeta({
     ogDescription: ogDescription.value,
     ogTitle: ogTitle.value,
     ogImage: ogImage.value,
-    ogType() {
-        return 'website'
-    },
+    ogType: 'website',
     ogUrl: ogUrl.value,
 })
 
