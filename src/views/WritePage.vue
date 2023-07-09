@@ -141,7 +141,7 @@ onMounted(() => {
 
   undoStack.value.push({ content: '', cursor: 0 });
 
-  if(textarea.value!.innerText.trim() == ''){
+  if (textarea.value!.innerText.trim() == '') {
     textarea.value?.focus();
   }
 
@@ -153,7 +153,7 @@ onUnmounted(() => {
   redoStack.value = [];
   clearTimeout(timeOut)
   const warning = document.getElementById('warningShow') as HTMLDivElement
-  if(warning){
+  if (warning) {
     warning.style.display = 'none';
   }
   window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -305,11 +305,11 @@ function createPost() {
   }
   else {
     const warningShow = document.getElementById('warningShow') as HTMLDivElement
-      warningShow.style.display = 'flex'
-      warningShow.textContent = 'You must be have signed in or compeleted your registration to post'
-      timeOut = setTimeout(() => {
-        warningShow.style.display = 'none'
-      }, 2000)
+    warningShow.style.display = 'flex'
+    warningShow.textContent = 'You must be have signed in or compeleted your registration to post'
+    timeOut = setTimeout(() => {
+      warningShow.style.display = 'none'
+    }, 2000)
   }
 }
 
@@ -370,32 +370,31 @@ function undo() {
     const previous = undoStack.value[undoStack.value.length - 1];
     textarea.value!.innerHTML = previous.content;
 
-    if(previous.content !== ''){
+    if (previous.content !== '') {
       setCursorPosition(previous.cursor);
     }
 
     updateDom()
   }
-  else{
+  else {
     insertTextAtCursor('')
   }
 }
 
 function redo() {
   if (redoStack.value.length > 0) {
-    console.log(redoStack.value)
     const next = redoStack.value.pop()!;
     undoStack.value.push(next);
 
     textarea.value!.innerHTML = next.content;
 
-    if(next.content !== ''){
+    if (next.content !== '') {
       setCursorPosition(next.cursor);
     }
 
     updateDom()
   }
-  else{
+  else {
     insertTextAtCursor('')
   }
 }
@@ -447,6 +446,9 @@ function handlePaste(event: ClipboardEvent) {
       }
     })
 }
+let urlText: string = 'URL'
+let linkText: string = 'Link Text'
+let headerLevels: string = '1'
 
 function insertTextAtCursor(text: string) {
   if (!textarea.value) return;
@@ -454,25 +456,85 @@ function insertTextAtCursor(text: string) {
   const selection = window.getSelection();
   if (selection) {
     const range = selection.getRangeAt(0);
-    range.deleteContents();
+    let textNode: Node;
+    if (range.collapsed) {
+      // No text is selected, insert the text as usual
+      textNode = document.createTextNode(text);
 
-    const textNode = document.createTextNode(text);
-    range.insertNode(textNode);
+      if (text === 'link') {
+        textNode = document.createTextNode(`[${linkText}](${urlText})`)
+      }
 
-    if (text === '**' || text === '_' || text === '~~' || text === '\n```\n' || text === '`') {
-      const cursorNode = document.createTextNode('');
-      range.insertNode(cursorNode);
+      else if (text === 'header') {
+        textNode = document.createTextNode(`\n${'#'.repeat(parseInt(headerLevels))} `)
+      }
 
-      const cloneNode = textNode.cloneNode();
-      range.insertNode(cloneNode);
+      range.deleteContents();
+      range.insertNode(textNode);
 
-      range.setStartAfter(cursorNode);
-      range.setEndAfter(cursorNode);
+      if (text === '**' || text === '_' || text === '~~' || text === '\n```\n' || text === '`') {
+
+        const cursorNode = document.createTextNode('');
+        range.insertNode(cursorNode);
+
+        const cloneNode = textNode.cloneNode();
+        range.insertNode(cloneNode);
+
+        range.setStartAfter(cursorNode);
+        range.setEndAfter(cursorNode);
+      }
+      range.collapse(false);
+    } else {
+      const selectedText = range.toString();
+      range.deleteContents();
+
+      if (text === '**' || text === '_' || text === '~~' || text === '\n```\n' || text === '`') {
+        // Wrap the selected text with the corresponding text strings inserted twice
+        const wrappedText = `${text}${selectedText}${text}`;
+        const wrappedTextNode = document.createTextNode(wrappedText);
+        range.insertNode(wrappedTextNode);
+        // Set the range to encompass the wrapped text
+        range.setStartBefore(wrappedTextNode);
+        range.setEndAfter(wrappedTextNode);
+      }
+      else if (text === 'link') {
+        const wrappedText = ` [${selectedText}](${urlText})`;
+        const wrappedTextNode = document.createTextNode(wrappedText);
+        range.insertNode(wrappedTextNode);
+        // Set the range to encompass the wrapped text
+        range.setStartBefore(wrappedTextNode);
+        range.setEndAfter(wrappedTextNode);
+      }
+      else if (text === 'header') {
+        const wrappedText = `\n${'#'.repeat(parseInt(headerLevels))} ${selectedText}`;
+        const wrappedTextNode = document.createTextNode(wrappedText);
+        range.insertNode(wrappedTextNode);
+        // Set the range to encompass the wrapped text
+        range.setStartBefore(wrappedTextNode);
+        range.setEndAfter(wrappedTextNode);
+      }
+      else if (text === '\n > ' || text === '\n1. ' || text === '\n- ') {
+        const wrappedText = `${text}${selectedText}`;
+        const wrappedTextNode = document.createTextNode(wrappedText);
+        range.insertNode(wrappedTextNode);
+        // Set the range to encompass the wrapped text
+        range.setStartBefore(wrappedTextNode);
+        range.setEndAfter(wrappedTextNode);
+      }
+      else {
+        const textNode = document.createTextNode(`${text}\r${selectedText}`);
+        range.insertNode(textNode);
+
+        range.setStartAfter(textNode);
+        range.setEndAfter(textNode);
+      }
+
+      range.collapse(false);
     }
-
-    range.collapse(false);
     selection.removeAllRanges();
     selection.addRange(range);
+    handleInput
+    updateDom()
   }
 }
 
@@ -487,7 +549,8 @@ function makeItalic() {
 function insertLink() {
   const url = prompt('Enter the URL:');
   if (url) {
-    insertTextAtCursor(`[Link Text](${url})`);
+    urlText = url
+    insertTextAtCursor(`link`);
   }
   else {
     insertTextAtCursor('');
@@ -507,7 +570,8 @@ function insertCodeBlock() {
 function insertHeader() {
   const headerLevel = prompt('Enter the header level (1-6):');
   if (headerLevel) {
-    insertTextAtCursor(`\n ${'#'.repeat(parseInt(headerLevel))} `);
+    headerLevels = headerLevel
+    insertTextAtCursor(`header`);
   }
   else {
     insertTextAtCursor('');
@@ -601,25 +665,25 @@ function handleInputLast(event: Event) {
         <input type="text" v-model="title" placeholder="Post Title" @focus="handleMediaTimechange" @input="updateDom" />
         <div class="toolbar" ref="toolbar">
           <button type="button" @click.prevent="makeBold">
-            <img src="https://img.icons8.com/ios-filled/50/000000/bold.png" alt="bold" height="20"/>
+            <img src="https://img.icons8.com/ios-filled/50/000000/bold.png" alt="bold" height="20" />
           </button>
           <button type="button" @click.prevent="makeItalic">
-            <img src="https://img.icons8.com/ios-filled/50/000000/italic.png" alt="itallic" height="20"/>
+            <img src="https://img.icons8.com/ios-filled/50/000000/italic.png" alt="itallic" height="20" />
           </button>
           <button type="button" @click.prevent="insertLink">
-            <img src="https://img.icons8.com/ios-filled/50/000000/link.png" alt="link" height="20"/>
+            <img src="https://img.icons8.com/ios-filled/50/000000/link.png" alt="link" height="20" />
           </button>
           <button type="button" @click.prevent="insertHeader">
-            <img src="https://img.icons8.com/ios-filled/50/000000/header.png" alt="header" height="20"/>
+            <img src="https://img.icons8.com/ios-filled/50/000000/header.png" alt="header" height="20" />
           </button>
           <button type="button" @click.prevent="insertStrikeThrough">
-            <img src="https://img.icons8.com/ios-filled/50/000000/strikethrough.png" alt="strike" height="20"/>
+            <img src="https://img.icons8.com/ios-filled/50/000000/strikethrough.png" alt="strike" height="20" />
           </button>
           <button type="button" @click.prevent="insertQuote">
-            <img src="https://img.icons8.com/ios-filled/50/000000/comma.png" alt="quote" height="20"/>
+            <img src="https://img.icons8.com/ios-filled/50/000000/comma.png" alt="quote" height="20" />
           </button>
           <button type="button" @click.prevent="insertSourceCode">
-            <img src="https://img.icons8.com/windows/90/000000/source-code.png" alt="source code" height="20"/>
+            <img src="https://img.icons8.com/windows/90/000000/source-code.png" alt="source code" height="20" />
           </button>
           <button type="button" @click.prevent="OrderedList">
             <img src="https://img.icons8.com/windows/90/000000/numbered-list.png" alt="OrderedList" height="20" />
@@ -628,23 +692,23 @@ function handleInputLast(event: Event) {
             <img src="https://img.icons8.com/ios-filled/80/000000/bulleted-list.png" alt="UnorderedList" height="20" />
           </button>
           <button type="button" @click.prevent="insertTable">
-            <img src="https://img.icons8.com/ios-filled/50/000000/table.png" alt="Table" height="20"/>
+            <img src="https://img.icons8.com/ios-filled/50/000000/table.png" alt="Table" height="20" />
           </button>
           <button type="button" @click.prevent="insertCodeBlock">
-            <img src="https://img.icons8.com/ios-filled/50/000000/code.png" alt="Code" height="20"/>
+            <img src="https://img.icons8.com/ios-filled/50/000000/code.png" alt="Code" height="20" />
           </button>
           <button type="button" @click.prevent="insertHorizontalRule">
             <img src="https://img.icons8.com/ios-filled/50/000000/horizontal-line.png" alt="Horizontal Line"
-              height="20"/>
+              height="20" />
           </button>
           <button type="button" @click.prevent="insertImageUrl" v-show="mediaTime">
-            <img src="https://img.icons8.com/ios-filled/50/000000/image.png" alt="Image" height="20"/>
+            <img src="https://img.icons8.com/ios-filled/50/000000/image.png" alt="Image" height="20" />
           </button>
           <button type="button" @click.prevent="undo">
-            <img src="https://img.icons8.com/ios-filled/50/000000/undo.png" alt="Image" height="20"/>
+            <img src="https://img.icons8.com/ios-filled/50/000000/undo.png" alt="Image" height="20" />
           </button>
           <button type="button" @click.prevent="redo">
-            <img src="https://img.icons8.com/ios-filled/50/000000/redo.png" alt="Image" height="20"/>
+            <img src="https://img.icons8.com/ios-filled/50/000000/redo.png" alt="Image" height="20" />
           </button>
         </div>
         <div ref="textarea" contenteditable="true" id="textarea" @keydown="handleKeyDown" @input="handleInput"
@@ -835,7 +899,8 @@ header a button {
   justify-content: space-around;
   margin-bottom: 10px;
 }
-.previewBtns button{
+
+.previewBtns button {
   cursor: pointer;
 }
 
@@ -927,6 +992,7 @@ form .firstDiv h2 {
 .publishsection input[type='submit'] {
   margin-top: 30px;
 }
+
 #warningShow {
   position: absolute;
   top: 50%;
@@ -954,8 +1020,12 @@ form .firstDiv h2 {
   background-color: #efefef;
 }
 
-button:hover, input[type="button"], input[type="submit"]:hover, label:hover {
-  background-color: #888; /* Dimmed background color */
+button:hover,
+input[type="button"],
+input[type="submit"]:hover,
+label:hover {
+  background-color: #888;
+  /* Dimmed background color */
 }
 
 @media screen and (min-width: 768px) {
@@ -997,6 +1067,6 @@ button:hover, input[type="button"], input[type="submit"]:hover, label:hover {
   .publishsection select {
     font-size: large;
   }
-  
+
 }
 </style>

@@ -15,6 +15,7 @@ import useDetailButtons from '@/composables/useDetailButtons.vue'
 import useAddComment from '@/composables/useAddComment.vue';
 import useDeleteComment from '@/composables/useDeleteComment.vue';
 import useEditComment from '@/composables/useEditComment.vue';
+import { useSeoMeta } from '@vueuse/head';
 
 useUserDetails()
 
@@ -30,8 +31,6 @@ const props = defineProps(['postId'])
 const isLoading = ref(true)
 
 const divContent = ref('')
-
-const mediaUrls = ref<string[]>([])
 
 const { app } = useAuthentication()
 
@@ -49,24 +48,15 @@ const posterDetail = ref<posterdetail[]>([])
 
 const isFollowing = ref(false)
 
-interface postmedia {
-    id: number;
-    mediaFullPath: string;
-}
+const title = ref('')
+const description = ref('')
+const keywords = ref('')
+const author = ref('')
+const ogDescription = ref('')
+const ogTitle = ref('')
+const ogUrl = ref('')
+const ogImage = ref('')
 
-async function getMedias() {
-    try {
-        await Promise.all(store.viwedPost.postMedia.map(async (postMedia: postmedia) => {
-            mediaUrls.value.push(postMedia.mediaFullPath);
-        }))
-            .catch(() => {
-                console.log('error')
-            })
-
-    } catch (error) {
-        console.log(error)
-    }
-}
 
 async function getCommenterdetails() {
     try {
@@ -90,7 +80,6 @@ async function getData() {
         // Handle the successful retrieval of the document here
         if (doc.data() !== undefined) {
             store.viwedPost = doc.data() as DocumentData;
-            getMedias()
             getPostContent()
             getPoster()
             getCommenterdetails()
@@ -121,60 +110,56 @@ onMounted(() => {
 })
 
 async function getPostContent() {
-    try {
-        const contentUrl = store.viwedPost.postContain
-        await axios.post('/postContent', { contentUrl })
-            .then(response => {
-                const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
-                newHTML.body.querySelectorAll('img, video').forEach((element, index) => {
-                    element.setAttribute('src', `${mediaUrls.value[index]}`)
-                })
+    const contentUrl = store.viwedPost.postContain
+    await axios.post('/postContent', { contentUrl })
+        .then(response => {
+            const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
 
-                newHTML.body.querySelector('h1')?.remove();
+            newHTML.body.querySelector('h1')?.remove();
 
-                divContent.value = newHTML.body.innerHTML
-            })
-            .catch((error) => {
-                console.log(error)
-            })
-    }
-    catch (error) {
-        console.log(error)
-    }
+            divContent.value = newHTML.body.innerHTML
+        })
+        .catch((error) => {
+            console.log(error)
+        })
 }
 
 async function getPoster() {
-    try {
-        const posterRef = doc(db, 'users', store.viwedPost.posterId)
-        const posterDetails = await getDoc(posterRef)
-        if (posterDetails.data() !== undefined) {
-            const { blogName, profilePicture, id, username } = posterDetails.data() as DocumentData
-            const data = { blogName, profilePicture, id, username }
+    posterDetail.value = []
+    const posterRef = doc(db, 'users', store.viwedPost.posterId)
+    const posterDetails = await getDoc(posterRef)
+    if (posterDetails.data() !== undefined) {
+        const { blogName, profilePicture, id, username } = posterDetails.data() as DocumentData
+        const data = { blogName, profilePicture, id, username }
 
-            posterDetail.value.push(data)
+        posterDetail.value.push(data)
 
-            await useCheckFollow(store.viwedPost.posterId, store.signedUser.id).then((isFollow) => {
-                isFollowing.value = isFollow
-            })
-        }
-    } catch (error) {
-        //
+        await useCheckFollow(store.viwedPost.posterId, store.signedUser.id).then((isFollow) => {
+            isFollowing.value = isFollow
+        })
     }
 }
 
 async function unFollow() {
+
     useUnfollow(store.viwedPost.posterId, posterDetail.value[0].blogName)
-    isFollowing.value = !isFollowing.value
+    if (store.signedUser.username !== undefined && store.signedUser.username !== '') {
+        isFollowing.value = !isFollowing.value
+    }
 }
 
 async function Follow() {
     useFollow(store.viwedPost.posterId)
-    isFollowing.value = !isFollowing.value
+    if (store.signedUser.username !== undefined && store.signedUser.username !== '') {
+        isFollowing.value = !isFollowing.value
+    }
 }
 
 onUnmounted(() => {
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    warning.style.display = 'none'
+    if (warning) {
+        warning.style.display = 'none'
+    }
 })
 
 function routeToProfile(userId: string) {
@@ -189,6 +174,20 @@ function routeToProfile(userId: string) {
 function back() {
     router.go(-1)
 }
+
+useSeoMeta({
+    title: title.value,
+    author: author.value,
+    description: description.value,
+    keywords: keywords.value,
+    ogDescription: ogDescription.value,
+    ogTitle: ogTitle.value,
+    ogImage: ogImage.value,
+    ogType() {
+        return 'website'
+    },
+    ogUrl: ogUrl.value,
+})
 
 </script>
 <template>
@@ -343,8 +342,7 @@ header {
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 95vh;
-    max-width: 520px;
+    height: 100vh;
     overflow-y: scroll;
 }
 
@@ -489,5 +487,4 @@ h5 {
     text-align: center;
     align-self: center;
 }
-
 </style>

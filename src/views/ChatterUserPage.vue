@@ -54,7 +54,9 @@ onMounted(() => {
 
     nextTick(() => {
         const warning = document.getElementById('warningShow') as HTMLDivElement
-        warning.style.display = 'none'
+        if(warning){
+            warning.style.display = 'none'
+        }
     })
 
     store.section = 'personal'

@@ -287,27 +287,14 @@ button{
 }
 #previewer {
   text-align: left;
-  line-height: 1;
-}
-
-#previewer div,
-#previewer p,
-#previewer a,
-#previewer ol,
-#previewer li,
-#previewer h1,
-#previewer h2,
-#previewer h3,
-#previewer h4,
-#previewer h5,
-#previewer h6 {
-  word-break: break-all;
+  line-height: 2em;
+  word-wrap: break-word;
 }
 
 #previewer ul,
 #previewer ol {
-  margin: 1.5em 0;
-  padding: 0 2em;
+  padding-left: 1rem;
+  line-height: 1.0em;
 }
 
 #previewer a {
@@ -372,12 +359,6 @@ button{
   min-width: 100px;
   white-space: nowrap;
   overflow-x: scroll;
-}
-
-
-#previewer ol {
-  padding: 0 2em;
-  list-style: decimal;
 }
 
 #previewer img {
