@@ -45,7 +45,7 @@
     "nodemon": "3.0.1",
     "pinia": "^2.0.36",
     "sass": "^1.63.6",
-    "serverless": "^3.33.0",
+    "serverless-http": "3.2.0",
     "simplemde": "^1.11.2",
     "vue": "^3.3.2",
     "vue-content-loader": "^2.0.1",
