@@ -6,7 +6,6 @@ import { useChatterStore } from '@/stores/store';
 const store = useChatterStore()
 
 export default function useAuthentication() {
-
     const firebaseConfig = {
         apiKey: "AIzaSyBg8PMYQ0FP7j98iYIv_WxREEtkBjcaSow",
         authDomain: "chatter-75076.firebaseapp.com",

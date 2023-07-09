@@ -1,12 +1,9 @@
 <script lang="ts">
 import { useChatterStore } from '@/stores/store';
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
-import useUserDetails from '@/composables/useUserDetails.vue'
 import useAuthentication from './useAuth.vue';
 
 export default function useUnfollow(posterId: string, posterName: string) {
-
-    useUserDetails()
 
     const { app } = useAuthentication()
 
@@ -27,35 +24,37 @@ export default function useUnfollow(posterId: string, posterName: string) {
             const docPoster = await getDocs(qPoster);
             const poster = docPoster.docs[0].data()
 
-            const oldArryUser = user.following.theFollowings
-            const newArrayUser = oldArryUser.filter((id: string) => id !== posterId)
-            const newtotalUser = newArrayUser.length
+            if (user !== undefined && user !== null && user.length !== 0 && poster !== undefined && poster !== null && poster.length !== 0) {
+                const oldArryUser = user.following.theFollowings
+                const newArrayUser = oldArryUser.filter((id: string) => id !== posterId)
+                const newtotalUser = newArrayUser.length
 
-            const oldArryPoster = poster.followers.theFollowers
-            const newArrayPoster = oldArryPoster.filter((id: string) => id !== store.signedUser.id)
-            const newtotalPoster = newArrayPoster.length
+                const oldArryPoster = poster.followers.theFollowers
+                const newArrayPoster = oldArryPoster.filter((id: string) => id !== store.signedUser.id)
+                const newtotalPoster = newArrayPoster.length
 
-            const posterUpdateRef = doc(db, "users", posterId)
-            const readerUpdateRef = doc(db, "users", store.signedUser.id)
+                const posterUpdateRef = doc(db, "users", posterId)
+                const readerUpdateRef = doc(db, "users", store.signedUser.id)
 
-            await updateDoc(posterUpdateRef, {
-                ['followers.theFollowers']: newArrayPoster,
-                ['followers.total']: newtotalPoster
-            })
+                await updateDoc(posterUpdateRef, {
+                    ['followers.theFollowers']: newArrayPoster,
+                    ['followers.total']: newtotalPoster
+                })
 
-            await updateDoc(readerUpdateRef, {
-                ['following.theFollowings']: newArrayUser,
-                ['following.total']: newtotalUser,
-                ['activityLog']: [...user.activityLog, {
-                    type: `You unfollowed ${posterName}`,
-                    details: {
-                        'followingId': posterId,
-                        'time': new Date()
-                    }
-                }]
-            })
+                await updateDoc(readerUpdateRef, {
+                    ['following.theFollowings']: newArrayUser,
+                    ['following.total']: newtotalUser,
+                    ['activityLog']: [...user.activityLog, {
+                        type: `You unfollowed ${posterName}`,
+                        details: {
+                            'followingId': posterId,
+                            'time': new Date()
+                        }
+                    }]
+                })
+            }
         } catch (error) {
-            console.error(error)
+            alert('An error occured, Check your network connection and try again')
         }
     }
 }

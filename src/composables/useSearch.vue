@@ -3,7 +3,6 @@ import { ref, watchEffect, onUnmounted } from 'vue'
 import { useChatterStore } from '@/stores/store'
 import { useRouter } from 'vue-router'
 import useAuthentication from './useAuth.vue';
-import { getStorage, ref as storageRef, getDownloadURL } from 'firebase/storage'
 import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc } from 'firebase/firestore'
 import useDetailButtons from './useDetailButtons.vue'
 import axios from 'axios'
@@ -62,80 +61,53 @@ watchEffect(() => {
 })
 
 async function getPostContent(post: DocumentData) {
-    try {
-        const contentUrl = post.postContain
-        await axios.post('/postContent', { contentUrl })
-            .then(response => {
-                const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
-                divContent.value = newHTML.body.innerHTML
-            })
-            .catch((error) => {
-                console.log(error)
-            })
-    }
-    catch (error) {
-        console.log(error)
-    }
+    const contentUrl = post.postContain
+    await axios.post('/postContent', { contentUrl })
+        .then(response => {
+            const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
+            divContent.value = newHTML.body.innerHTML
+        })
 }
 async function getPoster(posterID: string) {
     poster.value = null
-    try {
-        const posterRef = doc(db, 'users', posterID)
-        const posterDetails = await getDoc(posterRef)
-        if (posterDetails.data() !== undefined) {
-            const { fullName, profilePicture, username, blogName } = posterDetails.data() as DocumentData
-            const data = { profilePicture, posterID, fullName, username, blogName }
+    const posterRef = doc(db, 'users', posterID)
+    const posterDetails = await getDoc(posterRef)
+    if (posterDetails.data() !== undefined) {
+        const { fullName, profilePicture, username, blogName } = posterDetails.data() as DocumentData
+        const data = { profilePicture, posterID, fullName, username, blogName }
 
-            const storage = getStorage();
-            const posterImage = storageRef(storage, data.profilePicture)
-
-            try {
-                await getDownloadURL(posterImage)
-                    .then((url) => {
-                        if (data.profilePicture) {
-                            data.profilePicture = url
-                        }
-
-                        if (data.blogName === '') {
-                            data.blogName = `${data.username}Blog`
-                        }
-
-                        poster.value = {
-                            id: posterID as string,
-                            img: data.profilePicture as string,
-                            fullName: data.fullName as string,
-                            username: data.username as string,
-                            blogname: data.blogName as string
-                        }
-
-                    })
-            }
-            catch (error) {
-                //
-            }
+        poster.value = {
+            id: posterID as string,
+            img: data.profilePicture as string,
+            fullName: data.fullName as string,
+            username: data.username as string,
+            blogname: data.blogName as string
         }
-    } catch (error) {
-        //
     }
 }
 async function Search(type: string, value: string) {
-    const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
+    if (document.querySelector('#mainSearchContainer #loading')) {
+        (document.querySelector('#mainSearchContainer #loading') as HTMLDivElement).remove()
+    }
+    const newDiv = document.createElement('div')
+    newDiv.setAttribute('id', 'loading')
+    newDiv.textContent = 'Loading...'
     users.value = []
     posts.value = []
-    console.log(type, value)
 
     if (value === '') {
-        ;
-        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
-        error.textContent = 'Search input is empty'
-        timeOut = setTimeout(() => {
-            error.style.display = 'none'
-        }, 3000)
+        const warningShow = document.getElementById('warningShow');
+        if (warningShow) {
+            warningShow.style.display = 'flex';
+            warningShow.textContent = 'No Input'
+
+            timeOut = setTimeout(() => {
+                warningShow.style.display = 'none';
+                document.getElementById('searchBtn')?.removeAttribute('disabled');
+            }, 1000)
+        }
     }
     else if (type === 'Posts') {
-        const newDiv = document.createElement('div')
-        newDiv.setAttribute('id', 'loading')
-        newDiv.textContent = 'Loading...'
         document.getElementById('mainSearchContainer')?.appendChild(newDiv)
         document.getElementById('searchBtn')?.setAttribute('disabled', 'true');
 
@@ -144,19 +116,13 @@ async function Search(type: string, value: string) {
             await getDocs(postsQuery)
                 .then((docs) => {
                     if (docs.docs.length === 0) {
-                        newDiv.remove();
-                        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
-                        error.textContent = 'No post with this tag found'
-                        timeOut = setTimeout(() => {
-                            error.style.display = 'none'
-                            document.getElementById('searchBtn')?.removeAttribute('disabled')
-                        }, 3000)
+                        newDiv.textContent = 'No Post found with this tag'
                     }
                     else {
                         docs.docs.forEach((doc) => {
                             const post = doc.data()
                             getPostContent(post).then(() => {
-                                newDiv.remove()
+
                                 document.getElementById('searchBtn')?.removeAttribute('disabled')
                                 const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html')
                                 bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
@@ -174,31 +140,20 @@ async function Search(type: string, value: string) {
 
                                 getPoster(post.posterId).then(() => {
                                     post.posterDetails = poster.value
+                                    newDiv.remove()
                                     posts.value?.push(post)
                                 })
                             })
                         })
                     }
-                }).catch((error) => {
-                    newDiv.remove();
-                    (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
-                    error.textContent = 'Something went wrong'
-                    timeOut = setTimeout(() => {
-                        error.style.display = 'none'
-                        document.getElementById('searchBtn')?.removeAttribute('disabled')
-                    }, 3000)
+                    document.getElementById('searchBtn')?.removeAttribute('disabled');
                 })
         } catch (err) {
-            newDiv.remove()
-            const error = document.querySelector('#ErrorShow span') as HTMLSpanElement;
-            (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
-            error.textContent = 'Something went wrong'
+            newDiv.textContent = 'Something went wrong, try again later'
+            document.getElementById('searchBtn')?.removeAttribute('disabled');
         }
     }
     else if (type === 'Users') {
-        const newDiv = document.createElement('div')
-        newDiv.setAttribute('id', 'loading')
-        newDiv.textContent = 'Loading...'
         document.getElementById('mainSearchContainer')?.appendChild(newDiv)
         document.getElementById('searchBtn')?.setAttribute('disabled', 'true')
 
@@ -206,35 +161,20 @@ async function Search(type: string, value: string) {
         try {
             await getDocs(usersQuery)
                 .then((docs) => {
-                    newDiv.remove()
                     if (docs.docs.length === 0) {
-                        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
-                        error.textContent = 'No user with this username found'
-                        timeOut = setTimeout(() => {
-                            error.style.display = 'none'
-                            document.getElementById('searchBtn')?.removeAttribute('disabled')
-                        }, 3000)
+                        newDiv.textContent = 'No user with this username found'
                     }
                     else {
+                        newDiv.remove()
                         document.getElementById('searchBtn')?.removeAttribute('disabled')
                         docs.docs.forEach((doc) => {
                             users.value.push(doc.data());
                         })
                     }
-                }).catch(() => {
-                    newDiv.remove();
-                    (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
-                    error.textContent = 'Something went wrong'
-                    timeOut = setTimeout(() => {
-                        error.style.display = 'none'
-                        document.getElementById('searchBtn')?.removeAttribute('disabled')
-                    }, 3000)
                 })
         } catch (err) {
-            newDiv.remove()
-            const error = document.querySelector('#ErrorShow span') as HTMLSpanElement;
-            (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
-            error.textContent = 'Something went wrong'
+            newDiv.textContent = 'Something went wrong, try again later'
+            document.getElementById('searchBtn')?.removeAttribute('disabled');
         }
     }
 }
@@ -296,6 +236,7 @@ function routeToProfile(userId: string) {
             </button>
         </div>
     </div>
+    <div id="warningShow"></div>
 </template>
 <style scoped>
 .imgCon {
@@ -400,7 +341,6 @@ function routeToProfile(userId: string) {
     flex-direction: row;
     width: 100%;
     justify-content: center;
-    align-items: center;
 }
 
 .result-item-other {
@@ -425,12 +365,40 @@ function routeToProfile(userId: string) {
     font-size: medium;
 }
 
+#warningShow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border: 1px outset #efefef;
+    display: none;
+    text-align: center;
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+    font-weight: bold;
+    align-items: center;
+    justify-content: center;
+}
+
+.DayApp #warningShow {
+    color: #efefef;
+    background-color: black;
+}
+
+.NightApp #warningShow {
+    color: black;
+    background-color: #efefef;
+}
+
 @media screen and (min-width: 768px) and (max-width: 991px) {}
 
 @media screen and (min-width: 992px) {
     .result-item-other {
         width: 300px;
     }
+
     .imgCon {
         width: 70px;
         height: 70px;

@@ -3,7 +3,6 @@ import { doc, getFirestore, updateDoc, collection, query, where, getDocs } from 
 import useAuthentication from './useAuth.vue';
 import { onAuthStateChanged } from 'firebase/auth'
 import { useChatterStore } from '@/stores/store';
-
 const { app, auth } = useAuthentication()
 const store = useChatterStore()
 const db = getFirestore(app)

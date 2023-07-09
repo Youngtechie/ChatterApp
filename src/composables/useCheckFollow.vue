@@ -2,11 +2,8 @@
 import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore'
 import useAuthentication from './useAuth.vue';
 import { useChatterStore } from '@/stores/store';
-import useUserDetails from '@/composables/useUserDetails.vue'
 
 const store = useChatterStore()
-
-useUserDetails()
 
 export default async function useCheckFollow(posterId: string, userId: string): Promise<boolean> {
 
@@ -17,7 +14,6 @@ export default async function useCheckFollow(posterId: string, userId: string): 
     const posterRef = collection(db, 'users')
 
     if (store.signedUser.id === undefined || store.signedUser.id === '') {
-        console.log('not signed in')
         return false
     }
     else {
@@ -37,7 +33,6 @@ export default async function useCheckFollow(posterId: string, userId: string): 
 
             return poster.followers.theFollowers.includes(userId) && user.following.theFollowings.includes(posterId);
         } catch (error) {
-            console.log(userId, posterId)
             return false;
         }
     }

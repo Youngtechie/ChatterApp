@@ -22,21 +22,23 @@ onMounted(() => {
     try {
         onSnapshot(PostQ, (doc2) => {
             const post = doc2.docs[0].data()
-            if (post.postLikes.ids.includes(store.signedUser.id)) {
-                document.querySelectorAll(`#btnLike${props.viewPostId} svg path`).forEach((element: any) => {
-                    element.style.fill = 'red';
-                })
-                document.querySelectorAll(`#btnLike${props.viewPostId} span`).forEach((element: any) => {
-                    element.textContent = `${post.postLikes.total}`;
-                })
-            }
-            else if (!post.postLikes.ids.includes(store.signedUser.id)) {
-                document.querySelectorAll(`#btnLike${props.viewPostId} svg path`).forEach((element: any) => {
-                    element.style.fill = 'none';
-                })
-                document.querySelectorAll(`#btnLike${props.viewPostId} span`).forEach((element: any) => {
-                    element.textContent = `${post.postLikes.total}`;
-                })
+            if (post !== undefined && post !== null && post.length !== 0) {
+                if (post.postLikes.ids.includes(store.signedUser.id)) {
+                    document.querySelectorAll(`#btnLike${props.viewPostId} svg path`).forEach((element: any) => {
+                        element.style.fill = 'red';
+                    })
+                    document.querySelectorAll(`#btnLike${props.viewPostId} span`).forEach((element: any) => {
+                        element.textContent = `${post.postLikes.total}`;
+                    })
+                }
+                else if (!post.postLikes.ids.includes(store.signedUser.id)) {
+                    document.querySelectorAll(`#btnLike${props.viewPostId} svg path`).forEach((element: any) => {
+                        element.style.fill = 'none';
+                    })
+                    document.querySelectorAll(`#btnLike${props.viewPostId} span`).forEach((element: any) => {
+                        element.textContent = `${post.postLikes.total}`;
+                    })
+                }
             }
         })
     } catch (error) {
@@ -49,7 +51,10 @@ onMounted(() => {
 async function likeButton(userId: string, postId: string, posterId: string) {
 
     if (userId === '' || userId === undefined) {
-        return router.push('/login');
+        const ans = confirm('You need to be signed in to like a post. Do you want to sign in?')
+        if (ans === true) {
+            router.push('/login')
+        }
     }
     else {
         (document.getElementById(`btnLike${postId}`) as HTMLButtonElement).setAttribute('disabled', 'true');
@@ -68,97 +73,101 @@ async function likeButton(userId: string, postId: string, posterId: string) {
                             getDocs(qPoster)
                                 .then((document3) => {
                                     const poster = document3.docs[0].data()
-                                    if (user.likes.out.some((like: any) => like.postid === postId)) {
-                                        updateDoc(doc(db, 'users', `${userId}`), {
-                                            ['likes.out']: user.likes.out.filter((like: Record<string, any>) => like.postid !== postId),
-                                            ['likes.total.out']: user.likes.total.out - 1,
-                                            ['activityLog']: [...user.activityLog, {
-                                                type: 'You unliked this post',
-                                                details: {
-                                                    'postId': postId,
-                                                    'time': new Date()
-                                                }
-                                            }],
-                                            ["interactions"]: user.interactions.filter((interaction: Record<string, any>) => interaction.type === 'Liked a post' && interaction.details.postid === postId)
-                                        })
-                                    }
-                                    else {
-                                        updateDoc(doc(db, 'users', `${userId}`), {
-                                            ['likes.out']: [...user.likes.out, {
-                                                'postid': postId,
-                                                'time': new Date()
-                                            }],
-                                            ['likes.total.out']: user.likes.total.out + 1,
-                                            ['activityLog']: [...user.activityLog, {
-                                                type: 'You liked this post',
-                                                details: {
-                                                    'postId': postId,
-                                                    'time': new Date()
-                                                }
-                                            }],
-                                            ['interactions']: [...user.interactions, {
-                                                type: 'Liked this post',
-                                                details: {
-                                                    postid: postId,
-                                                    time: new Date()
-                                                }
-                                            }]
-                                        })
-                                    }
-
-                                    if (post.postLikes.ids.some((id: string) => id === userId)) {
-                                        updateDoc(doc(db, 'posts', `${postId}`), {
-                                            ['postLikes.ids']: post.postLikes.ids.filter((id: string) => id !== userId),
-                                            ['postLikes.total']: post.postLikes.total - 1
-                                        })
-                                    }
-                                    else {
-                                        updateDoc(doc(db, 'posts', `${postId}`), {
-                                            ['postLikes.ids']: [...post.postLikes.ids, userId],
-                                            ['postLikes.total']: post.postLikes.total + 1
-                                        })
-                                    }
-
-                                    if (poster.likes.in.some((like: any) => like.postid === postId)) {
-                                        updateDoc(doc(db, 'users', `${posterId}`), {
-                                            ['likes.in']: poster.likes.in.filter((like: Record<string, any>) => like.postid !== postId),
-                                            ['likes.total.in']: poster.likes.total.in - 1,
-                                        })
-                                    }
-                                    else {
-                                        if(posterId === userId){
-                                            updateDoc(doc(db, 'users', `${posterId}`), {
-                                                ['likes.in']: [...poster.likes.in, {
-                                                    postid: postId,
-                                                    time: new Date()
-                                                }],
-                                                ['likes.total.in']: poster.likes.total.in + 1,
-                                            })
-                                        }
-                                        else{
-                                            updateDoc(doc(db, 'users', `${posterId}`), {
-                                                ['likes.in']: [...poster.likes.in, {
-                                                    postid: postId,
-                                                    time: new Date()
-                                                }],
-                                                ['likes.total.in']: poster.likes.total.in + 1,
-                                                ['notifications']: [...poster.notifications, {
-                                                    type: `You got a like from <b>${user.fullName}</b> on a post`,
+                                    
+                                    if (user !== undefined && user !== null && user.length !== 0 && post !== undefined && post !== null && post.length !== 0 && poster !== undefined && poster !== null && poster.length !== 0) {
+                                        if (user.likes.out.some((like: any) => like.postid === postId)) {
+                                            updateDoc(doc(db, 'users', `${userId}`), {
+                                                ['likes.out']: user.likes.out.filter((like: Record<string, any>) => like.postid !== postId),
+                                                ['likes.total.out']: user.likes.total.out - 1,
+                                                ['activityLog']: [...user.activityLog, {
+                                                    type: 'You unliked this post',
                                                     details: {
                                                         'postId': postId,
                                                         'time': new Date()
                                                     }
+                                                }],
+                                                ["interactions"]: user.interactions.filter((interaction: Record<string, any>) => interaction.type === 'Liked a post' && interaction.details.postid === postId)
+                                            })
+                                        }
+                                        else {
+                                            updateDoc(doc(db, 'users', `${userId}`), {
+                                                ['likes.out']: [...user.likes.out, {
+                                                    'postid': postId,
+                                                    'time': new Date()
+                                                }],
+                                                ['likes.total.out']: user.likes.total.out + 1,
+                                                ['activityLog']: [...user.activityLog, {
+                                                    type: 'You liked this post',
+                                                    details: {
+                                                        'postId': postId,
+                                                        'time': new Date()
+                                                    }
+                                                }],
+                                                ['interactions']: [...user.interactions, {
+                                                    type: 'Liked this post',
+                                                    details: {
+                                                        postid: postId,
+                                                        time: new Date()
+                                                    }
                                                 }]
                                             })
                                         }
+
+                                        if (post.postLikes.ids.some((id: string) => id === userId)) {
+                                            updateDoc(doc(db, 'posts', `${postId}`), {
+                                                ['postLikes.ids']: post.postLikes.ids.filter((id: string) => id !== userId),
+                                                ['postLikes.total']: post.postLikes.total - 1
+                                            })
+                                        }
+                                        else {
+                                            updateDoc(doc(db, 'posts', `${postId}`), {
+                                                ['postLikes.ids']: [...post.postLikes.ids, userId],
+                                                ['postLikes.total']: post.postLikes.total + 1
+                                            })
+                                        }
+
+                                        if (poster.likes.in.some((like: any) => like.postid === postId)) {
+                                            updateDoc(doc(db, 'users', `${posterId}`), {
+                                                ['likes.in']: poster.likes.in.filter((like: Record<string, any>) => like.postid !== postId),
+                                                ['likes.total.in']: poster.likes.total.in - 1,
+                                            })
+                                        }
+                                        else {
+                                            if (posterId === userId) {
+                                                updateDoc(doc(db, 'users', `${posterId}`), {
+                                                    ['likes.in']: [...poster.likes.in, {
+                                                        postid: postId,
+                                                        time: new Date()
+                                                    }],
+                                                    ['likes.total.in']: poster.likes.total.in + 1,
+                                                })
+                                            }
+                                            else {
+                                                updateDoc(doc(db, 'users', `${posterId}`), {
+                                                    ['likes.in']: [...poster.likes.in, {
+                                                        postid: postId,
+                                                        time: new Date()
+                                                    }],
+                                                    ['likes.total.in']: poster.likes.total.in + 1,
+                                                    ['notifications']: [...poster.notifications, {
+                                                        type: `You got a like from <b>${user.fullName}</b> on a post`,
+                                                        details: {
+                                                            'postId': postId,
+                                                            'time': new Date()
+                                                        }
+                                                    }]
+                                                })
+                                            }
+                                        }
+
+                                        (document.getElementById(`btnLike${postId}`) as HTMLButtonElement).removeAttribute('disabled');
                                     }
 
-                                    (document.getElementById(`btnLike${postId}`) as HTMLButtonElement).removeAttribute('disabled');
                                 })
                         })
                 })
         } catch (error) {
-            console.log(error);
+            alert("An error occurred, You can't like this post");
             (document.getElementById(`btnLike${postId}`) as HTMLButtonElement).removeAttribute('disabled');
         }
     }

@@ -29,7 +29,6 @@ const db = getFirestore(app)
 
 const router = useRouter()
 
-const isLoading = ref(true)
 
 interface Poster {
     img: string,
@@ -38,7 +37,6 @@ interface Poster {
     username: string,
     blogname: string,
 }
-
 
 const posts = ref<DocumentData[] | null>([])
 const poster = ref<Poster | null>()
@@ -54,8 +52,8 @@ onMounted(() => {
     getPosts(store.signedUser.bookmarks)
 })
 
-watchEffect(()=>{
-    if(store.signedUser.bookmarks.length === 0){
+watchEffect(() => {
+    if (store.signedUser.bookmarks.length === 0) {
         posts.value = []
     }
 })
@@ -75,43 +73,29 @@ function routeToProfile(userId: string) {
 
 async function getPostContent(post: DocumentData) {
     divContent.value = ''
-    try {
-        const contentUrl = post.postContain
-        await axios.post('/postContent', { contentUrl })
-            .then(response => {
-                const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
-                divContent.value = newHTML.body.innerHTML
-            })
-            .catch((error) => {
-                console.log(error)
-            })
-    }
-    catch (err) {
-        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
-        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
-        error.textContent = 'Something went wrong, check your internet connection'
-    }
+    const contentUrl = post.postContain
+    await axios.post('/postContent', { contentUrl })
+        .then(response => {
+            const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
+            divContent.value = newHTML.body.innerHTML
+        })
 }
 
 async function getPoster(posterID: string) {
     poster.value = null
-    try {
-        const posterRef = doc(db, 'users', posterID)
-        const posterDetails = await getDoc(posterRef)
-        if (posterDetails.data() !== undefined) {
-            const { fullName, profilePicture, username, blogName } = posterDetails.data() as DocumentData
-            const data = { profilePicture, posterID, fullName, username, blogName }
-            poster.value = {
-                id: posterID as string,
-                img: data.profilePicture as string,
-                fullName: data.fullName as string,
-                username: data.username as string,
-                blogname: data.blogName as string
-            }
-
+    const posterRef = doc(db, 'users', posterID)
+    const posterDetails = await getDoc(posterRef)
+    if (posterDetails.data() !== undefined) {
+        const { fullName, profilePicture, username, blogName } = posterDetails.data() as DocumentData
+        const data = { profilePicture, posterID, fullName, username, blogName }
+        poster.value = {
+            id: posterID as string,
+            img: data.profilePicture as string,
+            fullName: data.fullName as string,
+            username: data.username as string,
+            blogname: data.blogName as string
         }
-    } catch (error) {
-        //
+
     }
 }
 
@@ -128,37 +112,38 @@ async function getPosts(bookmarks: string[]) {
             return Promise.all(
                 querySnapshot.docs.map(async (doc) => {
                     const post = doc.data();
+                    if (post !== undefined && post !== null && post.length !== 0) {
 
-                    await getPostContent(post);
+                        await getPostContent(post);
 
-                    const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
-                    bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
-                        tag.remove();
-                    });
-                    bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
-                        tag.remove();
-                    });
-                    bodyImgRemove.body.querySelector('h1')?.remove();
+                        const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
+                        bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
+                            tag.remove();
+                        });
+                        bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
+                            tag.remove();
+                        });
+                        bodyImgRemove.body.querySelector('h1')?.remove();
 
-                    divContent.value = bodyImgRemove.body.innerHTML;
-                    post.postContain = divContent.value;
+                        divContent.value = bodyImgRemove.body.innerHTML;
+                        post.postContain = divContent.value;
 
-                    await getPoster(post.posterId);
+                        await getPoster(post.posterId);
 
-                    post.posterDetails = poster.value;
-                    poster.value = null;
+                        post.posterDetails = poster.value;
+                        poster.value = null;
 
-                    return post;
+                        return post;
+                    }
                 })
             );
         });
 
         const resolvedPosts = await Promise.all(promises);
         const flattenedPosts = resolvedPosts.flat();
-        posts.value = flattenedPosts;
-        isLoading.value = false;
+        posts.value = flattenedPosts as DocumentData[];
 
-        if (posts.value) {
+        if (posts.value.length > 0) {
             nextTick(() => {
                 const warningShow = document.getElementById('warningShow');
                 if (warningShow) {
@@ -166,21 +151,33 @@ async function getPosts(bookmarks: string[]) {
                 }
             })
         }
+        if (posts.value.length === 0) {
+            nextTick(() => {
+                const warningShow = document.getElementById('warningShow');
+                if (warningShow) {
+                    warningShow.style.display = 'flex';
+                    warningShow.textContent = 'No bookmarks yet'
+                }
+            })
+        }
     } catch (err) {
-        console.log(err);
-        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
-        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
-        error.textContent = 'Something went wrong, check your internet connection';
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'flex';
+                warningShow.textContent = 'Something went wrong, check your internet connection and reload page.'
+            }
+        })
     }
 }
 
 </script>
 <template>
-    <div id="warningShow" v-if="isLoading"></div>
-    <section class="bookmarksPage" v-else>
+    <section class="bookmarksPage">
+        <div id="warningShow"></div>
         <h2>Bookmarks</h2>
         <div class="bookmarksCon">
-            <div v-if="posts?.length as number > 0 && isLoading === false" :class="{ resultsContainer: true }">
+            <div v-if="posts?.length as number > 0" :class="{ resultsContainer: true }">
                 <div v-for="(post, index) in posts" :key="index" class="result-item">
                     <div class="imgCon" @click.prevent="routeToProfile(post.posterId)"
                         :style="{ backgroundImage: `url(${post?.posterDetails.img})` }"></div>
@@ -194,9 +191,6 @@ async function getPosts(bookmarks: string[]) {
                     </div>
                 </div>
             </div>
-            <div v-if="store.signedUser.bookmarks.length === 0 && isLoading === false" class="noBookmarks">
-                No Bookmarks yet.
-            </div>
         </div>
     </section>
 </template>
@@ -205,7 +199,8 @@ h2 {
     text-align: center;
     margin: 10px 0;
 }
-.bookmarksPage{
+
+.bookmarksPage {
     overflow-y: scroll;
     display: flex;
     flex-direction: column;
@@ -214,6 +209,7 @@ h2 {
     padding-top: 55px;
     position: relative;
 }
+
 .bookmarksCon {
     width: 100%;
     height: 100%;
@@ -259,9 +255,8 @@ h2 {
     flex-direction: row;
     width: 100%;
     display: flex;
-    align-items: center;
     justify-content: center;
-    
+
 }
 
 .result-item-image {
@@ -299,6 +294,7 @@ h2 {
     font-weight: bolder;
     cursor: pointer;
 }
+
 .result-item-header span:last-of-type {
     font-size: medium;
 }
@@ -318,26 +314,29 @@ h2 {
     font-weight: bolder;
     align-items: center;
     justify-content: center;
-  }
-  
-  .DayApp #warningShow {
+}
+
+.DayApp #warningShow {
     color: #efefef;
     background-color: black;
-  }
-  
-  .NightApp #warningShow {
+}
+
+.NightApp #warningShow {
     color: black;
     background-color: #efefef;
-  }
-  @media screen and (min-width: 992px) {
+}
+
+@media screen and (min-width: 992px) {
     .result-item-other {
         width: 300px;
     }
+
     .imgCon {
         width: 70px;
         height: 70px;
     }
-    #warningShow{
+
+    #warningShow {
         width: 300px;
         height: 300px;
     }

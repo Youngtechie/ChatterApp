@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, type Ref, ref, nextTick } from 'vue';
+import { onUnmounted, type Ref, ref, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useChatterStore } from '@/stores/store';
 import SignOut from '@/composables/useSignOut.vue';
@@ -13,30 +13,38 @@ const router = useRouter()
 
 const store = useChatterStore()
 
-useUserDetails()
-
 const isLoading: Ref<boolean> = ref(true)
+
+onMounted(() => {
+    useUserDetails()
+})
+
 
 let id = setTimeout(() => {
     if (store.signedUser.id === undefined && store.authenticated === false) {
         router.push('/home')
     }
     else if (store.authenticated === true) {
-        if (store.signedUser.id === undefined && store.signedUser.username === undefined) {
-            router.push({ name: 'NetworkError', query: { redirect: `${router.currentRoute.value.path}` } })
-        }
-        else if (store.signedUser.id !== undefined && store.signedUser.username === '') {
-            console.log('User registration not finished... Logging out user.....')
+        if (store.signedUser.id !== undefined && store.signedUser.username === '') {
+            const warningShow = document.getElementById('warningShow') as HTMLDivElement
+            warningShow.style.display = 'flex'
+            warningShow.textContent = 'Registration not complete... Logging you out'
             SignOut()
-            store.authenticated = false
-            router.push('/login')
+            id = setTimeout(() => {
+                warningShow.style.display = 'none'
+                store.authenticated = false
+                router.push('/login')
+            }, 2000)
         }
-        else {
-            isLoading.value = false
-            createPie(store.signedUser.analyses.totalPosts, store.signedUser.analyses.totalComments, store.signedUser.analyses.totalLiked, store.signedUser.bookmarks.length)
+        else if (store.viwedProfile.username === undefined && store.viwedProfile.id === undefined) {
+            nextTick(() => {
+                const warning = document.getElementById('warningShow') as HTMLDivElement
+                if (warning) {
+                    warning.style.display = 'flex'
+                    warning.textContent = 'Check your network connection and try reloading page'
+                }
+            })
         }
-    }
-    else {
         isLoading.value = false
         createPie(store.signedUser.analyses.totalPosts, store.signedUser.analyses.totalComments, store.signedUser.analyses.totalLiked, store.signedUser.bookmarks.length)
     }
@@ -45,7 +53,9 @@ let id = setTimeout(() => {
 onUnmounted(() => {
     clearTimeout(id)
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    warning.style.display = 'none'
+    if (warning) {
+        warning.style.display = 'none'
+    }
 })
 
 function back() {
@@ -79,6 +89,7 @@ function createPie(totalPosts: any, totalComments: any, totalLiked: any, totalBo
 <template>
     <useLoadingPage v-if="isLoading" action-name="Loading Analysis..." />
     <main v-else class="analysisPage">
+        <div id="warningShow"></div>
         <button @click.prevent="back">Back</button>
         <h1>{{ store.signedUser.username }} Analyses</h1>
         <section>
@@ -97,6 +108,7 @@ button {
     left: 10px;
     padding: 5px;
 }
+
 .analysisPage {
     display: flex;
     flex-direction: column;
@@ -129,5 +141,32 @@ button {
 .analysisPage p span {
     font-weight: bold;
     font-size: larger;
+}
+
+#warningShow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border: 1px outset #efefef;
+    display: none;
+    text-align: center;
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+    font-weight: bolder;
+    align-items: center;
+    justify-content: center;
+}
+
+.DayApp #warningShow {
+    color: #efefef;
+    background-color: black;
+}
+
+.NightApp #warningShow {
+    color: black;
+    background-color: #efefef;
 }
 </style>

@@ -2,10 +2,7 @@
 import { useChatterStore } from '@/stores/store';
 import router from '@/router';
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore'
-import useUserDetails from '@/composables/useUserDetails.vue'
 import useAuthentication from './useAuth.vue';
-
-useUserDetails()
 
 export default function useFollow(posterId: string) {
 
@@ -19,8 +16,10 @@ export default function useFollow(posterId: string) {
 
     async function callFunction() {
         if (store.signedUser.id === undefined || store.signedUser.id === '') {
-            console.log('not signed in')
-            router.push('/login')
+            const ans = confirm('You need to be signed in to follow someone. Do you want to sign in?')
+            if (ans === true) {
+                router.push('/login')
+            }
         }
         else {
             updateFollowsAndFollowing()
@@ -36,44 +35,48 @@ export default function useFollow(posterId: string) {
             const docPoster = await getDocs(qPoster);
             const poster = docPoster.docs[0].data()
 
-            const oldArryUser = user.following.theFollowings
-            const newArrayUser = [...oldArryUser, posterId]
-            const newtotalUser = newArrayUser.length
+            if (user !== undefined && user !== null && user.length !== 0 && poster !== undefined && poster !== null && poster.length !== 0) {
+                const oldArryUser = user.following.theFollowings
+                const newArrayUser = [...oldArryUser, posterId]
+                const newtotalUser = newArrayUser.length
 
-            const oldArryPoster = poster.followers.theFollowers
-            const newArrayPoster = [...oldArryPoster, store.signedUser.id]
-            const newtotalPoster = newArrayPoster.length
+                const oldArryPoster = poster.followers.theFollowers
+                const newArrayPoster = [...oldArryPoster, store.signedUser.id]
+                const newtotalPoster = newArrayPoster.length
 
-            const posterUpdateRef = doc(db, "users", posterId)
-            const readerUpdateRef = doc(db, "users", store.signedUser.id)
+                const posterUpdateRef = doc(db, "users", posterId)
+                const readerUpdateRef = doc(db, "users", store.signedUser.id)
 
-            await updateDoc(posterUpdateRef, {
-                ['followers.theFollowers']: newArrayPoster,
-                ['followers.total']: newtotalPoster,
-                ['notifications']: [...poster.notifications, {
-                    type: `${store.signedUser.fullName} started following you`,
-                    details: {
-                        'followerId': store.signedUser.id,
-                        'time': new Date()
-                    }
-                }]
-            })
+                await updateDoc(posterUpdateRef, {
+                    ['followers.theFollowers']: newArrayPoster,
+                    ['followers.total']: newtotalPoster,
+                    ['notifications']: [...poster.notifications, {
+                        type: `${store.signedUser.fullName} started following you`,
+                        details: {
+                            'followerId': store.signedUser.id,
+                            'time': new Date()
+                        }
+                    }]
+                })
 
-            await updateDoc(readerUpdateRef, {
-                ['following.theFollowings']: newArrayUser,
-                ['following.total']: newtotalUser,
-                ['activityLog']: [...user.activityLog, {
-                    type: 'New following',
-                    details: {
-                        'followingId': posterId,
-                        'time': new Date()
-                    }
-                }]
-            })
+                await updateDoc(readerUpdateRef, {
+                    ['following.theFollowings']: newArrayUser,
+                    ['following.total']: newtotalUser,
+                    ['activityLog']: [...user.activityLog, {
+                        type: 'New following',
+                        details: {
+                            'followingId': posterId,
+                            'time': new Date()
+                        }
+                    }]
+                })
+            }
+
         } catch (error) {
-            console.error(error)
+            alert('An occured while trying to follow this user. Please try again later')
         }
     }
+
     callFunction()
 }
 </script>

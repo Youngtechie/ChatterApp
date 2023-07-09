@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import useAuthentication from './useAuth.vue';
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc, type DocumentData } from 'firebase/firestore'
-import router from '@/router';
 import { useChatterStore } from '@/stores/store';
 
 const props = defineProps({
@@ -30,7 +29,7 @@ async function updateStore() {
 
 async function deleteComment(userId: string, postId: string, posterId: string, commentIndex: number, commentText: string) {
     if (userId === '' || userId === undefined) {
-        return router.push('/login');
+        return
     }
     else {
         const qUser = query(collection(db, 'users'), where('id', '==', `${userId}`))

@@ -38,31 +38,32 @@ const isLoading: Ref<boolean> = ref(true)
 const interests: Ref<string> = ref('')
 
 async function AddOtherInfo() {
-  await updateDoc(doc(db, 'users', `${store.signedUser.id}`), {
-    blogName: username.value.charAt(0).toUpperCase() + username.value.slice(1).toLowerCase() + 'Blog',
-    username: username.value.charAt(0).toUpperCase() + username.value.slice(1).toLowerCase(),
-    dateOfBirth: Birthday.value,
-    location: Location.value,
-    gender: gender.value,
-    isLogined: true,
-    interests: interests.value.split(','),
-    fullName: fullName.value
-  })
-  router.push({ name: 'Home' })
+  if (store.signedUser.id !== undefined && store.signedUser.id !== null && store.signedUser.id !== '') {
+    await updateDoc(doc(db, 'users', `${store.signedUser.id}`), {
+      blogName: username.value.charAt(0).toUpperCase() + username.value.slice(1).toLowerCase() + 'Blog',
+      username: username.value.charAt(0).toUpperCase() + username.value.slice(1).toLowerCase(),
+      dateOfBirth: Birthday.value,
+      location: Location.value,
+      gender: gender.value,
+      isLogined: true,
+      interests: interests.value.split(','),
+      fullName: fullName.value
+    })
+    router.push({ name: 'Home' })
+  }
 }
 
 async function Delete() {
-  let deletedId = store.signedUser.id
-  SignOut().then(() => {
-    deleteDoc(doc(db, 'users', `${deletedId}`)).then(() => {
-      router.push('/')
-      store.signedUser = {}
-      store.authenticated = false
-    }).catch((err) => {
-      console.log(err)
+  if (store.signedUser.id !== undefined && store.signedUser.id !== '' && store.signedUser.id !== null) {
+    let deletedId = store.signedUser.id
+    SignOut().then(() => {
+      deleteDoc(doc(db, 'users', `${deletedId}`)).then(() => {
+        store.signedUser = {}
+        store.authenticated = false
+        router.push('/')
+      })
     })
-  })
-
+  }
 }
 
 let id = setTimeout(() => {
@@ -151,7 +152,6 @@ onUnmounted(() => {
   justify-content: center;
   align-items: center;
   height: 100vh;
-  width: 300px;
   padding: 10px;
 }
 
@@ -213,7 +213,6 @@ input[type="date"] {
 
 .submit-button,
 .delete-button {
-  width: 120px;
   padding: 0.5rem;
   text-align: center;
   background-color: #007bff;
@@ -223,9 +222,13 @@ input[type="date"] {
   cursor: pointer;
 }
 
-.submit-button:hover,
-.delete-button:hover {
+.submit-button:hover {
   background-color: #0056b3;
+}
+
+.delete-button:hover {
+  background-color: red;
+
 }
 
 .submit-button:active,

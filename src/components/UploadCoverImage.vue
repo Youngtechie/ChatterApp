@@ -23,7 +23,7 @@ export default function displayCoverImage(event: Event): void {
 
     var reader = new FileReader();
 
-    if (file && isFileSizeValid(file, 1) && isImageFile(file)) {
+    if (file && isFileSizeValid(file, 5) && isImageFile(file)) {
         reader.onload = function (e: ProgressEvent<FileReader>) {
             if (e.target && e.target.result) {
                 img.src = e.target.result as string
@@ -47,12 +47,7 @@ export default function displayCoverImage(event: Event): void {
     }
     else {
         input.value = ''
-        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
-        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
-        error.textContent = 'Please select a valid image file (max 1MB)'
-        setTimeout(() => {
-            (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'none'
-        }, 3000)
+        alert('Please select a valid image file (max 5MB)')
     }
 
     if (file) {

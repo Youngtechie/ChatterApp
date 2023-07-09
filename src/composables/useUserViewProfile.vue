@@ -9,14 +9,11 @@ const db = getFirestore(app)
 
 export default async function getUser(id: string) {
     const q = query(collection(db, 'users'), where('id', '==', `${id}`))
-    try {
-        await getDocs(q)
-            .then((doc) => {
+    await getDocs(q)
+        .then((doc) => {
+            if(doc.docs[0].data().length !== 0){
                 store.viwedProfile = doc.docs[0].data()
-            })
-    }
-    catch (error) {
-        console.log(error)
-    }
+            }
+        })
 }
 </script>

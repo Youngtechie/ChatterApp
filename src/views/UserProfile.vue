@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { onUnmounted, ref, type Ref, onMounted, nextTick, watchEffect } from 'vue';
+import { onUnmounted, ref, onMounted, nextTick } from 'vue';
 import { useChatterStore } from '@/stores/store';
 import { useRouter } from 'vue-router';
 import useLoadingPage from "@/composables/useLoadingPage.vue";
-import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc } from 'firebase/firestore'
+import { getStorage, ref as storageRef, deleteObject, listAll } from 'firebase/storage'
+import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc, limit, deleteDoc } from 'firebase/firestore'
 import useUserDetails from '@/composables/useUserDetails.vue'
 import SignOut from '@/composables/useSignOut.vue';
 import useAuthentication from '@/composables/useAuth.vue'
@@ -13,7 +14,7 @@ import axios from 'axios'
 
 const router = useRouter();
 
-const isLoading: Ref<boolean> = ref(true)
+const isLoading = ref(true)
 
 const store = useChatterStore()
 
@@ -23,6 +24,11 @@ interface Poster {
     fullName: string,
     username: string,
     blogname: string,
+}
+
+interface EachInteraction {
+    'type': string,
+    'postDetails': DocumentData
 }
 
 onMounted(() => {
@@ -36,23 +42,19 @@ onMounted(() => {
     store.section = 'personal'
 })
 
-watchEffect(() => {
-    if (store.signedUser.id !== undefined) {
-        isLoading.value = false
-    }
-})
-
 const poster = ref<Poster | null>()
 
 const { app } = useAuthentication()
 
 const db = getFirestore(app)
 
+const storage = getStorage(app)
+
 const DomParse = new DOMParser()
 
 const divContent = ref('')
 
-const isinteractionsLoading = ref(true)
+const interactionsArr = ref<EachInteraction[]>([])
 
 
 async function getPostContent(post: DocumentData) {
@@ -70,24 +72,19 @@ async function getPostContent(post: DocumentData) {
 
 async function getPoster(posterID: string) {
     poster.value = null
-    try {
-        const posterRef = doc(db, 'users', posterID)
-        const posterDetails = await getDoc(posterRef)
-        if (posterDetails.data() !== undefined) {
-            const { fullName, profilePicture, username, blogName } = posterDetails.data() as DocumentData
-            const data = { profilePicture, posterID, fullName, username, blogName }
+    const posterRef = doc(db, 'users', posterID)
+    const posterDetails = await getDoc(posterRef)
+    if (posterDetails.data() !== undefined) {
+        const { fullName, profilePicture, username, blogName } = posterDetails.data() as DocumentData
+        const data = { profilePicture, posterID, fullName, username, blogName }
 
-            poster.value = {
-                id: posterID as string,
-                img: data.profilePicture as string,
-                fullName: data.fullName as string,
-                username: data.username as string,
-                blogname: data.blogName as string
-            }
-
+        poster.value = {
+            id: posterID as string,
+            img: data.profilePicture as string,
+            fullName: data.fullName as string,
+            username: data.username as string,
+            blogname: data.blogName as string
         }
-    } catch (error) {
-        //
     }
 }
 
@@ -97,7 +94,8 @@ async function getPosts(interactions: Record<string, any>) {
             const promises = interactions.map(async (interaction: any) => {
                 const postsQuery = query(
                     collection(db, 'posts'),
-                    where('postId', '==', interaction.details.postid)
+                    where('postId', '==', interaction.details.postid),
+                    limit(10)
                 );
 
                 const querySnapshot = await getDocs(postsQuery);
@@ -106,43 +104,60 @@ async function getPosts(interactions: Record<string, any>) {
                     querySnapshot.docs.map(async (doc) => {
                         const post = doc.data();
 
-                        await getPostContent(post);
+                        if (post !== undefined && post !== null && post.length !== 0) {
 
-                        const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
-                        bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
-                            tag.remove();
-                        });
-                        bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
-                            tag.remove();
-                        });
-                        bodyImgRemove.body.querySelector('h1')?.remove();
+                            await getPostContent(post);
 
-                        divContent.value = bodyImgRemove.body.innerHTML;
-                        post.postContain = divContent.value;
+                            const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
+                            bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
+                                tag.remove();
+                            });
+                            bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
+                                tag.remove();
+                            });
+                            bodyImgRemove.body.querySelector('h1')?.remove();
 
-                        await getPoster(post.posterId);
+                            divContent.value = bodyImgRemove.body.innerHTML;
+                            post.postContain = divContent.value;
 
-                        post.posterDetails = poster.value;
-                        poster.value = null;
+                            await getPoster(post.posterId).then(() => {
+                                post.posterDetails = poster.value
+                            })
 
-                        const EachInteraction = {
-                            'type': interaction.type,
-                            'postDetails': post
+                            const EachInteraction = {
+                                'type': interaction.type,
+                                'postDetails': post
+                            }
+
+                            return EachInteraction;
                         }
 
-                        return EachInteraction;
                     })
                 );
             })
             const resolvedPosts = await Promise.all(promises);
-            store.signedUser.interactions = resolvedPosts.flat()
-            isinteractionsLoading.value = false
+            interactionsArr.value = resolvedPosts.flat()
+
+            if (interactionsArr.value.length === 0) {
+                const warningShowInt = document.getElementById('warningShowint') as HTMLDivElement
+                warningShowInt.style.display = 'flex';
+                warningShowInt.textContent = 'No interactions yet'
+            }
+            else if (interactionsArr.value.length > 0) {
+                const warningShowInt = document.getElementById('warningShowint') as HTMLDivElement
+                warningShowInt.style.display = 'none';
+            }
         } catch (error) {
-            //
+            console.log(error)
+            const warningShowInt = document.getElementById('warningShowint') as HTMLDivElement
+            warningShowInt.style.display = 'flex';
+            warningShowInt.textContent = "An error occured, Check your network connection and try again"
         }
     }
     else {
-        return;
+        const warningShowInt = document.getElementById('warningShowint') as HTMLDivElement
+        warningShowInt.style.display = 'flex';
+        warningShowInt.textContent = 'No interactions yet'
     }
 }
 
@@ -152,8 +167,14 @@ function back() {
 
 function changeSection(value: string) {
     store.section = value
-    if (value === 'interaction' && store.userId !== '' && store.userId !== undefined) {
-        getPosts(store.signedUser.interactions)
+    interactionsArr.value = []
+    if (value === 'interaction') {
+        nextTick(() => {
+            const warningShowInt = document.getElementById('warningShowint') as HTMLDivElement
+            warningShowInt.style.display = 'flex';
+            warningShowInt.textContent = 'Loading ...'
+            getPosts(store.signedUser.interactions)
+        })
     }
 }
 
@@ -170,19 +191,101 @@ function routeToProfile(userId: string) {
     }
 }
 
+async function deleteUser(userId: string) {
+    const userRef = doc(db, 'users', userId)
+    await deleteDoc(userRef)
+    const q = query(collection(db, 'posts'), where('posterId', '==', userId))
+    const querySnapshot = await getDocs(q)
+    querySnapshot.forEach((d) => {
+        const post = d.data()
+        const postRef = doc(db, 'posts', post.postId)
+        const folderPath = `ChatterAppFiles/posts/${post.postId}`;
+        deleteFolder(folderPath);
+        deleteDoc(postRef)
+    })
+    const avatarRef = `ChatterAppFiles/avatar/${userId}`
+    deleteFolder(avatarRef)
+}
+
+async function deleteFolder(folderPath: string) {
+    const folderRef = storageRef(storage, folderPath);
+
+    // List all files in the folder
+    const fileList = await listAll(folderRef);
+
+    if (fileList.items.length === 0) {
+        return
+    }
+    // Delete each file within the folder
+    const deleteFilePromises = fileList.items.map((file) => deleteObject(file));
+    // Wait for all file deletions to complete
+    await Promise.all(deleteFilePromises);
+}
+
+async function deleteAccount() {
+    const ans = confirm('Are you sure you want to delete your account?')
+    if (ans === false) {
+        return
+    }
+    try {
+        const warningShow = document.getElementById('warningShow') as HTMLDivElement
+        warningShow.style.display = 'flex'
+        warningShow.textContent = 'Deleting account ...'
+        await deleteUser(store.signedUser.id).then(() => {
+            warningShow.textContent = 'Account deleted successfully'
+            SignOut()
+            setTimeout(() => {
+                store.authenticated = false
+                store.signedUser = {}
+                warningShow.style.display = 'none'
+                router.push('/home')
+            }, 2000)
+        }).catch(() => {
+            const warningShow = document.getElementById('warningShow') as HTMLDivElement
+            warningShow.style.display = 'flex'
+            warningShow.textContent = 'An error occured, Check your network connection and try again'
+            setTimeout(() => {
+                warningShow.style.display = 'none'
+            }, 2000)
+        })
+    }
+    catch (error) {
+        const warningShow = document.getElementById('warningShow') as HTMLDivElement
+        warningShow.style.display = 'flex'
+        warningShow.textContent = 'An error occurred, Check your network connection and try again'
+        setTimeout(() => {
+            warningShow.style.display = 'none'
+        }, 2000)
+    }
+}
+
 let id = setTimeout(() => {
     if (store.signedUser.id === undefined && store.authenticated === false) {
         router.push('/home')
     }
     else if (store.authenticated === true) {
-        if (store.signedUser.id === undefined && store.signedUser.username === undefined) {
-            router.push({ name: 'NetworkError', query: { redirect: `${router.currentRoute.value.path}` } })
-        }
-        else if (store.signedUser.id !== undefined && store.signedUser.username === '') {
-            console.log('User registration not finished... Logging out user.....')
+        if (store.signedUser.id !== undefined && store.signedUser.username === '') {
+            const warningShow = document.getElementById('warningShow') as HTMLDivElement
+            warningShow.style.display = 'flex'
+            warningShow.textContent = 'Registration not complete... Logging you out'
             SignOut()
-            store.authenticated = false
-            router.push('/login')
+            id = setTimeout(() => {
+                warningShow.style.display = 'none'
+                store.authenticated = false
+                router.push('/login')
+            }, 2000)
+        }
+        else if (store.signedUser.username === undefined && store.signedUser.id === undefined) {
+            nextTick(() => {
+                const warning = document.getElementById('warningShow') as HTMLDivElement
+                if (warning) {
+                    warning.style.display = 'flex'
+                    warning.textContent = 'Check your network connection and try again'
+                }
+            })
+        }
+        else {
+            isLoading.value = false
         }
     }
 }, 5000)
@@ -190,7 +293,13 @@ let id = setTimeout(() => {
 onUnmounted(() => {
     clearTimeout(id)
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    warning.style.display = 'none'
+    if (warning) {
+        warning.style.display = 'none'
+    }
+    const warningShowInt = document.getElementById('warningShowint') as HTMLDivElement
+    if (warningShowInt) {
+        warningShowInt.style.display = 'none'
+    }
 })
 
 
@@ -222,6 +331,7 @@ onUnmounted(() => {
 
             <div class="btns">
                 <RouterLink :to="{ name: 'EditProfile' }"><button>Edit Profile</button></RouterLink>
+                <button @click.prevent="deleteAccount">Delete Account</button>
             </div>
 
             <div class="readerSec">
@@ -247,10 +357,9 @@ onUnmounted(() => {
                 </div>
                 <div v-if="store.section === 'interaction'"
                     :class="{ show: store.section === 'interaction', none: store.section !== 'interaction', interaction: true }">
-                    <div v-if="isinteractionsLoading" id="warningShow">Loading ...</div>
-                    <div v-else>
-                        <div v-for="(interaction, index) in store.signedUser.interactions" :key="index"
-                            class="resultContainer">
+                    <div id="warningShowint"></div>
+                    <div v-if="interactionsArr.length > 0">
+                        <div v-for="(interaction, index) in interactionsArr" :key="index" class="resultContainer">
                             <div class="type">
                                 {{ interaction.type }}
                             </div>
@@ -281,6 +390,8 @@ onUnmounted(() => {
                 <RouterLink to="/search"><button>Search</button></RouterLink>
             </section>
         </div>
+
+        <div id="warningShow"></div>
     </main>
 </template>
 <style scoped>
@@ -361,6 +472,7 @@ header button:first-of-type {
     justify-content: space-between;
     width: 100%;
     max-width: 320px;
+    margin-top: 0.5rem;
 }
 
 .follow p {
@@ -384,12 +496,27 @@ header button:first-of-type {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    margin-bottom: 1rem;
+    margin: 0.5rem 0;
+    width: 300px;
 }
 
 .btns button {
     padding: 5px;
     border-radius: 10px;
+    cursor: pointer;
+}
+
+.btns button:hover {
+    background: #888;
+}
+
+.btns button:last-of-type:not(a button) {
+    color: red;
+}
+
+.btns button:last-of-type:hover:not(a button) {
+    background-color: red;
+    color: white;
 }
 
 .readerSec {
@@ -519,7 +646,6 @@ header button:first-of-type {
     display: flex;
     flex-direction: row;
     width: 100%;
-    align-items: center;
     justify-content: center;
 }
 
@@ -567,7 +693,7 @@ header button:first-of-type {
     width: 300px;
 }
 
-#warningShow {
+#warningShowint {
     padding: 10px;
     border: 1px outset #efefef;
     text-align: center;
@@ -582,18 +708,37 @@ header button:first-of-type {
     justify-self: center;
 }
 
+#warningShow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border: 1px outset #efefef;
+    display: none;
+    text-align: center;
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+    font-weight: bolder;
+    align-items: center;
+    justify-content: center;
+}
+
+.DayApp #warningShowint,
 .DayApp #warningShow {
     color: #efefef;
     background-color: black;
 }
 
+.NightApp #warningShowint,
 .NightApp #warningShow {
     color: black;
     background-color: #efefef;
 }
 
 @media screen and (min-width: 1200px) {
-    .personalDetails{
+    .personalDetails {
         width: 350px;
     }
 }

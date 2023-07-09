@@ -19,7 +19,6 @@ interface Poster {
 
 useUserDetails()
 
-
 const posts = ref<DocumentData[] | null>([])
 
 const divContent = ref('')
@@ -57,42 +56,28 @@ onMounted(() => {
 
 async function getPostContent(post: DocumentData) {
     divContent.value = ''
-    try {
-        const contentUrl = post.postContain
-        await axios.post('/postContent', { contentUrl })
-            .then(response => {
-                const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
-                divContent.value = newHTML.body.innerHTML
-            })
-            .catch((error) => {
-                console.log(error)
-            })
-    }
-    catch (err) {
-        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
-        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
-        error.textContent = 'Something went wrong, check your internet connection and reload page'
-    }
+    const contentUrl = post.postContain
+    await axios.post('/postContent', { contentUrl })
+        .then(response => {
+            const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
+            divContent.value = newHTML.body.innerHTML
+        })
 }
 
 async function getPoster(posterID: string) {
     poster.value = null
-    try {
-        const posterRef = doc(db, 'users', posterID)
-        const posterDetails = await getDoc(posterRef)
-        if (posterDetails.data() !== undefined) {
-            const { fullName, profilePicture, username, blogName } = posterDetails.data() as DocumentData
-            const data = { profilePicture, posterID, fullName, username, blogName }
-            poster.value = {
-                id: posterID as string,
-                img: data.profilePicture as string,
-                fullName: data.fullName as string,
-                username: data.username as string,
-                blogname: data.blogName as string
-            }
+    const posterRef = doc(db, 'users', posterID)
+    const posterDetails = await getDoc(posterRef)
+    if (posterDetails.data() !== undefined) {
+        const { fullName, profilePicture, username, blogName } = posterDetails.data() as DocumentData
+        const data = { profilePicture, posterID, fullName, username, blogName }
+        poster.value = {
+            id: posterID as string,
+            img: data.profilePicture as string,
+            fullName: data.fullName as string,
+            username: data.username as string,
+            blogname: data.blogName as string
         }
-    } catch (error) {
-        //
     }
 }
 
@@ -100,24 +85,27 @@ async function getPosts(query: any) {
     const querySnapshot = await getDocs(query);
     const promises = querySnapshot.docs.map(async (doc) => {
         const post = doc.data() as DocumentData;
-        await getPostContent(post);
 
-        const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
-        bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
-            tag.remove();
-        });
-        bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
-            tag.remove();
-        });
-        bodyImgRemove.body.querySelector('h1')?.remove();
-        divContent.value = bodyImgRemove.body.innerHTML;
+        if (post !== undefined && post !== null && post.length !== 0) {
+            await getPostContent(post);
 
-        (post as DocumentData).postContain = divContent.value;
+            const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
+            bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
+                tag.remove();
+            });
+            bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
+                tag.remove();
+            });
+            bodyImgRemove.body.querySelector('h1')?.remove();
+            divContent.value = bodyImgRemove.body.innerHTML;
 
-        await getPoster((post as DocumentData).posterId as string);
-        (post as DocumentData).posterDetails = poster.value;
+            (post as DocumentData).postContain = divContent.value;
 
-        return post;
+            await getPoster((post as DocumentData).posterId as string);
+            (post as DocumentData).posterDetails = poster.value;
+
+            return post;
+        }
     });
 
     const resolvedPosts = await Promise.all(promises);
@@ -164,7 +152,9 @@ watchEffect(() => {
 
 onUnmounted(() => {
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    warning.style.display = 'none'
+    if(warning){
+        warning.style.display = 'none'
+    }
 })
 
 </script>
@@ -286,32 +276,28 @@ h2 {
     font-weight: bolder;
     align-items: center;
     justify-content: center;
-  }
-  
-  .DayApp #warningShow {
+}
+
+.DayApp #warningShow {
     color: #efefef;
     background-color: black;
-  }
-  
-  .NightApp #warningShow {
+}
+
+.NightApp #warningShow {
     color: black;
     background-color: #efefef;
-  }
+}
 
-  @media screen and (min-width: 992px) {
+@media screen and (min-width: 992px) {
     .result-item-other {
         width: 300px;
     }
+
     .imgCon {
         width: 70px;
         height: 70px;
     }
-    
+
 }
-@media screen and (min-width: 768px) {
-    #warningShow{
-      width: 300px;
-      height: 300px;
-    }
-  }
+
 </style>

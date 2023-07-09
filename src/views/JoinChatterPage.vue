@@ -26,48 +26,48 @@ const isLoading: Ref<boolean> = ref(true)
 let timeOut: ReturnType<typeof setTimeout>;
 
 async function getUserDetails(accessToken: any, result: any) {
-    try {
-        const accessUrl = `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${accessToken}`
-        axios.post('/access', { accessUrl }).then((res) => {
-            details.value = res.data
-            const q = query(collection(db, 'users'), where('email', '==', `${details.value.email}`))
-            getDocs(q).then((document) => {
-                const ChatterAcc = document?.docs
-                if (ChatterAcc.length < 1 && details.value.email) {
-                    const NewUser = store.createUser(details.value.email)
-                    
-                    const firstName = details.value.given_name !== undefined ? details.value.given_name : ''
-                    const lastName = details.value.family_name !== undefined ? details.value.family_name : ''
+    const accessUrl = `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${accessToken}`
+    axios.post('/access', { accessUrl }).then((res) => {
+        details.value = res.data
+        const q = query(collection(db, 'users'), where('email', '==', `${details.value.email}`))
+        getDocs(q).then((document) => {
+            const ChatterAcc = document?.docs
+            if (ChatterAcc.length < 1 && details.value.email) {
+                const NewUser = store.createUser(details.value.email)
 
-                    NewUser.fullName = firstName + ' ' + lastName
+                const firstName = details.value.given_name !== undefined ? details.value.given_name : ''
+                const lastName = details.value.family_name !== undefined ? details.value.family_name : ''
 
-                    NewUser.id = result.user.uid
+                NewUser.fullName = firstName + ' ' + lastName
 
-                    const unknownAvatar = refFromStorage(storage, "ChatterAppFiles/avatar/unknown/UnkownUser.png")
+                NewUser.id = result.user.uid
 
-                    getDownloadURL(unknownAvatar).then((url) => {
-                        NewUser.profilePicture = url
-                    }).finally(() => {
-                        setDoc(doc(db, "users", `${result.user.uid}`), { ...NewUser }).then(() => {
-                            isLoading.value = true
-                            router.push('/additionalData')
-                        })
+                const unknownAvatar = refFromStorage(storage, "ChatterAppFiles/avatar/unknown/UnkownUser.png")
+
+                getDownloadURL(unknownAvatar).then((url) => {
+                    NewUser.profilePicture = url
+                }).finally(() => {
+                    setDoc(doc(db, "users", `${result.user.uid}`), { ...NewUser }).then(() => {
+                        isLoading.value = true
+                        router.push('/additionalData')
                     })
-                }
-                else if (ChatterAcc.length > 0 && ChatterAcc[0].data().username.trim() !== '') {
-                    isLoading.value = true
-                    router.push('/home')
-                }
-                else if (ChatterAcc.length > 0 && ChatterAcc[0].data().username === '') {
-                    router.push('/additionalData')
-                }
-            })
-        }).catch((err) => {
-            console.log(err)
+                })
+            }
+            else if (ChatterAcc.length > 0 && ChatterAcc[0].data().username.trim() !== '') {
+                isLoading.value = true
+                router.push('/home')
+            }
+            else if (ChatterAcc.length > 0 && ChatterAcc[0].data().username === '') {
+                router.push('/additionalData')
+            }
         })
-    } catch (error) {
-        console.log(error)
-    }
+    }).catch(() => {
+        const warningShow = document.getElementById('warningShow') as HTMLDivElement
+        if (warningShow) {
+            warningShow.style.display = 'flex'
+            warningShow.textContent = 'Something went wrong, check your internet connection and try again.'
+        }
+    })
 }
 
 function LoginWithGmail() {
@@ -77,9 +77,11 @@ function LoginWithGmail() {
             const credential = GoogleAuthProvider.credentialFromResult(result);
             getUserDetails(credential?.accessToken, result)
         }).catch(() => {
-            const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
-            (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
-            error.textContent = 'Something went wrong, check your internet connection and try again.'
+            const warningShow = document.getElementById('warningShow') as HTMLDivElement
+            if (warningShow) {
+                warningShow.style.display = 'flex'
+                warningShow.textContent = 'Something went wrong, check your internet connection and try again.'
+            }
         })
 }
 
@@ -90,7 +92,9 @@ timeOut = setTimeout(() => {
 onUnmounted(() => {
     clearTimeout(timeOut)
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    warning.style.display = 'none'
+    if (warning) {
+        warning.style.display = 'none'
+    }
 })
 
 </script>
@@ -127,6 +131,7 @@ onUnmounted(() => {
         <section id="footer">
             &copy; Olaegbe Abdul-Rahmon Pelumi 2023
         </section>
+        <div id="warningShow"></div>
     </main>
 </template>
 <style scoped>
@@ -211,6 +216,33 @@ button {
     width: 1.5rem;
     height: 1.5rem;
     margin-right: 0.5rem;
+}
+
+#warningShow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border: 1px outset #efefef;
+    display: none;
+    text-align: center;
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+    font-weight: bolder;
+    align-items: center;
+    justify-content: center;
+}
+
+.DayApp #warningShow {
+    color: #efefef;
+    background-color: black;
+}
+
+.NightApp #warningShow {
+    color: black;
+    background-color: #efefef;
 }
 
 /* Additional styles to adjust the size of the button and icon as needed */

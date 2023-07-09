@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import useAuthentication from './useAuth.vue';
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc, type DocumentData } from 'firebase/firestore'
-import router from '@/router';
 import { useChatterStore } from '@/stores/store';
 
 const props = defineProps({
@@ -35,10 +34,10 @@ async function updateStoreComments() {
 
 async function updateCommentButton(userId: string, postId: string, posterId: string, commentString: string, commentId: number) {
     if (userId === '' || userId === undefined) {
-        return router.push('/login');
+        return
     }
     else if (commentString.trim() === "") {
-        console.log('Comment cannot be empty')
+        alert('Comment cannot be empty')
     }
     else {
         (document.getElementById('btnEditComment') as HTMLButtonElement).setAttribute('disabled', 'true');
@@ -152,7 +151,7 @@ async function updateCommentButton(userId: string, postId: string, posterId: str
 
                 })
         } catch (error) {
-            console.log(error);
+            alert('An error occurred, try again');
             (document.getElementById('btnEditComment') as HTMLButtonElement).removeAttribute('disabled');
         }
     }

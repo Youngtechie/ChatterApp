@@ -18,10 +18,13 @@ const commentValue = ref('')
 
 async function addCommentButton(userId: string, postId: string, posterId: string, commentString: string) {
     if (userId === '' || userId === undefined) {
-        return router.push('/login');
+        const ans = confirm('You must be logged in to comment, will you love to sign up?')
+        if (ans) {
+            router.push('/join')
+        }
     }
     else if (commentString.trim() === "") {
-        console.log('comment cannot be empty')
+        alert('You cannot post an empty comment')
     }
     else {
         (document.getElementById('btnAddcomment') as HTMLButtonElement).setAttribute('disabled', 'true');
@@ -172,7 +175,7 @@ async function addCommentButton(userId: string, postId: string, posterId: string
 
                 })
         } catch (error) {
-            console.log(error);
+            alert('Something went wrong');
             (document.getElementById('btnAddcomment') as HTMLButtonElement).removeAttribute('disabled');
         }
     }
@@ -196,7 +199,8 @@ async function addCommentButton(userId: string, postId: string, posterId: string
     width: 320px;
     margin-top: 10px;
 }
-textarea{
+
+textarea {
     border: 1px solid #ccc;
     border-radius: 5px;
     padding: 5px;
@@ -208,11 +212,12 @@ textarea{
     background-color: transparent;
     overflow-y: scroll;
 }
-.NightApp textarea{
+
+.NightApp textarea {
     color: #fff;
 }
 
-button{
+button {
     border: 2px outset #ccc;
     border-radius: 5px;
     padding: 5px;

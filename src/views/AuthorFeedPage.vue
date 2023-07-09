@@ -2,7 +2,7 @@
 import { ref, onUnmounted, watchEffect, onMounted, nextTick } from 'vue'
 import { useChatterStore } from '@/stores/store';
 import { getStorage, ref as storageRef, deleteObject, listAll } from 'firebase/storage'
-import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, deleteDoc } from 'firebase/firestore'
+import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, deleteDoc, limit } from 'firebase/firestore'
 import { useRouter } from 'vue-router';
 import useAuthentication from '@/composables/useAuth.vue'
 import axios from 'axios'
@@ -13,7 +13,9 @@ let timeOut: ReturnType<typeof setTimeout>;
 onUnmounted(() => {
     clearTimeout(timeOut)
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    warning.style.display = 'none'
+    if(warning){
+        warning.style.display = 'none'
+    }
 })
 
 const posts = ref<DocumentData[] | null>([])
@@ -32,8 +34,6 @@ const db = getFirestore(app)
 
 const store = useChatterStore()
 
-const isloading = ref(true)
-
 
 watchEffect(() => {
     if (posts.value?.length as number > 0) {
@@ -50,62 +50,80 @@ watchEffect(() => {
 onMounted(() => {
     clearTimeout(timeOut)
     nextTick(() => {
-        const warningShow = document.getElementById('warningShow');
+        const warningShow = document.getElementById('warningShow') as HTMLDivElement;
         if (warningShow) {
             warningShow.style.display = 'flex';
             warningShow.textContent = 'Loading ...'
         }
-    })
-
+    })   
     getPosts()
 })
 
 
 async function getPostContent(post: DocumentData) {
     divContent.value = ''
-    try {
-        const contentUrl = post.postContain
-        await axios.post('/postContent', { contentUrl })
-            .then(response => {
-                const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
-                divContent.value = newHTML.body.innerHTML
-            })
-            .catch((error) => {
-                console.log(error)
-            })
-    }
-    catch (err) {
-        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
-        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
-        error.textContent = 'Something went wrong, check your internet connection'
-    }
+    const contentUrl = post.postContain
+    await axios.post('/postContent', { contentUrl })
+        .then(response => {
+            const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
+            divContent.value = newHTML.body.innerHTML
+        })
 }
 
 async function getPosts() {
-    const q = query(collection(db, 'posts'), where('posterId', '==', store.signedUser.id))
-    const querySnapshot = await getDocs(q);
-    const promises = querySnapshot.docs.map(async (doc) => {
-        const post = doc.data() as DocumentData;
-        await getPostContent(post);
+    const q = query(collection(db, 'posts'), where('posterId', '==', store.signedUser.id), limit(10))
+    try {
+        const querySnapshot = await getDocs(q);
+        const promises = querySnapshot.docs.map(async (doc) => {
+            const post = doc.data() as DocumentData;
+            await getPostContent(post);
 
-        const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
-        bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
-            tag.remove();
+            const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
+            bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
+                tag.remove();
+            });
+            bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
+                tag.remove();
+            });
+            bodyImgRemove.body.querySelector('h1')?.remove();
+            divContent.value = bodyImgRemove.body.innerHTML;
+
+            (post as DocumentData).postContain = divContent.value;
+
+            return post;
         });
-        bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
-            tag.remove();
-        });
-        bodyImgRemove.body.querySelector('h1')?.remove();
-        divContent.value = bodyImgRemove.body.innerHTML;
 
-        (post as DocumentData).postContain = divContent.value;
-
-        return post;
-    });
-
-    const resolvedPosts = await Promise.all(promises);
-    posts.value = resolvedPosts as DocumentData[];
-    isloading.value = false;
+        const resolvedPosts = await Promise.all(promises);
+        posts.value = resolvedPosts as DocumentData[];
+        if (posts.value.length > 0) {
+            nextTick(() => {
+                const warningShow = document.getElementById('warningShow');
+                if (warningShow) {
+                    warningShow.style.display = 'none';
+                }
+            })
+        }
+        if(posts.value.length === 0) {
+            nextTick(() => {
+                const warningShow = document.getElementById('warningShow') as HTMLDivElement;
+                if (warningShow) {
+                    warningShow.style.display = 'flex';
+                    warningShow.textContent = 'You have not posted anything yet'
+                }
+            })
+        }
+    } catch (error) {
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow') as HTMLDivElement;
+            if (warningShow) {
+                warningShow.style.display = 'flex';
+                warningShow.textContent = 'Something went wrong, check your internet connection and reload page.'
+                timeOut = setTimeout(() => {
+                    warningShow.style.display = 'none';
+                }, 2000)
+            }
+        })
+    }
 }
 
 function routeToPost(postId: string) {
@@ -138,7 +156,17 @@ async function deletePost(postId: string) {
         deleteFolder(folderPath);
     }
     catch (err) {
-        console.log(err)
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow') as HTMLDivElement;
+            if (warningShow) {
+                warningShow.style.display = 'flex';
+                warningShow.textContent = 'Something went wrong, check your internet connection and try again later.'
+                timeOut = setTimeout(() => {
+                    warningShow.style.display = 'none';
+                }, 2000)
+            }
+        })
+        return
     }
 }
 
@@ -158,9 +186,10 @@ async function deleteFolder(folderPath: string) {
 
 </script>
 <template>
-    <div v-if="posts?.length as number > 0 && isloading === false" :class="{ resultsContainer: true }">
+    <div v-if="posts?.length as number > 0" :class="{ resultsContainer: true }">
         <div v-for="(post, index) in posts" :key="index" class="result-item">
-            <div class="imgCon" @click.prevent="routeToProfile(post.posterId)" :style="{backgroundImage: `url(${store.signedUser.profilePicture})`}"></div>
+            <div class="imgCon" @click.prevent="routeToProfile(post.posterId)"
+                :style="{ backgroundImage: `url(${store.signedUser.profilePicture})` }"></div>
             <div class="result-item-other">
                 <div class="result-item-header">
                     <span @click.prevent="routeToProfile(post.posterId)">{{ store.signedUser.blogName }}</span>
@@ -187,7 +216,8 @@ async function deleteFolder(folderPath: string) {
     height: 100%;
     width: 100%;
 }
-.imgCon{
+
+.imgCon {
     width: 50px;
     height: 50px;
     background-color: #efefef;
@@ -204,9 +234,7 @@ async function deleteFolder(folderPath: string) {
     flex-direction: row;
     width: 100%;
     display: flex;
-    align-items: center;
     justify-content: center;
-    
 }
 
 .result-item-other {
@@ -261,10 +289,12 @@ async function deleteFolder(folderPath: string) {
     background-color: red;
     color: white;
 }
+
 @media screen and (min-width: 992px) {
     .result-item-other {
         width: 300px;
     }
+
     .imgCon {
         width: 70px;
         height: 70px;

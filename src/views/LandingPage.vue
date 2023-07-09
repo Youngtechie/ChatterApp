@@ -95,8 +95,6 @@ const store = useChatterStore()
 }
 
 #section1 #text {
-    display: flex;
-    flex-direction: column;
     text-align: center;
     position: absolute;
     top: 50%;

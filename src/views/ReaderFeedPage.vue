@@ -11,7 +11,9 @@ import useCalculateTime from '@/composables/useCalculateTime.vue'
 
 onUnmounted(() => {
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    warning.style.display = 'none'
+    if(warning){
+        warning.style.display = 'none'
+    }
 })
 const divContent = ref('')
 
@@ -44,7 +46,8 @@ const interests = ref<string[]>([])
 const posts = ref<DocumentData[] | null>([])
 const poster = ref<Poster | null>()
 const followings = ref<DocumentData[] | null>([])
-const stopNoData = ref(0)
+const stopNoDataF = ref(0)
+const stopNoDataR = ref(0)
 
 onMounted(() => {
     nextTick(() => {
@@ -55,8 +58,22 @@ onMounted(() => {
         }
     })
 
-    getPostsByTag(interests.value)
+    store.signedUser.interests.forEach((interest: string) => {
+        const newInterest = interest.trim()
+        interests.value.push(newInterest.charAt(0).toUpperCase() + newInterest.slice(1).toLowerCase())
+    })
 
+    try {
+        getPostsByTag(interests.value)
+    } catch (error) {
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'flex';
+                warningShow.textContent = 'Something went wrong, check your internet connection and reload page.';
+            }
+        })
+    }
 })
 
 function handleChangeSection(section: string) {
@@ -72,10 +89,34 @@ function handleChangeSection(section: string) {
     })
 
     if (section === 'following_section') {
-        getFollowings()
+        try {
+            getFollowings()
+        } catch (error) {
+            nextTick(() => {
+                const warningShow = document.getElementById('warningShow');
+                if (warningShow) {
+                    warningShow.style.display = 'flex';
+                    warningShow.textContent = 'Something went wrong, check your internet connection and reload page.';
+                }
+            })
+        }
     }
     if (section === 'interested_section') {
-        getPostsByTag(interests.value)
+        store.signedUser.interests.forEach((interest: string) => {
+            const newInterest = interest.trim()
+            interests.value.push(newInterest.charAt(0).toUpperCase() + newInterest.slice(1).toLowerCase())
+        })
+        try {
+            getPostsByTag(interests.value)
+        } catch (error) {
+            nextTick(() => {
+                const warningShow = document.getElementById('warningShow');
+                if (warningShow) {
+                    warningShow.style.display = 'flex';
+                    warningShow.textContent = 'Something went wrong, check your internet connection and reload page.';
+                }
+            })
+        }
     }
 }
 
@@ -92,66 +133,56 @@ function routeToProfile(userId: string) {
     }
 }
 
-store.signedUser.interests.forEach((interest: string) => {
-    const newInterest = interest.trim()
-    interests.value.push(newInterest.charAt(0).toUpperCase() + newInterest.slice(1).toLowerCase())
-})
-
 async function getPostContent(post: DocumentData) {
     divContent.value = ''
-    try {
-        const contentUrl = post.postContain
-        await axios.post('/postContent', { contentUrl })
-            .then(response => {
-                const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
-                divContent.value = newHTML.body.innerHTML
-            })
-            .catch((error) => {
-                console.log(error)
-            })
-    }
-    catch (err) {
-        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement;
-        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex'
-        error.textContent = 'Something went wrong, check your internet connection'
-    }
+    const contentUrl = post.postContain
+    await axios.post('/postContent', { contentUrl })
+        .then(response => {
+            const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
+            divContent.value = newHTML.body.innerHTML
+        })
+        .catch((error) => {
+            console.log(error)
+        })
+
 }
 
 async function getPoster(posterID: string) {
     poster.value = null
-    try {
-        const posterRef = doc(db, 'users', posterID)
-        const posterDetails = await getDoc(posterRef)
-        if (posterDetails.data() !== undefined) {
-            const { fullName, profilePicture, username, blogName } = posterDetails.data() as DocumentData
-            const data = { profilePicture, posterID, fullName, username, blogName }
-            poster.value = {
-                id: posterID as string,
-                img: data.profilePicture as string,
-                fullName: data.fullName as string,
-                username: data.username as string,
-                blogname: data.blogName as string
-            }
+    const posterRef = doc(db, 'users', posterID)
+    const posterDetails = await getDoc(posterRef)
+    if (posterDetails.data() !== undefined) {
+        const { fullName, profilePicture, username, blogName } = posterDetails.data() as DocumentData
+        const data = { profilePicture, posterID, fullName, username, blogName }
+        poster.value = {
+            id: posterID as string,
+            img: data.profilePicture as string,
+            fullName: data.fullName as string,
+            username: data.username as string,
+            blogname: data.blogName as string
         }
-    } catch (error) {
-        //
     }
 }
 
 async function getPostsByTag(tags: string[]) {
-    try {
-        const promises = tags.map(async (tag) => {
-            const postsQuery = query(
-                collection(db, 'posts'),
-                where('postTag', '==', tag),
-                orderBy('postTime', 'desc')
-            );
+    const length = tags.length < 10 ? tags.length : 10;
+    const numOfData = Math.floor(10 / length as number);
+    posts.value = []
+    const promises = tags.map(async (tag) => {
+        const postsQuery = query(
+            collection(db, 'posts'),
+            where('postTag', '==', tag),
+            orderBy('postTime', 'desc'),
+            limit(numOfData)
+        );
 
-            const querySnapshot = await getDocs(postsQuery);
+        const querySnapshot = await getDocs(postsQuery);
 
-            return Promise.all(
-                querySnapshot.docs.map(async (doc) => {
-                    const post = doc.data();
+        return Promise.all(
+            querySnapshot.docs.map(async (doc) => {
+                const post = doc.data();
+
+                if (post !== undefined && post !== null && post.length !== 0) {
 
                     await getPostContent(post);
 
@@ -175,25 +206,24 @@ async function getPostsByTag(tags: string[]) {
 
 
                     return post;
-                })
-            );
-        });
-
-        const resolvedPosts = await Promise.all(promises);
-        const flattenedPosts = resolvedPosts.flat();
-        posts.value = flattenedPosts;
-        if (posts.value.length > 0) {
-            nextTick(() => {
-                const warningShow = document.getElementById('warningShow');
-                if (warningShow) {
-                    warningShow.style.display = 'none';
                 }
             })
-        }
-    } catch (err) {
-        const error = document.querySelector('#ErrorShow span') as HTMLSpanElement
-        (document.querySelector('#ErrorShow') as HTMLDivElement).style.display = 'flex';
-        error.textContent = 'Something went wrong, check your internet connection';
+        );
+    });
+
+    const resolvedPosts = await Promise.all(promises);
+    const flattenedPosts = resolvedPosts.flat();
+    posts.value = flattenedPosts as DocumentData[];
+    if (posts.value.length > 0) {
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'none';
+            }
+        })
+    }
+    if (posts.value.length === 10) {
+        stopNoDataR.value = 10;
     }
 }
 
@@ -203,22 +233,22 @@ async function getFollowings() {
     followings.value = [];
 
     const promises = store.signedUser.following.theFollowings.map(async (followingId: string) => {
-        try {
-            const followingsQuery = query(
-                collection(db, 'posts'),
-                where('posterId', '==', followingId),
-                orderBy('postTime', 'desc'),
-                limit(numOfData)
-            );
+        const followingsQuery = query(
+            collection(db, 'posts'),
+            where('posterId', '==', followingId),
+            orderBy('postTime', 'desc'),
+            limit(numOfData)
+        );
 
-            const querySnapshot = await getDocs(followingsQuery);
+        const querySnapshot = await getDocs(followingsQuery);
 
-            return Promise.all(
-                querySnapshot.docs.map(async (doc) => {
-                    const following = doc.data();
+        return Promise.all(
+            querySnapshot.docs.map(async (doc) => {
+                const following = doc.data();
 
+                if(following !== undefined && following !== null && following.length !== 0){
                     await getPostContent(following);
-
+    
                     const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
                     bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
                         tag.remove();
@@ -227,48 +257,49 @@ async function getFollowings() {
                         tag.remove();
                     });
                     bodyImgRemove.body.querySelector('h1')?.remove();
-
+    
                     divContent.value = bodyImgRemove.body.innerHTML;
                     following.postContain = divContent.value;
-
+    
                     await getPoster(following.posterId);
-
+    
                     following.posterDetails = poster.value;
                     poster.value = null;
                     isLoading.value = false;
-
+    
                     return following;
-                })
-            );
-        } catch (error) {
-            console.log(error);
-            throw new Error('Something went wrong');
-        }
+                }
+            })
+        );
     });
 
-    try {
-        const resolvedFollowings = await Promise.all(promises);
-        const flattenedFollowings = resolvedFollowings.flat();
+    const resolvedFollowings = await Promise.all(promises);
+    const flattenedFollowings = resolvedFollowings.flat();
 
-        followings.value = flattenedFollowings;
+    followings.value = flattenedFollowings;
 
-        if (followings.value.length > 10) {
-            stopNoData.value = 10;
-        }
+    if (followings.value.length === 10) {
+        stopNoDataF.value = 10;
+    }
 
+    if (followings.value.length > 0) {
         nextTick(() => {
             const warningShow = document.getElementById('warningShow');
             if (warningShow) {
                 warningShow.style.display = 'none';
             }
         })
-    } catch (error) {
-        const errorDiv = document.querySelector('#ErrorShow span') as HTMLSpanElement
-        errorDiv.style.display = 'flex';
-        errorDiv.textContent = 'Something went wrong, check your internet connection';
+    }
+    else if (followings.value.length === 0) {
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'flex';
+                warningShow.textContent = 'No post to show from your followings.';
+            }
+        })
     }
 }
-
 
 </script>
 <template>
@@ -340,6 +371,14 @@ async function getFollowings() {
     background-position: center;
 }
 
+.result-item-image {
+    width: 50px;
+    height: 50px;
+    margin-left: 5px;
+    border-radius: 50%;
+    background-color: #efefef;
+}
+
 .btns button {
     width: 50%;
     height: 100%;
@@ -372,7 +411,6 @@ async function getFollowings() {
     flex-direction: row;
     width: 100%;
     display: flex;
-    align-items: center;
     justify-content: center;
 }
 
@@ -403,13 +441,16 @@ async function getFollowings() {
     font-weight: bolder;
     cursor: pointer;
 }
+
 .result-item-header span:last-of-type {
     font-size: medium;
 }
+
 @media screen and (min-width: 992px) {
     .result-item-other {
         width: 300px;
     }
+
     .imgCon {
         width: 70px;
         height: 70px;

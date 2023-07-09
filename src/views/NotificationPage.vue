@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import {onUnmounted} from 'vue'
 import { useChatterStore } from '@/stores/store';
 import { useRouter } from 'vue-router';
 import SignOut from '@/composables/useSignOut.vue';
@@ -9,23 +10,29 @@ const router = useRouter()
 
 store.sidebar = false
 
-if (store.signedUser.isLogined) {
-    store.signedUser.notifications.sort((a: Record<string, any>, b: Record<string, any>) => b.details.time.seconds - a.details.time.seconds)
-    console.log(store.signedUser.notifications)
-}
+let id: ReturnType<typeof setTimeout>
 
 if (store.authenticated === true) {
-    if (store.signedUser.id === undefined && store.signedUser.username === undefined) {
-        router.push({ name: 'NetworkError', query: { redirect: `${router.currentRoute.value.path}` } })
-    }
-    else if (store.signedUser.id !== undefined && store.signedUser.username === '') {
-        console.log('User registration not finished... Logging out user.....')
+    if (store.signedUser.id !== undefined && store.signedUser.username === '') {
+        const warningShow = document.getElementById('warningShow') as HTMLDivElement
+        warningShow.style.display = 'flex'
+        warningShow.textContent = 'Registration not complete... Logging you out'
         SignOut()
-        store.authenticated = false
-        router.push('/login')
+        id = setTimeout(() => {
+            warningShow.style.display = 'none'
+            store.authenticated = false
+            router.push('/login')
+        }, 2000)
     }
 }
 
+onUnmounted(() => {
+    clearTimeout(id)
+    const warning = document.getElementById('warningShow') as HTMLDivElement
+    if(warning){
+        warning.style.display = 'none'
+    }
+})
 </script>
 <template>
     <div id="notificationPage">
@@ -46,8 +53,11 @@ if (store.authenticated === true) {
             <h1>Write, read and connect with great minds on chatter</h1>
             <p>Share people your great ideas, and also write-ups based on your interests. Connect with people of same
                 interests and goals.</p>
-            <button>Get started</button>
+                <RouterLink to="/login">
+                    <button>Get started</button>
+                </RouterLink>
         </section>
+        <div id="warningShow"></div>
     </div>
 </template>
 <style scoped>
@@ -114,6 +124,33 @@ if (store.authenticated === true) {
 .clickNotify p:last-of-type {
     font-size: 0.8rem;
     margin-top: 0.5rem;
+}
+
+#warningShow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border: 1px outset #efefef;
+    display: none;
+    text-align: center;
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+    font-weight: bolder;
+    align-items: center;
+    justify-content: center;
+}
+
+.DayApp #warningShow {
+    color: #efefef;
+    background-color: black;
+}
+
+.NightApp #warningShow {
+    color: black;
+    background-color: #efefef;
 }
 
 </style>

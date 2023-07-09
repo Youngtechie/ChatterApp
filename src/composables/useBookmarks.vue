@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import useAuthentication from './useAuth.vue';
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, onSnapshot, getDoc, type DocumentData } from 'firebase/firestore'
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore'
 import router from '@/router';
 import { useChatterStore } from '@/stores/store';
 
@@ -20,13 +20,9 @@ const PostQ = query(collection(db, 'posts'), where('postId', '==', `${props.view
 const bookmarked = ref(false)
 
 onMounted(() => {
-    try {
-        onSnapshot(PostQ, (doc2) => {
-            const post = doc2.docs[0].data()
-            const userRef = doc(db, 'users', store.signedUser.id)
-            getDoc(userRef).then((doc1) => {
-                store.signedUser = doc1.data() as DocumentData
-            })
+    onSnapshot(PostQ, (doc2) => {
+        const post = doc2.docs[0].data()
+        if (post !== undefined && post !== null && post.length !== 0) {
             if (post.postBookmarks.includes(store.signedUser.id)) {
                 bookmarked.value = true;
                 document.querySelectorAll(`#btnBook${props.viewPostId} span`).forEach((element) => {
@@ -40,16 +36,16 @@ onMounted(() => {
                     element.textContent = `${post.postBookmarks.length}`;
                 })
             }
-        })
-        
-    } catch (error) {
-        //
-    }
+        }
+    })
 })
 
 function bookmark(userId: string, postId: string) {
     if (userId === '' || userId === undefined) {
-        return router.push('/login');
+        const ans = confirm('You must be logged in to comment, will you love to sign up?')
+        if (ans) {
+            router.push('/join')
+        }
     }
     else {
         (document.getElementById(`btnLike${postId}`) as HTMLButtonElement).setAttribute('disabled', 'true');
@@ -65,29 +61,31 @@ function bookmark(userId: string, postId: string) {
                         .then((document2) => {
                             const post = document2.docs[0].data();
 
-                            if (user.bookmarks.some((postID: string) => postID === post.postId)) {
-                                updateDoc(doc(db, 'users', `${userId}`), {
-                                    ['bookmarks']: user.bookmarks.filter((postID: string) => postID !== postId)
-                                })
-                                updateDoc(doc(db, 'posts', `${postId}`), {
-                                    ['postBookmarks']: post.postBookmarks.filter((userID: string) => userID !== userId)
-                                })
-                            }
-                            else {
-                                updateDoc(doc(db, 'users', `${userId}`), {
-                                    ['bookmarks']: [...user.bookmarks, postId]
-                                })
-                                updateDoc(doc(db, 'posts', `${postId}`), {
-                                    ['postBookmarks']: [...post.postBookmarks, userId]
-                                })
-                            }
+                            if (user !== undefined && user !== null && user.length !== 0 && post !== undefined && post !== null && post.length !== 0) {
 
-                            (document.getElementById(`btnLike${postId}`) as HTMLButtonElement).removeAttribute('disabled');
+                                if (user.bookmarks.some((postID: string) => postID === post.postId)) {
+                                    updateDoc(doc(db, 'users', `${userId}`), {
+                                        ['bookmarks']: user.bookmarks.filter((postID: string) => postID !== postId)
+                                    })
+                                    updateDoc(doc(db, 'posts', `${postId}`), {
+                                        ['postBookmarks']: post.postBookmarks.filter((userID: string) => userID !== userId)
+                                    })
+                                }
+                                else {
+                                    updateDoc(doc(db, 'users', `${userId}`), {
+                                        ['bookmarks']: [...user.bookmarks, postId]
+                                    })
+                                    updateDoc(doc(db, 'posts', `${postId}`), {
+                                        ['postBookmarks']: [...post.postBookmarks, userId]
+                                    })
+                                }
+
+                                (document.getElementById(`btnLike${postId}`) as HTMLButtonElement).removeAttribute('disabled');
+                            }
                         })
                 })
         }
         catch (err) {
-            //
             (document.getElementById(`btnLike${postId}`) as HTMLButtonElement).removeAttribute('disabled');
         }
     }

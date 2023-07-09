@@ -39,14 +39,21 @@ function toggleSeeMore() {
 
 let id = setTimeout(() => {
     if (store.authenticated === true) {
-        if (store.signedUser.id === undefined && store.signedUser.username === undefined) {
-            router.push({ name: 'NetworkError', query: { redirect: `${router.currentRoute.value.path}` } })
-        }
-        else if (store.signedUser.id !== undefined && store.signedUser.username === '') {
-            console.log('User registration not finished... Logging out user.....')
+        if (store.signedUser.id !== undefined && store.signedUser.username === '') {
+            const warningShow = document.getElementById('warningShow') as HTMLDivElement
+            warningShow.style.display = 'flex'
+            warningShow.textContent = 'Registration not complete... Logging you out'
             SignOut()
-            store.authenticated = false
-            router.push('/login')
+            id = setTimeout(() => {
+                warningShow.style.display = 'none'
+                store.authenticated = false
+                router.push('/login')
+            }, 2000)
+        }
+        else if (store.signedUser.id === undefined && store.signedUser.username === undefined) {
+            const warningShow = document.getElementById('warningShow') as HTMLDivElement
+            warningShow.style.display = 'flex'
+            warningShow.textContent = 'An error occurred, check your internet connection and try reloading.'
         }
         else {
             isLoading.value = false
@@ -60,7 +67,9 @@ let id = setTimeout(() => {
 onUnmounted(() => {
     clearTimeout(id)
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    warning.style.display = 'none'
+    if(warning){
+        warning.style.display = 'none'
+    }
 })
 
 function Signout() {
@@ -91,7 +100,8 @@ function Signout() {
                     <path d="M3 18h18v-2H3v2zM3 13h18v-2H3v2zM3 6v2h18V6H3z" />
                 </svg>
             </button>
-            <RouterLink to="/write" class="writeBtn"><button>Write</button></RouterLink>
+            <RouterLink to="/write" :class="[{ writeBtn: true }, { Novisibility: !store.signedUser.isLogined }]">
+                <button>Write</button></RouterLink>
             <h1>Chatter</h1>
             <button :title="store.themeDetails.title" id="themeBtn" @click="store.changeTheme">
                 <div id="themeImgContainer"><img :src="store.themeDetails.img" /></div>
@@ -192,8 +202,13 @@ function Signout() {
                         User Analysis
                     </button>
                 </RouterLink>
-                <RouterLink to="/explore"> <button>
-                    <img src="/trending.png" height="24px" width="24px"/>
+                <RouterLink to="/trendings"> <button>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="feather feather-trending-up">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                            <polyline points="17 6 23 6 23 12"></polyline>
+                        </svg>
                         Trending
                     </button>
                 </RouterLink>
@@ -310,11 +325,13 @@ function Signout() {
                         User Analysis
                     </button>
                 </RouterLink>
-                <RouterLink to="/explore"> <button>
-                    <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-trending-up">
-                        <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
-                        <polyline points="17 6 23 6 23 12"></polyline>
-                      </svg>
+                <RouterLink to="/trendings"> <button>
+                        <svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                            class="feather feather-trending-up">
+                            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                            <polyline points="17 6 23 6 23 12"></polyline>
+                        </svg>
                         Trending
                     </button>
                 </RouterLink>
@@ -354,7 +371,7 @@ function Signout() {
             </RouterLink>
         </section>
 
-
+        <div id="warningShow"></div>
     </main>
 </template>
 <style scoped>
@@ -364,6 +381,10 @@ function Signout() {
     height: 100%;
     width: 100%;
     position: relative;
+}
+
+.Novisibility {
+    visibility: hidden;
 }
 
 .sidebar2 {
@@ -540,13 +561,11 @@ nav p {
     display: flex;
     flex-direction: row;
     align-items: center;
-    justify-content: center;
-    padding: 0 1rem;
     width: 100%;
-    justify-content: space-between;
+    justify-content: space-around;
     background-color: transparent;
     align-self: flex-start;
-    justify-self: flex-start;
+    justify-self: center;
 }
 
 .profileSection span {
@@ -667,6 +686,33 @@ nav p {
 
 .fill:hover {
     fill: #000;
+}
+
+#warningShow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border: 1px outset #efefef;
+    display: none;
+    text-align: center;
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+    font-weight: bolder;
+    align-items: center;
+    justify-content: center;
+}
+
+.DayApp #warningShow {
+    color: #efefef;
+    background-color: black;
+}
+
+.NightApp #warningShow {
+    color: black;
+    background-color: #efefef;
 }
 
 @media screen and (max-width: 767px) {

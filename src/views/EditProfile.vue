@@ -94,8 +94,13 @@ function updateUser() {
             }
         }).then(() => {
             router.push('/userProfile')
-        }).catch((err) => {
-            console.log(err)
+        }).catch(() => {
+            const warningShow = document.getElementById('warningShow') as HTMLDivElement
+            warningShow.style.display = 'flex'
+            warningShow.textContent = 'An error occurred, check your internet connection and try again.'
+            id = setTimeout(() => {
+                warningShow.style.display = 'none'
+            }, 2000)
         }).finally(()=>{
             document.getElementById('updateBtn')?.removeAttribute('disabled')
         })
@@ -110,7 +115,6 @@ watchEffect(() => {
 })
 
 let id = setTimeout(() => {
-
     fullname.value = store.signedUser.fullName
     username.value = store.signedUser.username
     bio.value = store.signedUser.bio
@@ -125,14 +129,21 @@ let id = setTimeout(() => {
         router.push('/home')
     }
     else if (store.authenticated === true) {
-        if (store.signedUser.id === undefined && store.signedUser.username === undefined) {
-            router.push({ name: 'NetworkError', query: { redirect: `${router.currentRoute.value.path}` } })
-        }
-        else if (store.signedUser.id !== undefined && store.signedUser.username === '') {
-            console.log('User registration not finished... Logging out user.....')
+        if (store.signedUser.id !== undefined && store.signedUser.username === '') {
+            const warningShow = document.getElementById('warningShow') as HTMLDivElement
+            warningShow.style.display = 'flex'
+            warningShow.textContent = 'Registration not complete... Logging you out'
             SignOut()
-            store.authenticated = false
-            router.push('/login')
+            id = setTimeout(() => {
+                warningShow.style.display = 'none'
+                store.authenticated = false
+                router.push('/login')
+            }, 2000)
+        }
+        else if (store.signedUser.id === undefined && store.signedUser.username === undefined) {
+            const warningShow = document.getElementById('warningShow') as HTMLDivElement
+            warningShow.style.display = 'flex'
+            warningShow.textContent = 'An error occurred, check your internet connection and try reloading.'
         }
         else {
             isLoading.value = false;
@@ -146,14 +157,12 @@ let id = setTimeout(() => {
 onUnmounted(() => {
     clearTimeout(id)
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    warning.style.display = 'none'
+    if(warning){
+        warning.style.display = 'none'
+    }
 })
 </script>
 <template>
-    <!-- <div class="deleteAccount">
-        <h3>Delete Account</h3>
-        <p>Once you delete your account, there is no going back. Please be certain.</p>
-        <button @click="Delete">Delete</button> -->
     <useLoadingPage v-if="isLoading" action-name="Loading data ..." />
     <main v-else>
         <header>
@@ -231,7 +240,7 @@ onUnmounted(() => {
             </section>
             <button type="submit" id="updateBtn">Update</button>
         </form>
-
+        <div id="warningShow"></div>
     </main>
 </template>
 <style scoped>
@@ -414,6 +423,33 @@ label {
     font-weight: bold;
     align-self: center;
 }
+#warningShow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px;
+    border: 1px outset #efefef;
+    display: none;
+    text-align: center;
+    height: 200px;
+    width: 200px;
+    border-radius: 10px;
+    font-weight: bolder;
+    align-items: center;
+    justify-content: center;
+}
+
+.DayApp #warningShow {
+    color: #efefef;
+    background-color: black;
+}
+
+.NightApp #warningShow {
+    color: black;
+    background-color: #efefef;
+}
+
 @media screen and (min-width: 992px) {
     .radioGroup{
         width: 350px;
