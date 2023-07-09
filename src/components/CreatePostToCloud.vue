@@ -38,21 +38,6 @@ export default async function CreatePostToCloud(rawDocument: string, docContent:
             }
         }
 
-        if (tag.trim() !== '') {
-            const tagRef = doc(db, 'tags', tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase())
-            const tagResult = await getDoc(tagRef) as DocumentData
-            if (tagResult.data().length > 0) {
-                updateDoc((tagRef), {
-                    counts: tagResult.data().counts + 1
-                })
-            }
-            else {
-                setDoc((tagRef), {
-                    counts: 1
-                })
-            }
-        }
-
         if (postId !== "") {
             const postRef = doc(db, 'posts', postId)
             const post = await getDoc(postRef)

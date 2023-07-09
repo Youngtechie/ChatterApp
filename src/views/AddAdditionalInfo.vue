@@ -223,13 +223,11 @@ input[type="date"] {
 }
 
 .submit-button:hover {
-.submit-button:hover {
   background-color: #0056b3;
 }
 
-.delete-button:hover {
+.delete-button:hover{
   background-color: red;
-
 }
 
 .submit-button:active,

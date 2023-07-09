@@ -13,7 +13,7 @@ let timeOut: ReturnType<typeof setTimeout>;
 onUnmounted(() => {
     clearTimeout(timeOut)
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    if(warning){
+    if (warning) {
         warning.style.display = 'none'
     }
 })
@@ -55,7 +55,7 @@ onMounted(() => {
             warningShow.style.display = 'flex';
             warningShow.textContent = 'Loading ...'
         }
-    })   
+    })
     getPosts()
 })
 
@@ -76,21 +76,24 @@ async function getPosts() {
         const querySnapshot = await getDocs(q);
         const promises = querySnapshot.docs.map(async (doc) => {
             const post = doc.data() as DocumentData;
-            await getPostContent(post);
 
-            const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
-            bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
-                tag.remove();
-            });
-            bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
-                tag.remove();
-            });
-            bodyImgRemove.body.querySelector('h1')?.remove();
-            divContent.value = bodyImgRemove.body.innerHTML;
+            if (post !== undefined && post !== null && post.length !== 0) {
+                await getPostContent(post);
 
-            (post as DocumentData).postContain = divContent.value;
+                const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
+                bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
+                    tag.remove();
+                });
+                bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
+                    tag.remove();
+                });
+                bodyImgRemove.body.querySelector('h1')?.remove();
+                divContent.value = bodyImgRemove.body.innerHTML;
 
-            return post;
+                (post as DocumentData).postContain = divContent.value;
+
+                return post;
+            }
         });
 
         const resolvedPosts = await Promise.all(promises);
@@ -103,7 +106,7 @@ async function getPosts() {
                 }
             })
         }
-        if(posts.value.length === 0) {
+        if (posts.value.length === 0) {
             nextTick(() => {
                 const warningShow = document.getElementById('warningShow') as HTMLDivElement;
                 if (warningShow) {

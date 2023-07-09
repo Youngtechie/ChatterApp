@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ref, onMounted } from 'vue'
 import useAuthentication from './useAuth.vue';
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore'
 import router from '@/router';
