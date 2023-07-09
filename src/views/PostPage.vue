@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router';
 import { useChatterStore } from '@/stores/store';
 import { doc, getFirestore, getDoc, type DocumentData, updateDoc, onSnapshot } from 'firebase/firestore'
-import { ref, onUnmounted, onMounted, watchEffect } from 'vue'
+import { ref, onUnmounted, onMounted } from 'vue'
 import useLoadingPage from "@/composables/useLoadingPage.vue";
 import axios from 'axios'
 import useCalculateTime from '@/composables/useCalculateTime.vue';
@@ -15,7 +15,7 @@ import useDetailButtons from '@/composables/useDetailButtons.vue'
 import useAddComment from '@/composables/useAddComment.vue';
 import useDeleteComment from '@/composables/useDeleteComment.vue';
 import useEditComment from '@/composables/useEditComment.vue';
-import { useSeoMeta } from '@vueuse/head';
+// import { useSeoMeta } from '@vueuse/head';
 
 useUserDetails()
 
@@ -48,14 +48,14 @@ const posterDetail = ref<posterdetail[]>([])
 
 const isFollowing = ref(false)
 
-const title = ref('')
-const description = ref('')
-const keywords = ref('')
-const author = ref('')
-const ogDescription = ref('')
-const ogTitle = ref('')
-const ogUrl = ref('')
-const ogImage = ref('')
+// const title = ref('')
+// const description = ref('')
+// const keywords = ref('')
+// const author = ref('')
+// const ogDescription = ref('')
+// const ogTitle = ref('')
+// const ogUrl = ref('')
+// const ogImage = ref('')
 
 
 async function getCommenterdetails() {
@@ -106,21 +106,7 @@ onMounted(() => {
     } catch (error) {
         //
     }
-    getData().then(()=>{
-        console.log(divContent.value.split(' ').slice(0, 30))
-        // store.viwedPost.postDescription = divContent.value.split(' ').slice(0, 30)
-    })
-})
-
-watchEffect(()=>{
-    title.value = store.viwedPost.postTitle.join(' ')
-    description.value = store.viwedPost.postDescription.join(' ')
-    keywords.value = store.viwedPost.postKeywords.join(' ')
-    author.value = store.viwedPost.posterDetails.fullName
-    ogDescription.value = store.viwedPost.postDescription.join(' ')
-    ogTitle.value = store.viwedPost.postTitle.join(' ')
-    ogImage.value = store.viwedPost.postCoverImage
-    ogUrl.value = window.location.href
+    getData()
 })
 
 async function getPostContent() {
@@ -188,18 +174,6 @@ function routeToProfile(userId: string) {
 function back() {
     router.go(-1)
 }
-
-useSeoMeta({
-    title: title.value,
-    author: author.value,
-    description: description.value,
-    keywords: keywords.value,
-    ogDescription: ogDescription.value,
-    ogTitle: ogTitle.value,
-    ogImage: ogImage.value,
-    ogType: 'website',
-    ogUrl: ogUrl.value,
-})
 
 </script>
 <template>
