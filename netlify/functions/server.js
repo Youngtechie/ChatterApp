@@ -1,8 +1,6 @@
 import express from 'express';
-import path from 'path';
 import axios from 'axios';
 import cors from 'cors';
-import bodyParser from 'body-parser';
 import { config } from 'dotenv';
 import serverless from 'serverless-http';
 
@@ -10,7 +8,7 @@ config()
 
 const app = express();
 
-app.use(bodyParser.json());
+app.use(express.json());
 
 app.use(cors());
 
