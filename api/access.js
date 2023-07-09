@@ -1,6 +1,10 @@
 export const handler = async (event, context) => {
+  console.log(event);
     return {
       statusCode: 200,
+      headers: {
+        'Content-Type': 'application/javascript', // Set the Content-Type header to JavaScript
+      },
       body: JSON.stringify({
         message: 'Hello World!',
       }),
