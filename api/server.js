@@ -1,22 +1,11 @@
-import express from 'express';
-// import axios from 'axios';
-import cors from 'cors';
-import { config } from 'dotenv';
-import serverless from 'serverless-http';
-
-config()
-
-const app = express();
-
-app.use(express.json());
-
-app.use(cors());
-
-app.get('/lol', (req, res)=>{
-    res.send('Hello World')
-    res.send(JSON.stringify({ message: 'Hello from the serverless function!' }))
-})
-
+export const handler = async () => {
+    return {
+      statusCode: 200,
+      body: JSON.stringify({
+        message: 'Hello World!',
+      }),
+    }
+  }
 // app.post('/postContent', (req, res) => {
 //   // Access the received data from the request body
 //   const { contentUrl } = req.body; // Destructure contentUrl from req.body
@@ -44,6 +33,6 @@ app.get('/lol', (req, res)=>{
 // });
 
 // Start the Express server
-const handler = serverless(app);
+// const handler = serverless(app);
 
-export { handler };
+// export { handler };
