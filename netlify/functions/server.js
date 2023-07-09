@@ -1,5 +1,4 @@
 import express from 'express';
-import { fileURLToPath } from 'url';
 import path from 'path';
 import axios from 'axios';
 import cors from 'cors';
@@ -9,15 +8,9 @@ import serverless from 'serverless-http';
 
 config()
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
 const app = express();
 
 app.use(bodyParser.json());
-
-// Serve the Vue.js static files
-app.use(express.static(path.join(__dirname, 'dist')));
 
 app.use(cors());
 
@@ -45,10 +38,6 @@ app.post('/access', (req, res) => {
   axios.get(`${accessUrl}`).then((response) => {
     res.json(response.data);
   });
-});
-
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 // Start the Express server
