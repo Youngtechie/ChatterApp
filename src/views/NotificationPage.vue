@@ -56,6 +56,9 @@ onUnmounted(() => {
                 <RouterLink to="/login">
                     <button>Get started</button>
                 </RouterLink>
+                <RouterLink to="/login">
+                    <button>Get started</button>
+                </RouterLink>
         </section>
         <div id="warningShow"></div>
     </div>
