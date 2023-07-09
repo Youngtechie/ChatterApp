@@ -16,7 +16,6 @@ import useAddComment from '@/composables/useAddComment.vue';
 import useDeleteComment from '@/composables/useDeleteComment.vue';
 import useEditComment from '@/composables/useEditComment.vue';
 import { useSeoMeta } from '@vueuse/head';
-import { watch } from 'fs';
 
 useUserDetails()
 
@@ -108,7 +107,8 @@ onMounted(() => {
         //
     }
     getData().then(()=>{
-        store.viwedPost.postDescription = divContent.value.split(' ').slice(0, 30)
+        console.log(divContent.value.split(' ').slice(0, 30))
+        // store.viwedPost.postDescription = divContent.value.split(' ').slice(0, 30)
     })
 })
 
