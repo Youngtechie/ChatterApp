@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router';
 import { useChatterStore } from '@/stores/store';
 import { doc, getFirestore, getDoc, type DocumentData, updateDoc, onSnapshot } from 'firebase/firestore'
-import { ref, onUnmounted, onMounted } from 'vue'
+import { ref, onUnmounted, onMounted, watchEffect } from 'vue'
 import useLoadingPage from "@/composables/useLoadingPage.vue";
 import axios from 'axios'
 import useCalculateTime from '@/composables/useCalculateTime.vue';
@@ -16,6 +16,7 @@ import useAddComment from '@/composables/useAddComment.vue';
 import useDeleteComment from '@/composables/useDeleteComment.vue';
 import useEditComment from '@/composables/useEditComment.vue';
 import { useSeoMeta } from '@vueuse/head';
+import { watch } from 'fs';
 
 useUserDetails()
 
@@ -106,7 +107,20 @@ onMounted(() => {
     } catch (error) {
         //
     }
-    getData()
+    getData().then(()=>{
+        store.viwedPost.postDescription = divContent.value.split(' ').slice(0, 30)
+    })
+})
+
+watchEffect(()=>{
+    title.value = store.viwedPost.postTitle.join(' ')
+    description.value = store.viwedPost.postDescription.join(' ')
+    keywords.value = store.viwedPost.postKeywords.join(' ')
+    author.value = store.viwedPost.posterDetails.fullName
+    ogDescription.value = store.viwedPost.postDescription.join(' ')
+    ogTitle.value = store.viwedPost.postTitle.join(' ')
+    ogImage.value = store.viwedPost.postCoverImage
+    ogUrl.value = window.location.href
 })
 
 async function getPostContent() {
