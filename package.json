@@ -41,6 +41,7 @@
     "marked-gfm-heading-id": "^3.0.4",
     "marked-highlight": "^2.0.1",
     "marked-mangle": "^1.1.0",
+    "nodemon": "3.0.1",
     "pinia": "^2.0.36",
     "sass": "^1.63.6",
     "simplemde": "^1.11.2",
