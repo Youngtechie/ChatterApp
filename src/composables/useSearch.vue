@@ -121,31 +121,36 @@ async function Search(type: string, value: string) {
                     else {
                         docs.docs.forEach((doc) => {
                             const post = doc.data()
-                            getPostContent(post).then(() => {
+                            if (post !== undefined && post !== null && post.length !== 0) {
+                                getPostContent(post).then(() => {
 
-                                document.getElementById('searchBtn')?.removeAttribute('disabled')
-                                const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html')
-                                bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
-                                    tag.remove()
+                                    document.getElementById('searchBtn')?.removeAttribute('disabled')
+                                    const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html')
+                                    bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
+                                        tag.remove()
+                                    })
+                                    bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
+                                        tag.remove()
+                                    })
+
+                                    bodyImgRemove.body.querySelector('h1')?.remove()
+
+                                    divContent.value = bodyImgRemove.body.innerHTML
+
+                                    post.postContain = divContent.value
+
+                                    getPoster(post.posterId).then(() => {
+                                        post.posterDetails = poster.value
+                                        newDiv.remove()
+                                        posts.value?.push(post)
+                                    })
                                 })
-                                bodyImgRemove.body.querySelectorAll('video').forEach((tag) => {
-                                    tag.remove()
-                                })
-
-                                bodyImgRemove.body.querySelector('h1')?.remove()
-
-                                divContent.value = bodyImgRemove.body.innerHTML
-
-                                post.postContain = divContent.value
-
-                                getPoster(post.posterId).then(() => {
-                                    post.posterDetails = poster.value
-                                    newDiv.remove()
-                                    posts.value?.push(post)
-                                })
-                            })
+                            }
                         })
                     }
+                    document.getElementById('searchBtn')?.removeAttribute('disabled');
+                }).catch(() => {
+                    newDiv.textContent = 'Something went wrong, try again later'
                     document.getElementById('searchBtn')?.removeAttribute('disabled');
                 })
         } catch (err) {
@@ -171,6 +176,9 @@ async function Search(type: string, value: string) {
                             users.value.push(doc.data());
                         })
                     }
+                }).catch(() => {
+                    newDiv.textContent = 'Something went wrong, try again later'
+                    document.getElementById('searchBtn')?.removeAttribute('disabled');
                 })
         } catch (err) {
             newDiv.textContent = 'Something went wrong, try again later'

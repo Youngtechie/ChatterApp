@@ -13,7 +13,9 @@ useUserDetails()
 
 onUnmounted(() => {
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    warning.style.display = 'none'
+    if(warning) {
+        warning.style.display = 'none'
+    }
 })
 const divContent = ref('')
 
