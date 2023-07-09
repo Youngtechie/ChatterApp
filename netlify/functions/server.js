@@ -52,4 +52,6 @@ app.get('*', (req, res) => {
 });
 
 // Start the Express server
-export const handler = serverless(app);
+const handler = serverless(app);
+
+export { handler };
