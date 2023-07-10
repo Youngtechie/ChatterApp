@@ -3,6 +3,7 @@ import { ref } from 'vue';
 import AuthorFeedPage from './AuthorFeedPage.vue';
 import ReaderFeedPage from './ReaderFeedPage.vue';
 import { useChatterStore } from '@/stores/store'
+import router from '@/router';
 
 const store = useChatterStore()
 
@@ -31,12 +32,12 @@ function drag(event: MouseEvent) {
   <div class="feedDiv">
     <ReaderFeedPage v-if="store.asReader" />
     <AuthorFeedPage v-else />
-    <RouterLink to="/write" draggable="true" @dragstart="startDrag" @dragend="drag">
-      <div class="lineContainer">
-        <div :class="{ line: true }"></div>
-        <div :class="{ line: true }"></div>
-      </div>
-    </RouterLink>
+    <div class="lineContainer" draggable="true" @click.prevent="router.push('/write')" @dragstart="startDrag"
+      @dragend="drag">
+      <div :class="{ line: true }"></div>
+      <div :class="{ line: true }"></div>
+    </div>
+
     <div id="warningShow"></div>
   </div>
 </template>
@@ -51,15 +52,15 @@ function drag(event: MouseEvent) {
 
 .lineContainer {
   position: absolute;
-  bottom: 100px;
+  bottom: 150px;
   right: 20px;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 30px;
-  width: 30px;
+  height: 40px;
+  width: 40px;
   background-color: blue;
   border-radius: 50%;
 }
@@ -67,17 +68,17 @@ function drag(event: MouseEvent) {
 .line {
   position: absolute;
   width: 2px;
-  height: 40%;
+  height: 100%;
   background-color: #E5E5E5;
 }
 
 .line:nth-child(2) {
-  right: 14px;
+  right: 19px;
 }
 
 .line:nth-child(1) {
   transform: rotate(90deg);
-  right: 14px;
+  right: 19px;
 }
 
 @media screen and (min-width: 768px) {
@@ -85,5 +86,4 @@ function drag(event: MouseEvent) {
     display: none;
   }
 }
-
 </style>

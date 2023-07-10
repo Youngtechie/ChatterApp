@@ -229,9 +229,6 @@ section p:not(#section3 section p){
     #section1{
         height: 500px;
     }
-    #section3Parts section{
-        height: 350px;
-        width: 250px;
-    }
+
 }
 </style>

@@ -445,6 +445,9 @@ h1,
     text-align: center;
 }
 
+h1{
+    margin: 0 5px;
+}
 h1:not(.coverImage h1) {
     font-weight: 700;
     text-transform: uppercase;
@@ -527,6 +530,7 @@ h4{
     width: 100%;
     border-radius: 5px;
     margin-bottom: 5px;
+    margin-left: 60px;
 }
 
 .Eachcomment {
