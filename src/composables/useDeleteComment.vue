@@ -95,44 +95,48 @@ async function deleteComment(userId: string, postId: string, posterId: string, c
                                         return updatedOutArray;
                                     }
 
-                                    if (user.comments.out.some((comment: any) => comment.postId === postId)) {
-                                        updateDoc(doc(db, 'users', `${userId}`), {
-                                            ['comments.out']: newOutArray(user),
-                                            ['comments.total.out']: user.comments.total.out - 1,
-                                            ['activityLog']: [...user.activityLog, {
-                                                type: 'You deleted a comment on this post',
-                                                details: {
-                                                    commentId: commentIndex,
-                                                    postId: postId,
-                                                    text: commentText,
-                                                    time: new Date()
-                                                }
-                                            }],
-                                            ["interactions"]: user.interactions.filter((interaction: Record<string, any>) => interaction.details.commentId !== commentIndex)
-                                        })
-                                    }
-                                    if (post.postComments) {
-                                        updateDoc(doc(db, 'posts', `${postId}`), {
-                                            ['postComments.details']: post.postComments.details.filter((comment: Record<string, any>) => comment.commentId !== commentIndex),
-                                            ['postComments.total']: post.postComments.total - 1
-                                        })
+                                    if (user !== undefined && user !== null && user.length !== 0 && post !== undefined && post !== null && post.length !== 0 && poster !== undefined && poster !== null && poster.length !== 0) {
+
+                                        if (user.comments.out.some((comment: any) => comment.postId === postId)) {
+                                            updateDoc(doc(db, 'users', `${userId}`), {
+                                                ['comments.out']: newOutArray(user),
+                                                ['comments.total.out']: user.comments.total.out - 1,
+                                                ['activityLog']: [...user.activityLog, {
+                                                    type: 'You deleted a comment on this post',
+                                                    details: {
+                                                        commentId: commentIndex,
+                                                        postId: postId,
+                                                        text: commentText,
+                                                        time: new Date()
+                                                    }
+                                                }],
+                                                ["interactions"]: user.interactions.filter((interaction: Record<string, any>) => interaction.details.commentId !== commentIndex)
+                                            })
+                                        }
+                                        if (post.postComments) {
+                                            updateDoc(doc(db, 'posts', `${postId}`), {
+                                                ['postComments.details']: post.postComments.details.filter((comment: Record<string, any>) => comment.commentId !== commentIndex),
+                                                ['postComments.total']: post.postComments.total - 1
+                                            })
+                                        }
+
+                                        if (poster.comments.in.some((comment: any) => comment.postId === postId)) {
+                                            updateDoc(doc(db, 'users', `${posterId}`), {
+                                                ['comments.in']: newInArray(poster),
+                                                ['comments.total.in']: poster.comments.total.in - 1,
+                                                ["notifications"]: poster.notifications.filter((notification: Record<string, any>) => notification.details.commentId !== commentIndex)
+                                            })
+                                        }
+
+                                        updateStore();
                                     }
 
-                                    if (poster.comments.in.some((comment: any) => comment.postId === postId)) {
-                                        updateDoc(doc(db, 'users', `${posterId}`), {
-                                            ['comments.in']: newInArray(poster),
-                                            ['comments.total.in']: poster.comments.total.in - 1,
-                                            ["notifications"]: poster.notifications.filter((notification: Record<string, any>) => notification.details.commentId !== commentIndex)
-                                        })
-                                    }
-
-                                    updateStore();
                                 })
                         })
 
                 })
         } catch (error) {
-            console.log(error);
+            throw new Error("Error deleting comment");   
         }
     }
 }
@@ -144,9 +148,17 @@ async function deleteComment(userId: string, postId: string, posterId: string, c
 <style scoped>
 .delBtn {
     color: red;
+    cursor: pointer;
+    border-radius: 10px;
 }
+
 .delBtn {
     background-color: red;
     color: white;
+}
+
+.delBtn:hover {
+    background-color: transparent;
+    color: red;
 }
 </style>

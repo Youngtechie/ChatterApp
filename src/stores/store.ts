@@ -12,9 +12,9 @@ export const useChatterStore = defineStore('chatter', () => {
   const asReader = ref(true) 
   const section = 'personal' 
   const sidebar = ref(false) 
-  const signedUser: DocumentData = {}
+  const signedUser: DocumentData = ref({})
   const viwedPost: DocumentData = ref({})
-  const viwedProfile: DocumentData = {}
+  const viwedProfile: DocumentData = ref({})
   const coverImageFile = ref<File | null>(null)
   const viwedPosterFollowed = ref(false)
   const textarea: textarea[] = []

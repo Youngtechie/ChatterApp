@@ -413,6 +413,9 @@ header {
 header #sidebarOpenBtn {
     background-color: transparent;
 }
+header button{
+    cursor: pointer;
+}
 
 .imgCon {
     width: 50px;
@@ -504,7 +507,7 @@ nav #navFooter {
     border-radius: 5px;
 }
 
-#navigators button:hover {
+#navigators button:hover, header button:hover {
     background-color: #007bff;
     color: #fff;
 }

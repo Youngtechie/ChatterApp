@@ -369,7 +369,7 @@ header button {
     border-radius: 5px;
 }
 
-#navigators button:hover {
+#navigators button:hover, header button:hover {
     background-color: #007bff;
     color: #fff;
 }

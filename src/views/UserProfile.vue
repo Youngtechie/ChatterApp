@@ -36,7 +36,7 @@ onMounted(() => {
 
     nextTick(() => {
         const warning = document.getElementById('warningShow') as HTMLDivElement
-        if(warning){
+        if (warning) {
             warning.style.display = 'none'
         }
     })
@@ -46,7 +46,7 @@ onMounted(() => {
 
 const poster = ref<Poster | null>()
 
-const { app } = useAuthentication()
+const { app, auth } = useAuthentication()
 
 const db = getFirestore(app)
 
@@ -57,6 +57,10 @@ const DomParse = new DOMParser()
 const divContent = ref('')
 
 const interactionsArr = ref<EachInteraction[]>([])
+
+let id: ReturnType<typeof setTimeout>;
+
+const deleted = ref("false")
 
 
 async function getPostContent(post: DocumentData) {
@@ -193,22 +197,42 @@ function routeToProfile(userId: string) {
     }
 }
 
-async function deleteUser(userId: string) {
+async function deleteUserDetails(userId: string) {
+    const warningShow = document.getElementById('warningShow') as HTMLDivElement
+    warningShow.style.display = 'flex'
+    warningShow.textContent = 'Deleting account ...'
+    const user = auth.currentUser
     const userRef = doc(db, 'users', userId)
-    await deleteDoc(userRef)
-    const q = query(collection(db, 'posts'), where('posterId', '==', userId))
-    const querySnapshot = await getDocs(q)
-    querySnapshot.forEach((d) => {
-        const post = d.data()
-        const postRef = doc(db, 'posts', post.postId)
-        const folderPath = `ChatterAppFiles/posts/${post.postId}`;
-        deleteFolder(folderPath);
-        deleteDoc(postRef)
+    user?.delete().then(() => {
+        deleteDoc(userRef)
+        const q = query(collection(db, 'posts'), where('posterId', '==', userId))
+        getDocs(q).then((d) => {
+            d.docs.forEach((document) => {
+                const post = document.data()
+                const postRef = doc(db, 'posts', post.postId)
+                const folderPath = `ChatterAppFiles/posts/${post.postId}`;
+                deleteFolder(folderPath);
+                deleteDoc(postRef)
+            })
+            const avatarRef = `ChatterAppFiles/avatar/${userId}`
+            deleteFolder(avatarRef)
+            SignOut()
+            warningShow.style.display = 'Account deleted successfully'
+            store.authenticated = false
+            deleted.value = "true"
+           id = setTimeout(() => {
+                warningShow.style.display = 'none'
+                store.signedUser = {}
+                router.push('/home')
+            }, 2000)
+        })
+    }).catch(() => {
+        warningShow.textContent = 'An error occured, Check your network connection and try again'
+        id = setTimeout(() => {
+            warningShow.style.display = 'none'
+        }, 2000)
     })
-    const avatarRef = `ChatterAppFiles/avatar/${userId}`
-    deleteFolder(avatarRef)
 }
-
 async function deleteFolder(folderPath: string) {
     const folderRef = storageRef(storage, folderPath);
 
@@ -230,38 +254,27 @@ async function deleteAccount() {
         return
     }
     try {
-        const warningShow = document.getElementById('warningShow') as HTMLDivElement
-        warningShow.style.display = 'flex'
-        warningShow.textContent = 'Deleting account ...'
-        await deleteUser(store.signedUser.id).then(() => {
-            warningShow.textContent = 'Account deleted successfully'
-            SignOut()
-            setTimeout(() => {
-                store.authenticated = false
-                store.signedUser = {}
-                warningShow.style.display = 'none'
-                router.push('/home')
-            }, 2000)
-        }).catch(() => {
+        await deleteUserDetails(store.signedUser.id).catch(() => {
             const warningShow = document.getElementById('warningShow') as HTMLDivElement
             warningShow.style.display = 'flex'
             warningShow.textContent = 'An error occured, Check your network connection and try again'
-            setTimeout(() => {
+            id = setTimeout(() => {
                 warningShow.style.display = 'none'
             }, 2000)
         })
+        
     }
     catch (error) {
         const warningShow = document.getElementById('warningShow') as HTMLDivElement
         warningShow.style.display = 'flex'
         warningShow.textContent = 'An error occurred, Check your network connection and try again'
-        setTimeout(() => {
+        id = setTimeout(() => {
             warningShow.style.display = 'none'
         }, 2000)
     }
 }
 
-let id = setTimeout(() => {
+id = setTimeout(() => {
     if (store.signedUser.id === undefined && store.authenticated === false) {
         router.push('/home')
     }
@@ -316,14 +329,14 @@ onUnmounted(() => {
             </button>
         </header>
 
-        <div class="body">
+        <div class="body" v-if="deleted === 'false'">
             <div class="imageCon">
                 <div class="imgCon" :style="{ backgroundImage: `url(${store.signedUser.profilePicture})` }"></div>
             </div>
 
             <section class="sectionFoImage">
                 <h3>{{ store.signedUser.fullName }}</h3>
-                <p v-if="store.signedUser.bio.length > 0">{{ store.signedUser.bio }}</p>
+                <p v-if="store.signedUser.bio">{{ store.signedUser.bio }}</p>
                 <div class="follow">
                     <p>{{ store.signedUser.followers.total }} Followers</p>
                     <p>||</p>
@@ -717,14 +730,16 @@ header button:first-of-type {
     color: black;
     background-color: #efefef;
 }
+
 @media screen and (max-width: 767px) {
-    #warningShowint{
+    #warningShowint {
         height: 150px;
         width: 150px;
     }
 }
+
 @media screen and (min-width: 768px) {
-    #warningShowint{
+    #warningShowint {
         height: 200px;
         width: 200px;
     }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, ref, type Ref } from 'vue';
+import { onUnmounted, ref, type Ref, nextTick } from 'vue';
 import { useRouter } from 'vue-router';
 import { useChatterStore } from '@/stores/store';
 import { collection, query, where, getDocs, getFirestore, setDoc, doc } from "firebase/firestore";
@@ -26,40 +26,54 @@ const isLoading: Ref<boolean> = ref(true)
 let timeOut: ReturnType<typeof setTimeout>;
 
 async function getUserDetails(accessToken: any, result: any) {
+    const warningShow = document.getElementById('warningShow') as HTMLDivElement
+    nextTick(() => {
+        if (warningShow) {
+            warningShow.style.display = 'flex'
+            warningShow.textContent = 'Authenticating....'
+        }
+    })
     const accessUrl = `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${accessToken}`
     axios.post('/.netlify/functions/access', { accessUrl }).then((res) => {
         details.value = res.data.details
-        const q = query(collection(db, 'users'), where('email', '==', `${details.value.email}`))
-        getDocs(q).then((document) => {
-            const ChatterAcc = document?.docs
-            if (ChatterAcc.length < 1 && details.value.email) {
-                const NewUser = store.createUser(details.value.email)
+        if (details.value.email !== '' && details.value.email !== null && details.value.email !== undefined) {
+            const q = query(collection(db, 'users'), where('email', '==', `${details.value.email}`))
+            getDocs(q).then((document) => {
+                if (document?.empty) {
+                    if (document?.docs.length < 1 && details.value.email) {
+                        const NewUser = store.createUser(details.value.email)
 
-                const firstName = details.value.given_name !== undefined ? details.value.given_name : ''
-                const lastName = details.value.family_name !== undefined ? details.value.family_name : ''
+                        const firstName = details.value.given_name !== undefined ? details.value.given_name : ''
+                        const lastName = details.value.family_name !== undefined ? details.value.family_name : ''
 
-                NewUser.fullName = firstName + ' ' + lastName
+                        NewUser.fullName = firstName + ' ' + lastName
 
-                NewUser.id = result.user.uid
+                        NewUser.id = result.user.uid
 
-                const unknownAvatar = refFromStorage(storage, "ChatterAppFiles/avatar/unknown/UnkownUser.png")
+                        const unknownAvatar = refFromStorage(storage, "ChatterAppFiles/avatar/unknown/UnkownUser.png")
 
-                getDownloadURL(unknownAvatar).then((url) => {
-                    NewUser.profilePicture = url
-                }).finally(() => {
-                    setDoc(doc(db, "users", `${result.user.uid}`), { ...NewUser }).then(() => {
-                        isLoading.value = true
-                        router.push('/additionalData')
-                    })
-                })
-            }
-            else if (ChatterAcc.length > 0 && ChatterAcc[0].data().username.trim() !== '') {
-                router.push('/home')
-            }
-            else if (ChatterAcc.length > 0 && ChatterAcc[0].data().username === '') {
-                router.push('/additionalData')
-            }
-        })
+                        getDownloadURL(unknownAvatar).then((url) => {
+                            NewUser.profilePicture = url
+                        }).finally(() => {
+                            setDoc(doc(db, "users", `${result.user.uid}`), { ...NewUser }).then(() => {
+                                isLoading.value = true
+                                router.push('/additionalData');
+                                if (warningShow) {
+                                    warningShow.style.display = 'none'
+                                }
+                            })
+                        })
+                    }
+                }
+                else if (!document?.empty && document?.docs.length > 0 && document?.docs[0].data().username === '') {
+                    isLoading.value = true
+                    router.push('/additionalData')
+                }
+                else {
+                    router.push('/home')
+                }
+            })
+        }
     }).catch(() => {
         const warningShow = document.getElementById('warningShow') as HTMLDivElement
         if (warningShow) {
@@ -73,17 +87,19 @@ function LoginWithGmail() {
     setPersistence(auth, browserSessionPersistence)
     signInWithPopup(auth, provider)
         .then((result) => {
-            const credential = GoogleAuthProvider.credentialFromResult(result);
-            getUserDetails(credential?.accessToken, result)
+            if (result !== null && result !== undefined) {
+                const credential = GoogleAuthProvider.credentialFromResult(result);
+                getUserDetails(credential?.accessToken, result)
+            }
         }).catch(() => {
             const warningShow = document.getElementById('warningShow') as HTMLDivElement
             if (warningShow) {
                 warningShow.style.display = 'flex'
                 warningShow.textContent = 'Something went wrong, check your internet connection and try again.'
                 timeOut = setTimeout(() => {
-    const warningShow = document.getElementById('warningShow') as HTMLDivElement
-                warningShow.style.display = 'none'
-}, 3000)
+                    const warningShow = document.getElementById('warningShow') as HTMLDivElement
+                    warningShow.style.display = 'none'
+                }, 3000)
             }
         })
 }

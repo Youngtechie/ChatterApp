@@ -107,6 +107,13 @@ button {
     top: 10px;
     left: 10px;
     padding: 5px;
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+button:hover{
+    background-color: blue;
+    color: white;
 }
 
 .analysisPage {

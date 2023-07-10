@@ -216,6 +216,7 @@ textarea {
     overflow-y: scroll;
     color: #fff;
     font-size: large;
+    cursor: pointer;
 }
 button:not(.editBTn) {
     border: 2px outset #ccc;
@@ -226,6 +227,14 @@ button:not(.editBTn) {
     outline: none;
     width: 150px;
     margin-top: 10px;
+}
+button{
+    cursor: pointer;
+    border-radius: 10px;
+}
+
+button:hover{
+    background-color: #888;
 }
 
 </style>

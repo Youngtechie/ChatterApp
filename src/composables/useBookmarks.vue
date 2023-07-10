@@ -26,8 +26,6 @@ async function getFieldFromFirebase(id: string) {
         if (docSnap.exists()) {
             const field = docSnap.data().bookmarks; // Replace "fieldName" with the actual field name you want to retrieve
             store.signedUser.bookmarks = field
-        } else {
-            console.log('Document does not exist');
         }
     } catch (error) {
         console.error('Error getting field from Firebase:', error);

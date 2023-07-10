@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type Ref, onUnmounted, watchEffect, onMounted } from 'vue'
+import { ref, type Ref, onUnmounted, watchEffect, onMounted, nextTick } from 'vue'
 import { doc, updateDoc, getFirestore, deleteDoc } from 'firebase/firestore'
 import { useChatterStore } from '@/stores/store';
 import { useRouter } from 'vue-router';
@@ -8,7 +8,7 @@ import useUserDetails from '@/composables/useUserDetails.vue'
 import useLoadingPage from '@/composables/useLoadingPage.vue';
 import SignOut from '@/composables/useSignOut.vue'
 
-const { app } = useAuthentication()
+const { app, auth } = useAuthentication()
 const router = useRouter()
 const store = useChatterStore()
 const db = getFirestore(app)
@@ -53,16 +53,30 @@ async function AddOtherInfo() {
   }
 }
 
-async function Delete() {
+function Delete() {
   if (store.signedUser.id !== undefined && store.signedUser.id !== '' && store.signedUser.id !== null) {
-    let deletedId = store.signedUser.id
-    SignOut().then(() => {
-      deleteDoc(doc(db, 'users', `${deletedId}`)).then(() => {
-        store.signedUser = {}
-        store.authenticated = false
-        router.push('/')
+    const ans = confirm('Are you sure you want to delete your account?')
+    if (ans) {
+      nextTick(() => {
+        const warningShow = document.getElementById('warningShow') as HTMLDivElement
+        if (warningShow) {
+          warningShow.style.display = 'flex'
+          warningShow.textContent = 'Deleting your account...'
+        }
+        let deletedId = store.signedUser.id
+        const user = auth.currentUser
+        user?.delete().then(()=>{
+          SignOut()
+          store.signedUser = {}
+          deleteDoc(doc(db, 'users', `${deletedId}`))
+          store.authenticated = false
+          router.push({ name: 'Home' })
+        })
       })
-    })
+    }
+    else{
+      return
+    }
   }
 }
 
@@ -82,6 +96,10 @@ let id = setTimeout(() => {
 
 onUnmounted(() => {
   clearTimeout(id)
+  const warningShow = document.getElementById('warningShow') as HTMLDivElement
+  if (warningShow) {
+    warningShow.style.display = 'none'
+  }
 })
 
 </script>
@@ -89,6 +107,7 @@ onUnmounted(() => {
 <template>
   <useLoadingPage v-if="isLoading" :action-name="'Loading...'" />
   <div v-else id="otherInfoCon">
+    <div id="warningShow"></div>
     <form @submit.prevent="AddOtherInfo" class="otherInfoForm">
       <section class="fullname">
         <label for="fullname2">Full Name:</label>
@@ -226,7 +245,7 @@ input[type="date"] {
   background-color: #0056b3;
 }
 
-.delete-button:hover{
+.delete-button:hover {
   background-color: red;
 }
 
