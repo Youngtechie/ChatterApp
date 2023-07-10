@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const handler = async (req,res) => {
+export default const handler = async (req,res) => {
     try {
     const eventBody = JSON.parse(req.body);
     const contentUrl = eventBody.contentUrl; // Destructure contentUrl from req.body
