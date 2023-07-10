@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-export const handler = async (event) => {
+export default const handler = async (event) => {
   const send = JSON.parse(event.body)
   const accessUrl = send.accessUrl
 
