@@ -1,12 +1,18 @@
-export const handler = async (event, context) => {
-  console.log(event);
+import axios from 'axios'
+
+export const handler = async (event) => {
+  const send = JSON.parse(event.body)
+  const accessUrl = send.accessUrl
+
+  const res = axios.get(`${accessUrl}`)
+
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/javascript', // Set the Content-Type header to JavaScript
       },
       body: JSON.stringify({
-        message: 'Hello World!',
+        details: (await res).data
       }),
     }
   }

@@ -45,8 +45,8 @@ const toolbar = ref<HTMLDivElement | null>(null)
 async function getPostContent(post: DocumentData) {
 
   const contentUrl = post.postRawContent
-  const response = await axios.post('/postContent', { contentUrl });
-  const newHTML = DomParse.parseFromString(response.data as string, 'text/html');
+  const response = await axios.post('/.netlify/functions/postContent', { contentUrl });
+  const newHTML = DomParse.parseFromString(response.data.content as string, 'text/html');
 
   if (textarea.value) {
     textarea.value.innerHTML = newHTML.body.innerHTML as string;

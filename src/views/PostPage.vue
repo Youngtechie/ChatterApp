@@ -111,9 +111,9 @@ onMounted(() => {
 
 async function getPostContent() {
     const contentUrl = store.viwedPost.postContain
-    await axios.post('/postContent', { contentUrl })
+    await axios.post('/.netlify/functions/postContent', { contentUrl })
         .then(response => {
-            const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
+            const newHTML = DomParse.parseFromString(response.data.content as string, 'text/html')
 
             newHTML.body.querySelector('h1')?.remove();
 

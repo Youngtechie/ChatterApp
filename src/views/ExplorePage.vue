@@ -59,7 +59,7 @@ async function getPostContent(post: DocumentData) {
     const contentUrl = post.postContain
     await axios.post('/.netlify/functions/postContent', { contentUrl })
         .then(response => {
-            const newHTML = DomParse.parseFromString(response.data as string, 'text/html')
+            const newHTML = DomParse.parseFromString(response.data.content as string, 'text/html')
             divContent.value = newHTML.body.innerHTML
         })
 }

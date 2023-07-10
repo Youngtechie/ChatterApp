@@ -28,7 +28,7 @@ let timeOut: ReturnType<typeof setTimeout>;
 async function getUserDetails(accessToken: any, result: any) {
     const accessUrl = `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${accessToken}`
     axios.post('/.netlify/functions/access', { accessUrl }).then((res) => {
-        details.value = res.data
+        details.value = res.data.details
         const q = query(collection(db, 'users'), where('email', '==', `${details.value.email}`))
         getDocs(q).then((document) => {
             const ChatterAcc = document?.docs
