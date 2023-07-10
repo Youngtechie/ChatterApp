@@ -1,9 +1,8 @@
 import axios from 'axios'
 
-export default const handler = async (event) => {
+export  const handler = async (event) => {
   const send = JSON.parse(event.body)
   const accessUrl = send.accessUrl
-
   const res = axios.get(`${accessUrl}`)
 
     return {
