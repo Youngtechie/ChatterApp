@@ -81,6 +81,10 @@ function LoginWithGmail() {
             if (warningShow) {
                 warningShow.style.display = 'flex'
                 warningShow.textContent = 'Something went wrong, check your internet connection and try again.'
+                timeOut = setTimeout(() => {
+    const warningShow = document.getElementById('warningShow') as HTMLDivElement
+                warningShow.style.display = 'none'
+}, 3000)
             }
         })
 }
