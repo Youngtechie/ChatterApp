@@ -11,7 +11,7 @@ import useCalculateTime from '@/composables/useCalculateTime.vue'
 
 onUnmounted(() => {
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    if(warning){
+    if (warning) {
         warning.style.display = 'none'
     }
 })
@@ -102,10 +102,7 @@ function handleChangeSection(section: string) {
         }
     }
     if (section === 'interested_section') {
-        store.signedUser.interests.forEach((interest: string) => {
-            const newInterest = interest.trim()
-            interests.value.push(newInterest.charAt(0).toUpperCase() + newInterest.slice(1).toLowerCase())
-        })
+        posts.value = []
         try {
             getPostsByTag(interests.value)
         } catch (error) {
@@ -141,10 +138,6 @@ async function getPostContent(post: DocumentData) {
             const newHTML = DomParse.parseFromString(response.data.content as string, 'text/html')
             divContent.value = newHTML.body.innerHTML
         })
-        .catch((error) => {
-            console.log(error)
-        })
-
 }
 
 async function getPoster(posterID: string) {
@@ -246,9 +239,9 @@ async function getFollowings() {
             querySnapshot.docs.map(async (doc) => {
                 const following = doc.data();
 
-                if(following !== undefined && following !== null && following.length !== 0){
+                if (following !== undefined && following !== null && following.length !== 0) {
                     await getPostContent(following);
-    
+
                     const bodyImgRemove = DomParse.parseFromString(divContent.value, 'text/html');
                     bodyImgRemove.body.querySelectorAll('img').forEach((tag) => {
                         tag.remove();
@@ -257,16 +250,16 @@ async function getFollowings() {
                         tag.remove();
                     });
                     bodyImgRemove.body.querySelector('h1')?.remove();
-    
+
                     divContent.value = bodyImgRemove.body.innerHTML;
                     following.postContain = divContent.value;
-    
+
                     await getPoster(following.posterId);
-    
+
                     following.posterDetails = poster.value;
                     poster.value = null;
                     isLoading.value = false;
-    
+
                     return following;
                 }
             })

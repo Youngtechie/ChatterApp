@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import useAuthentication from './useAuth.vue';
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, onSnapshot } from 'firebase/firestore'
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc, onSnapshot, getDoc } from 'firebase/firestore'
 import router from '@/router';
 import { useChatterStore } from '@/stores/store';
 
@@ -19,6 +19,21 @@ const PostQ = query(collection(db, 'posts'), where('postId', '==', `${props.view
 
 const bookmarked = ref(false)
 
+async function getFieldFromFirebase(id: string) {
+    try {
+        const docRef = doc(db, 'users', `${id}`);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const field = docSnap.data().bookmarks; // Replace "fieldName" with the actual field name you want to retrieve
+            store.signedUser.bookmarks = field
+        } else {
+            console.log('Document does not exist');
+        }
+    } catch (error) {
+        console.error('Error getting field from Firebase:', error);
+    }
+}
+
 onMounted(() => {
     onSnapshot(PostQ, (doc2) => {
         const post = doc2.docs[0].data()
@@ -28,13 +43,14 @@ onMounted(() => {
                 document.querySelectorAll(`#btnBook${props.viewPostId} span`).forEach((element) => {
                     element.textContent = `${post.postBookmarks.length}`;
                 })
-
+                getFieldFromFirebase(store.signedUser.id);
             }
             else if (!post.postBookmarks.includes(store.signedUser.id)) {
                 bookmarked.value = false;
                 document.querySelectorAll(`#btnBook${props.viewPostId} span`).forEach((element) => {
                     element.textContent = `${post.postBookmarks.length}`;
                 })
+                getFieldFromFirebase(store.signedUser.id);
             }
         }
     })
@@ -42,7 +58,7 @@ onMounted(() => {
 
 function bookmark(userId: string, postId: string) {
     if (userId === '' || userId === undefined) {
-        const ans = confirm('You must be logged in to comment, will you love to sign up?')
+        const ans = confirm('You must be logged in to bookmark a post, will you love to sign up?')
         if (ans) {
             router.push('/join')
         }
@@ -117,6 +133,6 @@ function bookmark(userId: string, postId: string) {
 <style scoped>
 span {
     font-weight: bold;
-    font-size: smaller;
+    font-size: 12px;
 }
 </style>

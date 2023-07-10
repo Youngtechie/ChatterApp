@@ -659,8 +659,6 @@ header button:first-of-type {
     padding: 10px;
     border: 1px outset #efefef;
     text-align: center;
-    height: 150px;
-    width: 150px;
     border-radius: 10px;
     font-weight: bolder;
     align-items: center;
@@ -670,33 +668,27 @@ header button:first-of-type {
     justify-self: center;
 }
 
-#warningShow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 10px;
-    border: 1px outset #efefef;
-    display: none;
-    text-align: center;
-    height: 200px;
-    width: 200px;
-    border-radius: 10px;
-    font-weight: bolder;
-    align-items: center;
-    justify-content: center;
-}
-
-.DayApp #warningShowint,
-.DayApp #warningShow {
+.DayApp #warningShowint{
     color: #efefef;
     background-color: black;
 }
 
-.NightApp #warningShowint,
-.NightApp #warningShow {
+.NightApp #warningShowint{
     color: black;
     background-color: #efefef;
+}
+
+@media screen and (max-width: 767px) {
+    #warningShowint{
+        height: 150px;
+        width: 150px;
+    }
+}
+@media screen and (min-width: 768px) {
+    #warningShowint{
+        height: 200px;
+        width: 200px;
+    }
 }
 
 @media screen and (min-width: 1200px) {

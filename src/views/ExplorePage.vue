@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watchEffect, onMounted, nextTick, onUnmounted } from 'vue'
+import { ref, onMounted, nextTick, onUnmounted } from 'vue'
 import { useChatterStore } from '@/stores/store';
 import { getFirestore, collection, query, getDocs, type DocumentData, limit, orderBy, startAfter, doc, getDoc } from 'firebase/firestore'
 import { useRouter } from 'vue-router';
@@ -41,6 +41,8 @@ const poster = ref<Poster | null>()
 
 const isloading = ref(true)
 
+let bigSizeScreen = ref(false)
+
 onMounted(() => {
     nextTick(() => {
         const warningShow = document.getElementById('warningShow');
@@ -52,7 +54,28 @@ onMounted(() => {
     currentQ.value = query(collection(db, 'posts'), orderBy('postTime', 'desc'), limit(15))
 
     getPosts(currentQ.value)
+
+    window.addEventListener('resize', handleResize);
+
+    const browserWidth = window.innerWidth;
+    if (browserWidth as number >= 768) {
+        bigSizeScreen.value = true
+    }
+    else {
+        bigSizeScreen.value = false
+    }
 })
+
+function handleResize() {
+    const browserWidth = window.innerWidth;
+    if (browserWidth as number >= 768) {
+        bigSizeScreen.value = true
+    }
+    else {
+        bigSizeScreen.value = false
+    }
+}
+
 
 async function getPostContent(post: DocumentData) {
     divContent.value = ''
@@ -112,6 +135,22 @@ async function getPosts(query: any) {
     posts.value = resolvedPosts as DocumentData[];
     poster.value = null;
     isloading.value = false;
+
+    if (posts.value?.length as number > 0) {
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'none';
+            }
+        })
+    }
+    else if(posts.value.length === 0){
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'flex';
+                warningShow.textContent = 'An error occurred, check your internet connection and try reloading.'
+            }
+    }
 }
 
 function next() {
@@ -139,20 +178,9 @@ function routeToProfile(userId: string) {
     }
 }
 
-watchEffect(() => {
-    if (posts.value?.length as number > 0) {
-        nextTick(() => {
-            const warningShow = document.getElementById('warningShow');
-            if (warningShow) {
-                warningShow.style.display = 'none';
-            }
-        })
-    }
-})
-
 onUnmounted(() => {
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    if(warning){
+    if (warning) {
         warning.style.display = 'none'
     }
 })
@@ -160,7 +188,7 @@ onUnmounted(() => {
 </script>
 <template>
     <main class="exploreSection">
-        <h2>Exploring Posts</h2>
+        <h2 v-show="!bigSizeScreen">Exploring Posts</h2>
         <div v-if="posts?.length as number > 0 && isloading === false" :class="{ resultsContainer: true }">
             <div v-for="(post, index) in posts" :key="index" class="result-item">
                 <div class="imgCon" @click.prevent="routeToProfile(post.posterId)"
@@ -224,7 +252,6 @@ h2 {
     border-bottom: 1px solid #ccc;
     display: flex;
     flex-direction: row;
-    align-items: center;
     justify-content: center;
     width: 100%;
 }
@@ -261,33 +288,6 @@ h2 {
     font-size: medium;
 }
 
-#warningShow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 10px;
-    border: 1px outset #efefef;
-    display: none;
-    text-align: center;
-    height: 200px;
-    width: 200px;
-    border-radius: 10px;
-    font-weight: bolder;
-    align-items: center;
-    justify-content: center;
-}
-
-.DayApp #warningShow {
-    color: #efefef;
-    background-color: black;
-}
-
-.NightApp #warningShow {
-    color: black;
-    background-color: #efefef;
-}
-
 @media screen and (min-width: 992px) {
     .result-item-other {
         width: 300px;
@@ -299,5 +299,4 @@ h2 {
     }
 
 }
-
 </style>

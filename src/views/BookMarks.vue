@@ -13,7 +13,7 @@ useUserDetails()
 
 onUnmounted(() => {
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    if(warning) {
+    if (warning) {
         warning.style.display = 'none'
     }
 })
@@ -42,8 +42,10 @@ interface Poster {
 
 const posts = ref<DocumentData[] | null>([])
 const poster = ref<Poster | null>()
+let bigSizeScreen = ref(false)
 
 onMounted(() => {
+    window.addEventListener('resize', handleResize);
     nextTick(() => {
         const warningShow = document.getElementById('warningShow');
         if (warningShow) {
@@ -52,11 +54,35 @@ onMounted(() => {
         }
     })
     getPosts(store.signedUser.bookmarks)
+    const browserWidth = window.innerWidth;
+    if (browserWidth as number >= 768) {
+        bigSizeScreen.value = true
+    }
+    else {
+        bigSizeScreen.value = false
+    }
 })
+
+function handleResize() {
+    const browserWidth = window.innerWidth;
+    if (browserWidth as number >= 768) {
+        bigSizeScreen.value = true
+    }
+    else {
+        bigSizeScreen.value = false
+    }
+}
 
 watchEffect(() => {
     if (store.signedUser.bookmarks.length === 0) {
         posts.value = []
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'flex';
+                warningShow.textContent = 'No bookmarks yet'
+            }
+        })
     }
 })
 
@@ -177,7 +203,7 @@ async function getPosts(bookmarks: string[]) {
 <template>
     <section class="bookmarksPage">
         <div id="warningShow"></div>
-        <h2>Bookmarks</h2>
+        <h2 v-show="!bigSizeScreen">Bookmarks</h2>
         <div class="bookmarksCon">
             <div v-if="posts?.length as number > 0" :class="{ resultsContainer: true }">
                 <div v-for="(post, index) in posts" :key="index" class="result-item">
@@ -301,33 +327,6 @@ h2 {
     font-size: medium;
 }
 
-#warningShow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 10px;
-    border: 1px outset #efefef;
-    display: none;
-    text-align: center;
-    height: 200px;
-    width: 200px;
-    border-radius: 10px;
-    font-weight: bolder;
-    align-items: center;
-    justify-content: center;
-}
-
-.DayApp #warningShow {
-    color: #efefef;
-    background-color: black;
-}
-
-.NightApp #warningShow {
-    color: black;
-    background-color: #efefef;
-}
-
 @media screen and (min-width: 992px) {
     .result-item-other {
         width: 300px;
@@ -336,11 +335,6 @@ h2 {
     .imgCon {
         width: 70px;
         height: 70px;
-    }
-
-    #warningShow {
-        width: 300px;
-        height: 300px;
     }
 }
 </style>

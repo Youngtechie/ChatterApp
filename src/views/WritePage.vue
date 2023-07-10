@@ -10,6 +10,7 @@ import useUserDetails from '@/composables/useUserDetails.vue'
 import CreatePostToCloud from '@/components/CreatePostToCloud.vue';
 import axios from 'axios'
 import useAuthentication from '@/composables/useAuth.vue'
+import { useSeoMeta } from '@vueuse/head';
 
 useUserDetails()
 
@@ -94,6 +95,13 @@ function handleBeforeUnload(event: BeforeUnloadEvent) {
 }
 
 onMounted(() => {
+  useSeoMeta({
+    title: 'Write a post',
+    description: 'Write a post on Chatter',
+    ogDescription: 'Write a post on Chatter',
+    ogTitle: 'Write a post',
+    ogUrl: 'https://chatter-2c1b0.web.app/write',
+  })
   // Add event listener for beforeunload
   window.addEventListener('beforeunload', handleBeforeUnload);
   // Add event listener for window resize
@@ -991,33 +999,6 @@ form .firstDiv h2 {
 
 .publishsection input[type='submit'] {
   margin-top: 30px;
-}
-
-#warningShow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  padding: 10px;
-  border: 1px outset #efefef;
-  display: none;
-  text-align: center;
-  height: 200px;
-  width: 200px;
-  border-radius: 10px;
-  font-weight: bolder;
-  align-items: center;
-  justify-content: center;
-}
-
-.DayApp #warningShow {
-  color: #efefef;
-  background-color: black;
-}
-
-.NightApp #warningShow {
-  color: black;
-  background-color: #efefef;
 }
 
 button:hover,

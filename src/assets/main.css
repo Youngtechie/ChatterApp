@@ -95,12 +95,10 @@ a, a:active, a:hover{
 }
 .DayApp .analysesDisplay svg path{
     stroke: black;
-    stroke-width: 1px;
 }
 
 .NightApp .analysesDisplay svg path{
   stroke: #fff;
-  stroke-width: 1px;
 }
 
 .DayApp .clickNotify{
@@ -128,14 +126,64 @@ nav .otherNavDetails a.router-link-active button{
 button{
   border: 2px solid #ccc;
 }
+#warningShow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px;
+  border: 1px outset #efefef;
+  text-align: center;
+  border-radius: 10px;
+  display: none;
+  font-weight: bolder;
+  align-items: center;
+  justify-content: center;
+}
 
-@media screen and (mix-width: 767px) {
+.DayApp #warningShow {
+  color: #efefef;
+  background-color: black;
+}
+
+.NightApp #warningShow {
+  color: black;
+  background-color: #efefef;
+}
+
+
+@media screen and (min-width: 768px) {
   .lineContainer{
     display: none;
+  }
+  body, button, input{
+    font-size: 18px;
+  }
+  h1{
+    font-size: 30px;
+  }
+  h2{
+    font-size: 29px;
+  }
+  h3{
+    font-size: 28px;
+  }
+  h4{
+    font-size: 27px;
+  }
+  h5{
+    font-size: 26px;
+  }
+  h6{
+    font-size: 25px;
   }
 }
 
 @media screen and (max-width: 767px) {
+  #warningShow, #centerContainer{
+    width: 300px;
+    height: 300px;
+  }
   body, button, input{
     font-size: 16px;
   }
@@ -165,26 +213,9 @@ button{
   
 }
 @media screen and (min-width: 768px) and (max-width: 991px) {
-  body, button, input{
-    font-size: 18px;
-  }
-  h1{
-    font-size: 30px;
-  }
-  h2{
-    font-size: 29px;
-  }
-  h3{
-    font-size: 28px;
-  }
-  h4{
-    font-size: 27px;
-  }
-  h5{
-    font-size: 26px;
-  }
-  h6{
-    font-size: 25px;
+  #warningShow, #centerContainer{
+    width: 350px;
+    height: 350px;
   }
   #themeBtn{
     width: 50px;
@@ -221,26 +252,9 @@ button{
 }
 
 @media screen and (min-width: 992px) {
-  body, button, input{
-    font-size: 20px;
-  }
-  h1{
-    font-size: 36px;
-  }
-  h2{
-    font-size: 34px;
-  }
-  h3{
-    font-size: 32px;
-  }
-  h4{
-    font-size: 30px;
-  }
-  h5{
-    font-size: 28px;
-  }
-  h6{
-    font-size: 26px;
+  #warningShow, #centerContainer{
+    width: 400px;
+    height: 400px;
   }
   #themeBtn{
     width: 60px;
@@ -255,27 +269,10 @@ button{
   }
 }
 
-@media screen and (min-width: 1200px) {
-  body{
-    font-size: 22px;
-  }
-  h1{
-    font-size: 48px;
-  }
-  h2{
-    font-size: 45px;
-  }
-  h3{
-    font-size: 42px;
-  }
-  h4{
-    font-size: 39px;
-  }
-  h5{
-    font-size: 36px;
-  }
-  h6{
-    font-size: 33px;
+@media screen and (min-width: 1400px) {
+  #warningShow, #centerContainer{
+    width: 450px;
+    height: 450px;
   }
 }
 

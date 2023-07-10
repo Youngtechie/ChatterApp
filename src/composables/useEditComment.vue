@@ -157,13 +157,13 @@ async function updateCommentButton(userId: string, postId: string, posterId: str
     }
 }
 
-function enableEditor(divEditId: string){
+function enableEditor(divEditId: string) {
     const commentDiv = document.getElementById(`${divEditId}`) as HTMLDivElement
     editCommentValue.value = commentDiv.innerText
     toEdit.value = true
 }
 
-function cancelEdit(){
+function cancelEdit() {
     (document.getElementById('btnEditComment') as HTMLButtonElement).setAttribute('disabled', 'true');
     editCommentValue.value = ''
     toEdit.value = false
@@ -174,30 +174,58 @@ function cancelEdit(){
     <button v-if="!toEdit" @click.prevent="enableEditor(props.divEditId as string)" class="editBTn">Edit</button>
     <div id="editContainer" v-else>
         <div id="centerContainer">
-            <textarea v-model="editCommentValue"></textarea>
-            <button id="btnEditComment" @click.prevent="updateCommentButton((props.currentUserId as string), (props.viewPostId as string), (props.viewPostPosterId as string), (editCommentValue as string), (commentId as number))">Update</button>
+            <textarea v-model="editCommentValue" minlength="1" maxlength="1000"></textarea>
+            <button id="btnEditComment"
+                @click.prevent="updateCommentButton((props.currentUserId as string), (props.viewPostId as string), (props.viewPostPosterId as string), (editCommentValue as string), (commentId as number))">Update</button>
             <button @click.prevent="cancelEdit">Cancel</button>
         </div>
     </div>
 </template>
 <style scoped>
-#editContainer{
+#editContainer {
     width: 100vw;
     height: 100vh;
     position: absolute;
-    top: 0;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
 }
-#centerContainer{
-    width: 200px;
-    height: 200px;
+
+#centerContainer {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     background-color: grey;
 }
+textarea {
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    margin-bottom: 10px;
+    resize: none;
+    height: 40%;
+    width: 90%;
+    outline: auto;
+    background-color: transparent;
+    overflow-y: scroll;
+    color: #fff;
+    font-size: large;
+}
+button:not(.editBTn) {
+    border: 2px outset #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+    width: 150px;
+    margin-top: 10px;
+}
+
 </style>

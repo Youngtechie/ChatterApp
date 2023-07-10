@@ -27,7 +27,7 @@ let timeOut: ReturnType<typeof setTimeout>;
 
 async function getUserDetails(accessToken: any, result: any) {
     const accessUrl = `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${accessToken}`
-    axios.post('/https://inspiring-meerkat-ba9084.netlify.app/.netlify/functions/access', { accessUrl }).then((res) => {
+    axios.post('/.netlify/functions/access', { accessUrl }).then((res) => {
         details.value = res.data.details
         const q = query(collection(db, 'users'), where('email', '==', `${details.value.email}`))
         getDocs(q).then((document) => {
@@ -54,7 +54,6 @@ async function getUserDetails(accessToken: any, result: any) {
                 })
             }
             else if (ChatterAcc.length > 0 && ChatterAcc[0].data().username.trim() !== '') {
-                isLoading.value = true
                 router.push('/home')
             }
             else if (ChatterAcc.length > 0 && ChatterAcc[0].data().username === '') {
@@ -220,33 +219,6 @@ button {
     width: 1.5rem;
     height: 1.5rem;
     margin-right: 0.5rem;
-}
-
-#warningShow {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 10px;
-    border: 1px outset #efefef;
-    display: none;
-    text-align: center;
-    height: 200px;
-    width: 200px;
-    border-radius: 10px;
-    font-weight: bolder;
-    align-items: center;
-    justify-content: center;
-}
-
-.DayApp #warningShow {
-    color: #efefef;
-    background-color: black;
-}
-
-.NightApp #warningShow {
-    color: black;
-    background-color: #efefef;
 }
 
 /* Additional styles to adjust the size of the button and icon as needed */

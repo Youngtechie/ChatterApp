@@ -1,4 +1,5 @@
 <script lang="ts">
+import { nextTick } from 'vue';
 import { doc, getFirestore, updateDoc, collection, query, where, getDocs } from 'firebase/firestore'
 import useAuthentication from './useAuth.vue';
 import { onAuthStateChanged } from 'firebase/auth'
@@ -22,7 +23,13 @@ async function getUser(user: any) {
             })
     }
     catch (error) {
-        console.log(error)
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'flex';
+                warningShow.textContent = 'An error occurred, check your internet connection and try reloading.'
+            }
+        })
     }
 }
 

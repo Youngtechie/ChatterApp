@@ -20,13 +20,14 @@ const routeToPost = (postId: string) => {
         <useLikeButton :viewPostId="props.post.postId" :viewPostPosterId="props.post.posterId" />
         <button @click.prevent="routeToPost(props.post.postId)">
             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="15" height="15" viewBox="0 0 50 50">
-                <path d="M25 4.0703125C12.368265 4.0703125 2.0703125 12.921644 2.0703125 24C2.0703125 30.432481 5.5907163 36.030749 11.003906 39.6875C10.995106 39.903125 11.010706 40.250912 10.728516 41.294922C10.378462 42.590119 9.6725023 44.413033 8.2382812 46.46875L7.21875 47.929688L9 47.929688C15.17102 47.929688 18.741544 43.907595 19.294922 43.261719C21.134317 43.693171 23.024914 43.929686 25 43.929688C37.631735 43.929688 47.929688 35.078356 47.929688 24C47.929688 12.921644 37.631735 4.0703125 25 4.0703125zM25 5.9296875C36.768265 5.9296875 46.070312 14.078356 46.070312 24C46.070312 33.921644 36.768265 42.070312 25 42.070312C22.959016 42.070312 21.040073 41.87506 19.236328 41.400391L18.654297 41.248047L18.277344 41.714844C18.277344 41.714844 15.390792 44.972581 10.78125 45.757812C11.617979 44.248964 12.233683 42.844161 12.521484 41.779297C12.921431 40.299494 12.929687 39.300781 12.929688 39.300781L12.929688 38.789062L12.5 38.515625C7.2214165 35.156526 3.9296875 29.955741 3.9296875 24C3.9296875 14.078356 13.231735 5.9296875 25 5.9296875z"></path>
-              </svg>              
+                <path stroke-width="3" d="M25 4.0703125C12.368265 4.0703125 2.0703125 12.921644 2.0703125 24C2.0703125 30.432481 5.5907163 36.030749 11.003906 39.6875C10.995106 39.903125 11.010706 40.250912 10.728516 41.294922C10.378462 42.590119 9.6725023 44.413033 8.2382812 46.46875L7.21875 47.929688L9 47.929688C15.17102 47.929688 18.741544 43.907595 19.294922 43.261719C21.134317 43.693171 23.024914 43.929686 25 43.929688C37.631735 43.929688 47.929688 35.078356 47.929688 24C47.929688 12.921644 37.631735 4.0703125 25 4.0703125zM25 5.9296875C36.768265 5.9296875 46.070312 14.078356 46.070312 24C46.070312 33.921644 36.768265 42.070312 25 42.070312C22.959016 42.070312 21.040073 41.87506 19.236328 41.400391L18.654297 41.248047L18.277344 41.714844C18.277344 41.714844 15.390792 44.972581 10.78125 45.757812C11.617979 44.248964 12.233683 42.844161 12.521484 41.779297C12.921431 40.299494 12.929687 39.300781 12.929688 39.300781L12.929688 38.789062L12.5 38.515625C7.2214165 35.156526 3.9296875 29.955741 3.9296875 24C3.9296875 14.078356 13.231735 5.9296875 25 5.9296875z">
+                </path>
+            </svg>
             <span>{{ props.post.postComments.total }}</span>
         </button>
         <button disabled>
-            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
-                width="25" height="25" viewBox="0 0 256 256" xml:space="preserve">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="25"
+                height="25" viewBox="0 0 256 256" xml:space="preserve">
                 <defs>
                 </defs>
                 <g style="stroke: none; stroke-width: 0; stroke-dasharray: none; stroke-linecap: butt; stroke-linejoin: miter; stroke-miterlimit: 10; fill: none; fill-rule: nonzero; opacity: 1;"
@@ -46,7 +47,7 @@ const routeToPost = (postId: string) => {
             </svg>
             <span>{{ props.post.postViews }}</span>
         </button>
-        <useBookmarks :view-post-id="props.post.postId"/>
+        <useBookmarks :view-post-id="props.post.postId" />
     </div>
 </template>
 <style scoped>
@@ -70,14 +71,16 @@ const routeToPost = (postId: string) => {
     cursor: pointer;
     font-weight: bold;
 }
-span{
+
+span {
     font-weight: bold;
-    font-size: smaller;
+    font-size: 12px;
 }
-.DayApp button:nth-of-type(3) svg *{
+
+.DayApp button:nth-of-type(3) svg * {
     fill: black
 }
-.NightApp button:nth-of-type(3) svg *{
+
+.NightApp button:nth-of-type(3) svg * {
     fill: #fff;
-}
-</style>
+}</style>

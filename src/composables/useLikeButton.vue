@@ -179,7 +179,7 @@ async function likeButton(userId: string, postId: string, posterId: string) {
         @click.prevent="likeButton(store.signedUser.id, (props.viewPostId as string), (props.viewPostPosterId as string))"
         :id="'btnLike' + `${viewPostId}`" class="like-button">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25" width="15" height="15">
-            <path
+            <path stroke-width="2"
                 d="M12.5,4.17C7.71,0,0,3.92,0,8.75c0,4.61,3.9,8.35,12.5,16.25C20.1,17.1,24,13.36,24,8.75C24,3.92,16.29,0,12.5,4.17z" />
         </svg>
         <span>0</span>
@@ -188,7 +188,7 @@ async function likeButton(userId: string, postId: string, posterId: string) {
 <style scoped>
 span {
     font-weight: bold;
-    font-size: smaller;
+    font-size: 12px;
 }
 
 svg path {
