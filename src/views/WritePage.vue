@@ -46,7 +46,7 @@ const toolbar = ref<HTMLDivElement | null>(null)
 async function getPostContent(post: DocumentData) {
 
   const contentUrl = post.postRawContent
-  const response = await axios.post('/.netlify/functions/postContent', { contentUrl });
+  const response = await axios.post('api/postContent', { contentUrl });
   const newHTML = DomParse.parseFromString(response.data.content as string, 'text/html');
 
   if (textarea.value) {
@@ -98,9 +98,9 @@ onMounted(() => {
   useSeoMeta({
     title: 'Write a post',
     description: 'Write a post on Chatter',
-    ogDescription: 'Write a post on Chatter',
+    ogDescription: 'Write a post on Chatter now',
     ogTitle: 'Write a post',
-    ogUrl: 'https://chatter-2c1b0.web.app/write',
+    ogUrl: 'https://inspiring-meerkat-ba9084.netlify.app/write',
   })
   // Add event listener for beforeunload
   window.addEventListener('beforeunload', handleBeforeUnload);
