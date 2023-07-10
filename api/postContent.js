@@ -1,16 +1,19 @@
 import axios from "axios";
 
-export const handler = async (event) => {
-    const eventBody = JSON.parse(event.body)
-    const contentUrl  = eventBody.contentUrl; // Destructure contentUrl from req.body
-    const res = axios.get(`${contentUrl}`)
-    return {
-        statusCode: 200,
-        headers: {
-            'Content-Type': 'application/javascript', // Set the Content-Type header to JavaScript
-        },
-        body: JSON.stringify({
-            content: (await res).data
-        })
+export const handler = async (req,res) => {
+    try {
+    const eventBody = JSON.parse(req.body);
+    const contentUrl = eventBody.contentUrl; // Destructure contentUrl from req.body
+    const response = await axios.get(contentUrl);
+    const content = response.data;
+
+    res.status(200).json({
+      content: content,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "An error occurred.",
+    });
     }
 }
