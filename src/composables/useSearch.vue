@@ -310,8 +310,9 @@ function routeToProfile(userId: string) {
     align-items: center;
     padding-top: 10px;
     overflow-y: scroll;
-    height: 70%;
+    height: 75%;
     width: 100%;
+    padding-bottom: 50px;
 }
 
 .result-item {
@@ -372,19 +373,4 @@ function routeToProfile(userId: string) {
 .result-item-header span:last-of-type {
     font-size: medium;
 }
-
-@media screen and (min-width: 768px) and (max-width: 991px) {}
-
-@media screen and (min-width: 992px) {
-    .result-item-other {
-        width: 300px;
-    }
-
-    .imgCon {
-        width: 70px;
-        height: 70px;
-    }
-}
-
-@media screen and (min-width: 1200px) {}
 </style>

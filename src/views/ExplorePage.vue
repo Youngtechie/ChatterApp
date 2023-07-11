@@ -244,7 +244,7 @@ h2 {
     overflow-y: scroll;
     max-width: 100%;
     border-top: 2px solid blue;
-    margin-top: 10px;
+    padding-bottom: 50px;
 }
 
 .result-item {
@@ -286,17 +286,5 @@ h2 {
 
 .result-item-header span:last-of-type {
     font-size: medium;
-}
-
-@media screen and (min-width: 992px) {
-    .result-item-other {
-        width: 300px;
-    }
-
-    .imgCon {
-        width: 70px;
-        height: 70px;
-    }
-
 }
 </style>

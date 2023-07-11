@@ -68,7 +68,7 @@ function drag(event: MouseEvent) {
 .line {
   position: absolute;
   width: 2px;
-  height: 100%;
+  height: 70%;
   background-color: #E5E5E5;
 }
 

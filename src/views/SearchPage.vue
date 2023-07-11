@@ -43,11 +43,10 @@ onUnmounted(() => {
 </template>
 <style scoped>
 #searchContainer {
-    margin: 10px 0;
     display: flex;
     justify-content: center;
     width: 100%;
-    height: 90vh;
+    height: 100vh;
     padding-top: 55px; 
 }
 </style>

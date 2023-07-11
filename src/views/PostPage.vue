@@ -170,7 +170,7 @@ function back() {
         </header>
 
         <div v-if="store.viwedPost.posterId !== undefined" class="postBody">
-            <h1 v-if="store.viwedPost.postCoverImage === ''">{{ store.viwedPost.postTitle.join(' ') as string }}</h1>
+            <h1 v-if="store.viwedPost.postCoverImage === '' || store.viwedPost.postCoverImage === undefined">{{ store.viwedPost.postTitle.join(' ') as string }}</h1>
             <section class="coverImage" v-else>
                 <img id="img" :src="store.viwedPost.postCoverImage" />
                 <h1>{{ store.viwedPost.postTitle.join(' ') as string }}</h1>
@@ -383,8 +383,9 @@ header button {
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 95vh;
+    height: 100vh;
     overflow-y: scroll;
+    overflow-x: hidden;
     padding-top: 55px;
     padding-bottom: 30px;
 }
@@ -424,6 +425,7 @@ header button {
     display: flex;
     flex-direction: column;
     position: relative;
+    margin-bottom: 25px;
 }
 
 .commentingSection {
@@ -554,10 +556,4 @@ h4{
 .commenterBtn button {
     padding: 5px;
 }
-
-.showPost {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
-    padding: 0 0.5rem;
-}</style>
+</style>

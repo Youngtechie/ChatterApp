@@ -32,40 +32,40 @@ body {
   flex-flow: column wrap;
   align-items: center;
 }
-#themeBtn{
-    display: flex;
-    align-items: center;
-    width: 40px;
-    height: 20px;
-    border-radius: 10px;
-    position: relative;
+#themeBtn {
+  display: flex;
+  align-items: center;
+  width: 40px;
+  height: 20px;
+  border-radius: 10px;
+  position: relative;
 }
-#themeImgContainer{
-    display: flex;
-    align-items: center;
-    width: 50%;
-    height: 100%;
-    border-radius: 10px;
-    position: absolute;
+#themeImgContainer {
+  display: flex;
+  align-items: center;
+  width: 50%;
+  height: 100%;
+  border-radius: 10px;
+  position: absolute;
 }
-.NightApp #themeImgContainer{
-    right: 0;
-    background-color: #efefef;
+.NightApp #themeImgContainer {
+  right: 0;
+  background-color: #efefef;
 }
-.DayApp #themeImgContainer img{
-    filter: brightness(0) invert(1);
+.DayApp #themeImgContainer img {
+  filter: brightness(0) invert(1);
 }
-.DayApp #themeImgContainer{
-    background-color: black;
-    left: 0;
+.DayApp #themeImgContainer {
+  background-color: black;
+  left: 0;
 }
-.DayApp #themeBtn{
-    background-color: #efefef;
-    border: 2px solid black;
+.DayApp #themeBtn {
+  background-color: #efefef;
+  border: 2px solid black;
 }
-.NightApp #themeBtn{
-    background-color: black;
-    border: 2px solid #efefef;
+.NightApp #themeBtn {
+  background-color: black;
+  border: 2px solid #efefef;
 }
 ::-webkit-scrollbar {
   width: 0;
@@ -79,33 +79,35 @@ body {
 ::-webkit-scrollbar-thumb {
   background-color: transparent;
 }
-a, a:active, a:hover{
+a,
+a:active,
+a:hover {
   text-decoration: none;
 }
-#previewer h1:first-of-type{
+#previewer h1:first-of-type {
   text-align: center;
 }
-.DayApp button{
+.DayApp button {
   background-color: #efefef;
   color: black;
 }
-.NightApp button{
+.NightApp button {
   background-color: black;
   color: white;
 }
-.DayApp .analysesDisplay svg path{
-    stroke: black;
+.DayApp .analysesDisplay svg path {
+  stroke: black;
 }
 
-.NightApp .analysesDisplay svg path{
+.NightApp .analysesDisplay svg path {
   stroke: #fff;
 }
 
-.DayApp .clickNotify{
+.DayApp .clickNotify {
   background-color: ghostwhite;
   border: 5px outset white;
 }
-.NightApp .clickNotify{
+.NightApp .clickNotify {
   background-color: #282c34;
   border: 5px inset #333;
 }
@@ -113,17 +115,17 @@ a, a:active, a:hover{
   fill: red;
 }
 
-.router-link-active button{
+.router-link-active button {
   background-color: blue;
-  color: white
+  color: white;
 }
 
-nav .otherNavDetails a.router-link-active button{
+nav .otherNavDetails a.router-link-active button {
   background-color: purple;
   fill: black;
 }
 
-button{
+button {
   border: 2px solid #ccc;
 }
 #warningShow {
@@ -151,154 +153,145 @@ button{
   background-color: #efefef;
 }
 
-
 @media screen and (min-width: 768px) {
-  .lineContainer{
+  .lineContainer {
     display: none;
   }
-  body, button, input{
+  body,
+  button,
+  input {
     font-size: 18px;
   }
-  h1{
+  h1 {
     font-size: 30px;
   }
-  h2{
+  h2 {
     font-size: 29px;
   }
-  h3{
+  h3 {
     font-size: 28px;
   }
-  h4{
+  h4 {
     font-size: 27px;
   }
-  h5{
+  h5 {
     font-size: 26px;
   }
-  h6{
+  h6 {
     font-size: 25px;
   }
 }
 
 @media screen and (max-width: 767px) {
-  #warningShow, #centerContainer{
+  #warningShow,
+  #centerContainer {
     width: 300px;
     height: 300px;
   }
-  body, button, input{
+  body,
+  button,
+  input {
     font-size: 16px;
   }
-  h1{
+  h1 {
     font-size: 24px;
   }
-  h2{
+  h2 {
     font-size: 23px;
   }
-  h3{
+  h3 {
     font-size: 22px;
   }
-  h4{
+  h4 {
     font-size: 21px;
   }
-  h5{
+  h5 {
     font-size: 20px;
   }
-  h6{
+  h6 {
     font-size: 19px;
   }
-  .lineContainer {
-    height: 30px;
-    width: 30px;
-    border-radius: 50%;
-}
-  
 }
 @media screen and (min-width: 768px) and (max-width: 991px) {
-  #warningShow, #centerContainer{
+  #warningShow,
+  #centerContainer {
     width: 350px;
     height: 350px;
   }
-  #themeBtn{
+  #themeBtn {
     width: 50px;
     height: 25px;
     border-radius: 20px;
   }
-  #themeImgContainer img{
+  #themeImgContainer img {
     height: 20px;
   }
-  #themeImgContainer{
+  #themeImgContainer {
     border-radius: 20px;
   }
-  .lineContainer {
-    height: 50px;
-    width: 50px;
-    border-radius: 50%;
-}
-
-.line {
-    position: absolute;
-    width: 2px;
-    height: 40%;
-    background-color: #E5E5E5;
-}
-
-.line:nth-child(2) {
-    right: 14px;
-}
-
-.line:nth-child(1) {
-    transform: rotate(90deg);
-    right: 14px;
-}
 }
 
 @media screen and (min-width: 992px) {
-  #warningShow, #centerContainer{
+  #warningShow,
+  #centerContainer {
     width: 400px;
     height: 400px;
   }
-  #themeBtn{
+  #themeBtn {
     width: 60px;
     height: 30px;
     border-radius: 30px;
   }
-  #themeImgContainer img{
+  #themeImgContainer img {
     height: 25px;
   }
-  #themeImgContainer{
+  #themeImgContainer {
     border-radius: 30px;
   }
+  .result-item-other {
+    width: 350px;
+  }
+  .imgCon {
+    width: 70px;
+    height: 70px;
+}
 }
 
 @media screen and (min-width: 1400px) {
-  #warningShow, #centerContainer{
+  #warningShow,
+  #centerContainer {
     width: 450px;
     height: 450px;
   }
 }
 
-.imgCon{
+.imgCon {
   cursor: pointer;
 }
-#divContent{
+#divContent {
   cursor: pointer;
 }
-#previewer {
+#previewer,
+.showPost {
   text-align: left;
   line-height: 2em;
   word-wrap: break-word;
 }
 
 #previewer ul,
-#previewer ol {
+#previewer ol,
+.showPost ul,
+.showPost ol {
   padding-left: 1rem;
-  line-height: 1.0em;
+  line-height: 1em;
 }
 
 #previewer a {
   color: #2d8cf0;
 }
 
-#previewer blockquote {
+#previewer blockquote,
+.showPost blockquote {
   border-left: 2px solid #009a61;
   font-size: 1em;
   padding: 0.5em;
@@ -307,7 +300,8 @@ button{
   color: #fff;
 }
 
-#previewer code {
+#previewer code,
+.showPost code {
   font-family: Consolas, Monaco, monospace;
   background-color: #282c34;
   color: #abb2bf;
@@ -316,7 +310,8 @@ button{
   width: 100%;
 }
 
-#previewer pre {
+#previewer pre,
+.showPost pre {
   background: #f0f0f0;
   margin: 1em 0;
   padding: 1em;
@@ -326,18 +321,19 @@ button{
   font-family: 'Courier New', Courier, monospace;
   border-radius: 5px;
   max-width: 100%;
-  white-space: normal;
-  word-break: break-word;
   display: block;
+  overflow-x: auto;
 }
 
-#previewer pre code {
+#previewer pre code,
+.showPost pre code {
   font-family: Consolas, Monaco, monospace;
   padding: 0;
   border-radius: 0;
 }
 
-#previewer table {
+#previewer table,
+.showPost table {
   width: 100%;
   border: 1px solid #ccc;
   border-bottom: 0;
@@ -348,7 +344,9 @@ button{
 }
 
 #previewer table tr td,
-#previewer table tr th {
+#previewer table tr th,
+.showPost table tr td,
+.showPost table tr th {
   padding: 0 0.5em;
   line-height: 40px;
   cursor: pointer;
@@ -358,12 +356,18 @@ button{
   overflow-x: scroll;
 }
 
-#previewer img {
+#previewer img,
+.showPost img {
   max-width: 100%;
   padding: 1em;
 }
 
-#mainSearchContainer #loading{
+.showPost li,
+#previewer li {
+  line-height: 2em;
+}
+
+#mainSearchContainer #loading {
   margin-top: 20px;
   border-top: 3px outset blue;
   width: 100%;
@@ -377,4 +381,13 @@ button{
   width: 100%;
   font-size: x-large;
   text-align: center;
+}
+.showPost {
+  width: 100%;
+  outline: none;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  line-height: 2em;
+  max-width: 95vw;
+  white-space: pre-wrap;
 }

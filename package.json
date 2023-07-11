@@ -1,8 +1,8 @@
 {
   "name": "chatter",
   "version": "0.0.0",
-  "type": "module",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check build-only",
@@ -20,6 +20,7 @@
     "@types/js-cookie": "^3.0.3",
     "@vueuse/head": "^1.1.26",
     "axios": "^0.24.0",
+    "babel": "^6.23.0",
     "body-parser": "^1.20.2",
     "chart.js": "^4.3.0",
     "cookie": "^0.5.0",
@@ -58,7 +59,7 @@
     "@babel/core": "^7.22.8",
     "@babel/node": "^7.22.6",
     "@babel/preset-env": "^7.22.7",
-    "@jest/globals": "^29.6.1",
+    "@babel/preset-typescript": "^7.22.5",
     "@pinia/testing": "^0.1.2",
     "@playwright/test": "^1.33.0",
     "@rushstack/eslint-patch": "^1.2.0",

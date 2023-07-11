@@ -134,6 +134,7 @@ export const useChatterStore = defineStore('chatter', () => {
     postId = ''
     postTitle: string[] = []
     postContain = ""
+    postCoverImage = ""
     postRawContent = ""
     postTag = ''
     postTime = ""
@@ -150,7 +151,6 @@ export const useChatterStore = defineStore('chatter', () => {
     postReposts = 0
     postViews = 0
     postBookmarks: string[] = []
-    postMedia: string[] = []
     postSettings: Record<string, any> = {
       disableComments: false,
       allowReposts: true

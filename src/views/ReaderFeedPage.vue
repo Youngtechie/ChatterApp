@@ -395,6 +395,7 @@ async function getFollowings() {
     padding-top: 10px;
     overflow-y: scroll;
     height: 80vh;
+    padding-bottom: 40px;
 }
 
 .result-item {
@@ -437,16 +438,5 @@ async function getFollowings() {
 
 .result-item-header span:last-of-type {
     font-size: medium;
-}
-
-@media screen and (min-width: 992px) {
-    .result-item-other {
-        width: 300px;
-    }
-
-    .imgCon {
-        width: 70px;
-        height: 70px;
-    }
 }
 </style>

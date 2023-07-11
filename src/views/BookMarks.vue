@@ -274,6 +274,7 @@ h2 {
     align-items: center;
     overflow-y: scroll;
     height: 100%;
+    padding-bottom: 50px;
 }
 
 .result-item {
@@ -327,14 +328,4 @@ h2 {
     font-size: medium;
 }
 
-@media screen and (min-width: 992px) {
-    .result-item-other {
-        width: 300px;
-    }
-
-    .imgCon {
-        width: 70px;
-        height: 70px;
-    }
-}
 </style>

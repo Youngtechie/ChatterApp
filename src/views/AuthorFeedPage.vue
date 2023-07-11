@@ -218,6 +218,7 @@ async function deleteFolder(folderPath: string) {
     overflow-y: scroll;
     height: 100%;
     width: 100%;
+    padding-bottom: 50px;
 }
 
 .imgCon {
@@ -293,14 +294,4 @@ async function deleteFolder(folderPath: string) {
     color: white;
 }
 
-@media screen and (min-width: 992px) {
-    .result-item-other {
-        width: 300px;
-    }
-
-    .imgCon {
-        width: 70px;
-        height: 70px;
-    }
-}
 </style>
