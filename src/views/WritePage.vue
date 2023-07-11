@@ -18,8 +18,6 @@ const { app } = useAuthentication()
 
 const db = getFirestore(app)
 
-type MaybeComputedRefOrPromise<T> = ComputedRef<T> | Promise<T>;
-
 const store = useChatterStore()
 // Configure DOMPurify
 const sanitizer = DOMPurify.sanitize;
