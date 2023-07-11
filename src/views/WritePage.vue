@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Ref, ref, onMounted, onUnmounted, watchEffect, nextTick } from 'vue';
+import { type Ref, ref, onMounted, onUnmounted, watchEffect, nextTick, computed  } from 'vue';
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 import router from '@/router/index';
@@ -17,6 +17,8 @@ useUserDetails()
 const { app } = useAuthentication()
 
 const db = getFirestore(app)
+
+type MaybeComputedRefOrPromise<T> = ComputedRef<T> | Promise<T>;
 
 const store = useChatterStore()
 // Configure DOMPurify
@@ -94,13 +96,18 @@ function handleBeforeUnload(event: BeforeUnloadEvent) {
   }
 }
 
-onMounted(() => {
+
+// Create a computed reference of type string[] using ref() or computed()
+const keys = computed(() => ['ChatterApp write page', 'Create content on ChatterApp', "ChatterApp's write page", 'Write a post on ChatterApp', 'Write a post on Chatter']);
+
+  onMounted(() => {
   useSeoMeta({
     title: 'Write a post',
+    keywords: computed(()=> keys.value.join(',') as string),
     description: 'Write a post on Chatter',
     ogDescription: 'Write a post on Chatter now',
     ogTitle: 'Write a post',
-    ogUrl: 'https://inspiring-meerkat-ba9084.netlify.app/write',
+    ogUrl: 'https://chatterapp-by-olaegbe.netlify.app/write',
   })
   // Add event listener for beforeunload
   window.addEventListener('beforeunload', handleBeforeUnload);
