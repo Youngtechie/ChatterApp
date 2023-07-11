@@ -1,18 +1,40 @@
-import { mount } from '@vitest/jest';
-import { createApp } from 'vue';
-import pinia from './test-setup.js';
-import HomePage from '@/views/HomePage.vue';
+import { shallowMount } from '@vue/test-utils'
+import { setActivePinia, createPinia } from 'pinia'
+import { useChatterStore } from '@/stores/store'
+import { describe, expect, it, beforeEach } from 'vitest'
+import HomePage from '@/views/HomePage.vue'
 
-describe('MyComponent', () => {
-  it('should render properly', async () => {
-      const app = createApp(HomePage);
+let store
 
-          // Use Pinia as a plugin
-              app.use(pinia);
+beforeEach(() => {
+  setActivePinia(createPinia())
 
-                  const wrapper = mount(app);
+  store = useChatterStore()
+})
 
-                      // Perform your test assertions
-                          expect(wrapper.text()).toContain('Hello, world!');
-                            });
-                            });
+describe('HomePage rendered correctly', () => {
+  it('should render correctly', () => {
+    const wrapper = shallowMount(HomePage)
+    expect(wrapper.html()).toMatchSnapshot()
+  })
+  it('should be created', () => {
+    expect(store).toBeDefined()
+  })
+  it('should have a signedUser', () => {
+    new Promise((resolve) => {
+      setTimeout(resolve, 5000)
+    }).then(() => {
+      expect(store.signedUser.length).toBeGreaterThan(0)
+    })
+  })
+  it('sidebarbtn clicked', () => {
+    const wrapper = shallowMount(HomePage)
+    new Promise((resolve) => {
+      setTimeout(resolve, 5000)
+    }).then(() => {
+      const sidebarBtn = wrapper.find('.sidebarOpenBtn')
+      sidebarBtn.trigger('click')
+      expect(sidebarBtn).toHaveBeenCalled(1)
+    })
+  })
+})

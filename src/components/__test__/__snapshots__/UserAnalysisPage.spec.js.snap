@@ -1,0 +1,8 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`UserAnalysisPage rendered correctly > should render correctly 1`] = `
+"<div data-v-2c6dcbed=\\"\\" class=\\"loading-page\\">
+  <div class=\\"spinner\\"></div>
+  <h1>Loading Analysis....</h1>
+</div>"
+`;

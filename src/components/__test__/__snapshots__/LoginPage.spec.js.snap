@@ -1,0 +1,8 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`JoinChatterPage rendered correctly > should render correctly 1`] = `
+"<div data-v-485eb7e3=\\"\\" class=\\"loading-page\\">
+  <div class=\\"spinner\\"></div>
+  <h1>Loading....</h1>
+</div>"
+`;

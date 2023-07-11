@@ -102,6 +102,7 @@ const store = useChatterStore()
     transform: translate(-50%, -50%);
     color: white;
     width: 100%;
+    padding:0 5px;
 }
 #section1 #text a button{
     margin-top: 10px;

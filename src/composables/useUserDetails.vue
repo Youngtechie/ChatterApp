@@ -5,10 +5,11 @@ import useAuthentication from './useAuth.vue';
 import { onAuthStateChanged } from 'firebase/auth'
 import { useChatterStore } from '@/stores/store';
 const { app, auth } = useAuthentication()
-const store = useChatterStore()
 const db = getFirestore(app)
 
-async function getUser(user: any) {
+export default async function useUserDetails() {
+    const store = useChatterStore()
+    async function getUser(user: any) {
     const q = query(collection(db, 'users'), where('email', '==', `${user.email}`))
     try {
         await getDocs(q)
@@ -32,8 +33,6 @@ async function getUser(user: any) {
         })
     }
 }
-
-export default async function useUserDetails() {
     onAuthStateChanged(auth, (user: any) => {
         if (user) {
             store.authenticated = true

@@ -9,6 +9,7 @@ import useUserDetails from '@/composables/useUserDetails.vue'
 import SignOut from '@/composables/useSignOut.vue';
 import useAuthentication from '@/composables/useAuth.vue'
 
+
 const { app, auth } = useAuthentication()
 
 const db = getFirestore(app)
@@ -101,7 +102,7 @@ function Signout() {
                     <path d="M3 18h18v-2H3v2zM3 13h18v-2H3v2zM3 6v2h18V6H3z" />
                 </svg>
             </button>
-            <RouterLink to="/write" :class="[{ writeBtn: true }, { Novisibility: !store.signedUser.isLogined }]">
+            <RouterLink to="/write" :class="[{ writeBtn: true }, { Novisibility: !store.signedUser.isLogined && store.signedUser.length > 0 }]">
                 <button>Write</button></RouterLink>
             <h1>Chatter</h1>
             <button :title="store.themeDetails.title" id="themeBtn" @click="store.changeTheme">

@@ -1,0 +1,3 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HomePage rendered correctly > should render correctly 1`] = `"<use-loading-page-stub data-v-9b48b94e=\\"\\" actionname=\\"Loading...\\"></use-loading-page-stub>"`;

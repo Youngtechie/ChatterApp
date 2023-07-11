@@ -1,11 +1,10 @@
 <script lang="ts">
 import { initializeApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, onAuthStateChanged } from "firebase/auth";
-import { useChatterStore } from '@/stores/store';
+import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
-const store = useChatterStore()
 
 export default function useAuthentication() {
+
     const firebaseConfig = {
         apiKey: "AIzaSyBg8PMYQ0FP7j98iYIv_WxREEtkBjcaSow",
         authDomain: "chatter-75076.firebaseapp.com",
@@ -22,18 +21,7 @@ export default function useAuthentication() {
     const auth = getAuth(app)
    
 
-    function getAuthentication() {
-        onAuthStateChanged(auth, (user: any) => {
-            if (user) {
-                store.authenticated = true
-            }
-            else {
-                store.authenticated = false
-            }
-        })
-    }
-
-    return { auth, provider, app, getAuthentication }
+    return { auth, provider, app }
 }
 
 </script>
