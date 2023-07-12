@@ -186,11 +186,7 @@ function back() {
         </header>
 
         <div v-if="store.viwedPost.posterId !== undefined" class="postBody">
-            <h1 v-if="store.viwedPost.postCoverImage === '' || store.viwedPost.postCoverImage === undefined">{{ store.viwedPost.postTitle.join(' ') as string }}</h1>
-            <section class="coverImage" v-else>
-                <img id="img" :src="store.viwedPost.postCoverImage" />
-                <h1>{{ store.viwedPost.postTitle.join(' ') as string }}</h1>
-            </section>
+            <h1>{{ store.viwedPost.postTitle.join(' ') as string }}</h1>
             <div class="postContainer">
                 <div class="section1">
                     <div class="details">

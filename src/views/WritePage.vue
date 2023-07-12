@@ -4,7 +4,6 @@ import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 import router from '@/router/index';
 import { getFirestore, type DocumentData, doc, getDoc, getDocs, collection, query } from 'firebase/firestore'
-import displayCoverImage from '@/components/UploadCoverImage.vue';
 import { useChatterStore } from '@/stores/store';
 import useUserDetails from '@/composables/useUserDetails.vue'
 import CreatePostToCloud from '@/components/CreatePostToCloud.vue';
@@ -39,7 +38,6 @@ const redoStack = ref<{ content: string; cursor: number }[]>([]);
 let timeOut: ReturnType<typeof setTimeout>;
 const DomParse = new DOMParser()
 const tagOption = ref('option1')
-const imageDeleted = ref(false)
 const toolbar = ref<HTMLDivElement | null>(null)
 
 async function getPostContent(post: DocumentData) {
@@ -194,27 +192,6 @@ function handleResize() {
   }
 }
 
-function handleCoverImage(event: Event) {
-  displayCoverImage(event)
-}
-
-function removeCoverImage() {
-  const img = document.querySelector('#displayCoverImage img') as HTMLDivElement
-  const btn = document.querySelector('.removeCover') as HTMLButtonElement
-  const label = document.querySelector('.coverImageAdd label') as HTMLLabelElement
-
-  if (img && btn) {
-    if (store.viwedPost.postCoverImage !== '') {
-      imageDeleted.value = true
-    }
-    img.remove()
-    btn.style.display = 'none'
-    label.innerText = 'Add Cover Image'
-    store.coverImageFile = null
-
-  }
-}
-
 function preview() {
 
   const md = new MarkdownIt()
@@ -294,7 +271,7 @@ function createPost() {
       (document.getElementById('publishBtn') as HTMLInputElement).setAttribute('disabled', 'true');
       const id = router.currentRoute.value.params.postId ? router.currentRoute.value.params.postId : '';
       try {
-        CreatePostToCloud(rawDocument.value as string, postContentToBePosted.value as string, titleArr.value, postTag.value, 'post', disableComments.value, id as string, imageDeleted.value)
+        CreatePostToCloud(rawDocument.value as string, postContentToBePosted.value as string, titleArr.value, postTag.value, 'post', disableComments.value, id as string)
       } catch (error) {
         nextTick(()=>{
           const warningShow = document.getElementById("warningShow") as HTMLDivElement
@@ -663,18 +640,6 @@ function handleInputLast(event: Event) {
   <div class="sectionContainers">
     <div :class="[{ none: postSection1 !== 'edit-section' }, { editorsection: true }]">
 
-      <div class="coverImageAdd">
-        <div id="displayCoverImage">
-          <img :src="store.viwedPost.postCoverImage" alt="Cover Image"
-            v-if="store.viwedPost.postCoverImage !== '' && store.viwedPost.postCoverImage !== undefined"
-            style="max-width: 100%; max-height: 200px;" />
-        </div>
-
-        <label for="coverImage">Add Cover Image</label>
-        <input type="file" @change="handleCoverImage" id="coverImage" style="display: none;" />
-        <button type="button" class="removeCover" @click="removeCoverImage">Remove Cover Image</button>
-      </div>
-
       <button type="button" @click="preview" id="previewBtn">Preview</button>
 
       <div id="writeEditor">
@@ -837,7 +802,8 @@ header a button {
 
 .editorsection {
   overflow-y: scroll;
-  padding: 35px 5px 0 5px;
+  padding: 55px 5px 0 5px;
+
 }
 
 .editorsection header {

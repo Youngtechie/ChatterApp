@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, type Ref, onUnmounted, watchEffect } from 'vue'
+import { ref, type Ref, onUnmounted, watchEffect, nextTick } from 'vue'
 import { doc, updateDoc, getFirestore } from 'firebase/firestore'
 import { getStorage, ref as refFromStorage, uploadBytes, getDownloadURL } from "firebase/storage";
 import { useChatterStore } from '@/stores/store';
@@ -70,9 +70,24 @@ function updateUser() {
                 })
             })
         }).then(() => {
-            router.push('/userProfile')
-        }).catch((err) => {
-            console.log(err)
+            nextTick(()=>{
+                const warningShow = document.getElementById('warningShow') as HTMLDivElement
+                warningShow.style.display = 'flex'
+                warningShow.textContent = 'Profile updated successfully'
+                id = setTimeout(() => {
+                    warningShow.style.display = 'none'
+                    router.push('/userProfile')
+                }, 2000)
+            })
+        }).catch(() => {
+            nextTick(()=>{
+                const warningShow = document.getElementById('warningShow') as HTMLDivElement
+                warningShow.style.display = 'flex'
+                warningShow.textContent = 'An error occurred, check your internet connection and try again.'
+                id = setTimeout(() => {
+                    warningShow.style.display = 'none'
+                }, 2000)
+            })
         }).finally(()=>{
             document.getElementById('updateBtn')?.removeAttribute('disabled')
         })
@@ -93,14 +108,24 @@ function updateUser() {
                 }
             }
         }).then(() => {
-            router.push('/userProfile')
+            nextTick(()=>{
+                const warningShow = document.getElementById('warningShow') as HTMLDivElement
+                warningShow.style.display = 'flex'
+                warningShow.textContent = 'Profile updated successfully'
+                id = setTimeout(() => {
+                    warningShow.style.display = 'none'
+                    router.push('/userProfile')
+                }, 2000)
+            })
         }).catch(() => {
-            const warningShow = document.getElementById('warningShow') as HTMLDivElement
-            warningShow.style.display = 'flex'
-            warningShow.textContent = 'An error occurred, check your internet connection and try again.'
-            id = setTimeout(() => {
-                warningShow.style.display = 'none'
-            }, 2000)
+            nextTick(()=>{
+                const warningShow = document.getElementById('warningShow') as HTMLDivElement
+                warningShow.style.display = 'flex'
+                warningShow.textContent = 'An error occurred, check your internet connection and try again.'
+                id = setTimeout(() => {
+                    warningShow.style.display = 'none'
+                }, 2000)
+            })
         }).finally(()=>{
             document.getElementById('updateBtn')?.removeAttribute('disabled')
         })

@@ -1,7 +1,7 @@
 <script lang="ts">
 import { nextTick } from "vue";
 import { useChatterStore } from '@/stores/store';
-import { getStorage, ref as storageRef, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage'
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage'
 import { doc, getFirestore, collection, addDoc, serverTimestamp, updateDoc, getDoc, setDoc, type DocumentData } from 'firebase/firestore'
 import useAuthentication from '@/composables/useAuth.vue';
 import router from '@/router';
@@ -16,7 +16,7 @@ const storage = getStorage(app)
 
 const FullStorage = storageRef(storage, 'ChatterAppFiles')
 
-export default async function CreatePostToCloud(rawDocument: string, docContent: string, title: string[], tag: string, type: string, disableComment: boolean, postId: string, imageDelete: boolean) {
+export default async function CreatePostToCloud(rawDocument: string, docContent: string, title: string[], tag: string, type: string, disableComment: boolean, postId: string) {
     if (type === "post") {
         nextTick(() => {
             const warningShow = document.getElementById("warningShow") as HTMLDivElement
@@ -85,27 +85,6 @@ export default async function CreatePostToCloud(rawDocument: string, docContent:
                     })
                 })
             })
-
-            if (imageDelete === true && store.coverImageFile === null) {
-                const coverImageStorage = storageRef(FullStorage, `posts/${postID}/${postID}CoverImage`);
-                deleteObject(coverImageStorage).then(() => {
-                    updateDoc(postRef, {
-                        postCoverImage: ''
-                    })
-                })
-            }
-
-            if (store.coverImageFile !== null) {
-                const coverImage = store.coverImageFile
-                const coverImageStorage = storageRef(FullStorage, `posts/${postID}/${postID}CoverImage`);
-                uploadBytes(coverImageStorage, coverImage as File).then(() => {
-                    getDownloadURL(coverImageStorage).then((url) => {
-                        updateDoc(postRef, {
-                            postCoverImage: url
-                        })
-                    })
-                })
-            }
 
             await updateDoc(postRef, {
                 postLastModified: new Date(),
@@ -205,29 +184,6 @@ export default async function CreatePostToCloud(rawDocument: string, docContent:
                 })
             })
 
-            if (imageDelete === true && store.coverImageFile === null) {
-                const postRef = doc(db, 'posts', newPost.id)
-                const coverImageStorage = storageRef(FullStorage, `posts/${newPost.id}/${newPost.id}CoverImage`);
-                deleteObject(coverImageStorage).then(() => {
-                    updateDoc(postRef, {
-                        postCoverImage: ''
-                    })
-                })
-            }
-
-            if (store.coverImageFile !== null) {
-                const postRef = doc(db, 'posts', newPost.id)
-                const coverImage = store.coverImageFile
-                const coverImageStorage = storageRef(FullStorage, `posts/${newPost.id}/${newPost.id}CoverImage`);
-                uploadBytes(coverImageStorage, coverImage as File).then(() => {
-                    getDownloadURL(coverImageStorage).then((url) => {
-                        updateDoc(postRef, {
-                            postCoverImage: url
-                        })
-                    })
-                })
-            };
-
             nextTick(() => {
                 const warningShow = document.getElementById("warningShow") as HTMLDivElement
                 if (warningShow) {
@@ -252,7 +208,6 @@ export default async function CreatePostToCloud(rawDocument: string, docContent:
                     }
                 }, 2000)
             });
-
 
             (document.getElementById('publishBtn') as HTMLInputElement).removeAttribute('disabled');
         }
