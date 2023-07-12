@@ -442,7 +442,7 @@ header {
     justify-content: space-between;
     padding: 1rem;
     width: 100%;
-    height: 10%;
+    height: 50px;
     background-color: #333333;
 }
 
