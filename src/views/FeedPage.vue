@@ -42,6 +42,7 @@ const store = useChatterStore()
   width: 40px;
   background-color: blue;
   border-radius: 50%;
+  z-index: 80000;
 }
 
 .line {

@@ -148,7 +148,7 @@ export default async function CreatePostToCloud(rawDocument: string, docContent:
             if (tag.trim() !== '') {
                 const tagRef = doc(db, 'tags', tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase())
                 const tagResult = await getDoc(tagRef) as DocumentData
-                if (tagResult.exist()) {
+                if (tagResult.exists()) {
                     updateDoc((tagRef), {
                         counts: tagResult.data().counts + 1
                     })
@@ -226,34 +226,35 @@ export default async function CreatePostToCloud(rawDocument: string, docContent:
                         })
                     })
                 })
-
-                nextTick(() => {
-                    const warningShow = document.getElementById("warningShow") as HTMLDivElement
-                    if (warningShow) {
-                        warningShow.textContent = "Post has been published"
-                    }
-                }).then(() => {
-                    setTimeout(() => {
-                        const ans = confirm('Do you want to view your post?')
-                        if (ans === true) {
-                            const warningShow = document.getElementById("warningShow") as HTMLDivElement
-                            if (warningShow) {
-                                warningShow.style.display = "none"
-                            }
-                            router.push(`/post/${postId}`);
-                        }
-                        else {
-                            const warningShow = document.getElementById("warningShow") as HTMLDivElement
-                            if (warningShow) {
-                                warningShow.style.display = "none"
-                            }
-                            router.push({ name: "Home" });
-                        }
-                    }, 2000)
-                });
-
-                (document.getElementById('publishBtn') as HTMLInputElement).removeAttribute('disabled');
             };
+
+            nextTick(() => {
+                const warningShow = document.getElementById("warningShow") as HTMLDivElement
+                if (warningShow) {
+                    warningShow.textContent = "Post has been published"
+                }
+            }).then(() => {
+                setTimeout(() => {
+                    const ans = confirm('Do you want to view your post?')
+                    if (ans === true) {
+                        const warningShow = document.getElementById("warningShow") as HTMLDivElement
+                        if (warningShow) {
+                            warningShow.style.display = "none"
+                        }
+                        router.push(`/post/${newPost.id}`);
+                    }
+                    else {
+                        const warningShow = document.getElementById("warningShow") as HTMLDivElement
+                        if (warningShow) {
+                            warningShow.style.display = "none"
+                        }
+                        router.push({ name: "Home" });
+                    }
+                }, 2000)
+            });
+
+
+            (document.getElementById('publishBtn') as HTMLInputElement).removeAttribute('disabled');
         }
     }
 }

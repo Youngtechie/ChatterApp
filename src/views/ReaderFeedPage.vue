@@ -352,10 +352,6 @@ async function getFollowings() {
             </div>
         </div>
     </div>
-    <div v-show="store.signedUser.following.theFollowings.length === 0 && presentSection === 'following_section'"
-        class="noFollower">
-        You are not following any one yet.
-    </div>
 </template>
 <style scoped>
 .btns {
