@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router';
 import { useChatterStore } from '@/stores/store';
 import { doc, getFirestore, getDoc, type DocumentData, updateDoc, onSnapshot } from 'firebase/firestore'
-import { ref, onUnmounted, onMounted } from 'vue'
+import { ref, onUnmounted, onMounted, nextTick } from 'vue'
 import useLoadingPage from "@/composables/useLoadingPage.vue";
 import axios from 'axios'
 import useCalculateTime from '@/composables/useCalculateTime.vue';
@@ -48,6 +48,8 @@ const posterDetail = ref<posterdetail[]>([])
 
 const isFollowing = ref(false)
 
+let id: ReturnType<typeof setTimeout>
+
 // const title = ref('')
 // const description = ref('')
 // const keywords = ref('')
@@ -69,8 +71,6 @@ async function getData() {
             getPoster()
             updateDoc(postRef, {
                 ["postViews"]: store.viwedPost.postViews + 1
-            }).finally(() => {
-                isLoading.value = false
             })
         }
     } catch (error) {
@@ -90,6 +90,21 @@ onMounted(() => {
         //
     }
     getData()
+
+    id = setTimeout(() => {
+        if(divContent.value !== ''){
+            isLoading.value = false;
+        }
+        else{
+            nextTick(()=>{
+                const warningShow = document.getElementById("warningShow") as HTMLDivElement
+                if(warningShow){
+                    warningShow.style.display = "flex"
+                    warningShow.textContent = "Something went wrong, check your network connection and reload the page."
+                }
+            })
+        }
+    }, 3000); 
 })
 
 async function getPostContent() {
@@ -139,6 +154,7 @@ async function Follow() {
 }
 
 onUnmounted(() => {
+    clearTimeout(id)
     const warning = document.getElementById('warningShow') as HTMLDivElement
     if (warning) {
         warning.style.display = 'none'
@@ -533,6 +549,9 @@ h4{
     border-radius: 5px;
     margin-bottom: 5px;
     margin-left: 60px;
+}
+.NightApp .followBtns button svg * {
+    fill: #fff;
 }
 
 .Eachcomment {

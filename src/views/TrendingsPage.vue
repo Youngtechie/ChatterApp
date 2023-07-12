@@ -66,6 +66,14 @@ onMounted(() => {
 
 watch(currentTrend, (newValue, oldValue) => {
     if (newValue !== oldValue) {
+        posts.value = []
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'flex';
+                warningShow.textContent = 'Loading ...'
+            }
+        })
         currentQ.value = query(collection(db, 'posts'), orderBy('postTime', 'desc'), limit(10), where('postTag', '==', currentTrend.value))
         getPosts(currentQ.value)
     }
@@ -190,7 +198,7 @@ watchEffect(() => {
 
 onUnmounted(() => {
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    if(warning){
+    if (warning) {
         warning.style.display = 'none'
     }
 })
@@ -198,7 +206,8 @@ onUnmounted(() => {
 <template>
     <main class="trendingsSection">
         <div class="trendingsBtn">
-            <button v-for="(trend, index) in trendings" :key="index" @click="changetrend(trend)" :class="{activeTrend: currentTrend === trend}">
+            <button v-for="(trend, index) in trendings" :key="index" @click="changetrend(trend)"
+                :class="{ activeTrend: currentTrend === trend }">
                 {{ trend }}
             </button>
         </div>
@@ -241,25 +250,31 @@ onUnmounted(() => {
     position: relative;
 }
 
-.trendingsSection .trendingsBtn{
+.trendingsSection .trendingsBtn {
     width: 100%;
     display: flex;
     flex-direction: row wrap;
     align-items: center;
-    justify-content: space-around;
+    justify-content: center;
 }
-.trendingsBtn button{
+
+.trendingsBtn button {
     padding: 5px;
     border-radius: 10px;
     font-weight: 700;
     cursor: pointer;
 }
 
-.activeTrend{
+.trendingsBtn button:not(.trendingsBtn button:first-of-type) {
+    margin-left: 20px;
+}
+
+.activeTrend {
     background-color: blue;
     color: #fff;
     cursor: not-allowed;
 }
+
 .resultsContainer {
     width: 100%;
     display: flex;
@@ -312,5 +327,4 @@ onUnmounted(() => {
 
 .result-item-header span:last-of-type {
     font-size: medium;
-}
-</style>
+}</style>

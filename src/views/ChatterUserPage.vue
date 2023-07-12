@@ -404,7 +404,11 @@ header button:first-of-type {
     border-radius: 10px;
     padding: 0 10px;
 }
-
+header button:hover{
+    background-color: #007bff;
+    color: #fff;
+    cursor: pointer;
+}
 .body {
     display: flex;
     flex-direction: column;
@@ -695,5 +699,8 @@ header button:first-of-type {
     .personalDetails {
         width: 350px;
     }
+}
+button{
+    cursor: pointer;
 }
 </style>

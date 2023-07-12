@@ -148,6 +148,7 @@ const keys = computed(() => ['ChatterApp write page', 'Create content on Chatter
         if (warningShow) {
           warningShow.style.display = 'none';
         }
+        updateDom()
       })
     })
   }
@@ -305,7 +306,22 @@ function createPost() {
     if (postContentToBePosted.value.trim() !== '' && rawDocument.value.trim() !== '') {
       (document.getElementById('publishBtn') as HTMLInputElement).setAttribute('disabled', 'true');
       const id = router.currentRoute.value.params.postId ? router.currentRoute.value.params.postId : '';
-      CreatePostToCloud(rawDocument.value as string, postContentToBePosted.value as string, titleArr.value, postTag.value, 'post', disableComments.value, id as string, imageDeleted.value)
+      try {
+        CreatePostToCloud(rawDocument.value as string, postContentToBePosted.value as string, titleArr.value, postTag.value, 'post', disableComments.value, id as string, imageDeleted.value)
+      } catch (error) {
+        nextTick(()=>{
+          const warningShow = document.getElementById("warningShow") as HTMLDivElement
+          if(warningShow){
+            warningShow.style.display = "flex"
+            warningShow.textContent = "Can't publish your post, check your network connection and try again."
+            timeOut = setTimeout(() => {
+              if(warningShow){
+                warningShow.style.display = "none"
+              }
+            }, 2000); 
+          }
+        })
+      }
     }
     else {
       const warningShow = document.getElementById('warningShow') as HTMLDivElement
@@ -756,12 +772,12 @@ function handleInputLast(event: Event) {
             </div>
           </div>
 
-          <select id="tags" v-model="postTag" v-show="tagOption === 'option1'" required title="Tags">
+          <select id="tags" v-model="postTag" v-if="tagOption === 'option1'" required title="Tags">
             <option value="" disabled>Select a tag for your post</option>
             <option v-for="tag in suggestedTags" :key="tag" :value="tag">{{ tag }}</option>
           </select>
 
-          <input type="text" v-model="postTag" v-show="tagOption === 'option2'" placeholder="Write your tag here" required
+          <input type="text" v-model="postTag" v-if="tagOption === 'option2'" placeholder="Write your tag here" required
             @input="handleInputLast" name="Inputag" />
         </div>
         <div class="secondDiv">

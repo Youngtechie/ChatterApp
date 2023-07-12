@@ -1,42 +1,21 @@
 <script setup lang="ts">
-import { ref } from 'vue';
 import AuthorFeedPage from './AuthorFeedPage.vue';
 import ReaderFeedPage from './ReaderFeedPage.vue';
 import { useChatterStore } from '@/stores/store'
-import router from '@/router';
 
 const store = useChatterStore()
-
-const isDragging = ref(false)
-let dragOffsetX = ref(0);
-let dragOffsetY = ref(0)
-
-function startDrag(event: MouseEvent) {
-  isDragging.value = true;
-  dragOffsetX.value = event.offsetX;
-  dragOffsetY.value = event.offsetY;
-}
-
-function drag(event: MouseEvent) {
-  if (isDragging.value) {
-    const x = event.clientX - dragOffsetX.value;
-    const y = event.clientY - dragOffsetY.value;
-    (event.target as HTMLDivElement).style.left = `${x}px`;
-    (event.target as HTMLDivElement).style.top = `${y}px`;
-    isDragging.value = false;
-  }
-}
 
 </script>
 <template>
   <div class="feedDiv">
     <ReaderFeedPage v-if="store.asReader" />
     <AuthorFeedPage v-else />
-    <div class="lineContainer" draggable="true" @click.prevent="router.push('/write')" @dragstart="startDrag"
-      @dragend="drag">
-      <div :class="{ line: true }"></div>
-      <div :class="{ line: true }"></div>
-    </div>
+    <RouterLink to="/write" draggable="true">
+      <div class="lineContainer">
+        <div :class="{ line: true }"></div>
+        <div :class="{ line: true }"></div>
+      </div>
+    </RouterLink>
 
     <div id="warningShow"></div>
   </div>

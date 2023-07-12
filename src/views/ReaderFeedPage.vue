@@ -215,6 +215,17 @@ async function getPostsByTag(tags: string[]) {
             }
         })
     }
+    else if (posts.value.length === 0) {
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'flex';
+                warningShow.style.flexDirection = 'column'
+                warningShow.innerHTML = 'No post found for your interest(s) <button>View Trendings</button>'
+
+            }
+        })
+    }
     if (posts.value.length === 10) {
         stopNoDataR.value = 10;
     }
@@ -283,12 +294,21 @@ async function getFollowings() {
             }
         })
     }
-    else if (followings.value.length === 0) {
+    else if (followings.value.length === 0 && store.signedUser.following.theFollowings > 0) {
         nextTick(() => {
             const warningShow = document.getElementById('warningShow');
             if (warningShow) {
                 warningShow.style.display = 'flex';
                 warningShow.textContent = 'No post to show from your followings.';
+            }
+        })
+    }
+    else{
+        nextTick(() => {
+            const warningShow = document.getElementById('warningShow');
+            if (warningShow) {
+                warningShow.style.display = 'flex';
+                warningShow.textContent = 'You are currently not following anyone yet';
             }
         })
     }
@@ -439,4 +459,5 @@ async function getFollowings() {
 .result-item-header span:last-of-type {
     font-size: medium;
 }
+
 </style>

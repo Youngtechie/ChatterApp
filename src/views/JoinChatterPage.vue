@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onUnmounted, ref, type Ref, nextTick } from 'vue';
+import { onUnmounted, ref, type Ref, nextTick, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useChatterStore } from '@/stores/store';
 import { collection, query, where, getDocs, getFirestore, setDoc, doc } from "firebase/firestore";
@@ -10,7 +10,7 @@ import useAuthentication from '@/composables/useAuth.vue';
 import axios from 'axios';
 import useUserDetails from '@/composables/useUserDetails.vue'
 
-useUserDetails()
+
 
 type AnyObject = {
     [key: string]: any;
@@ -24,6 +24,10 @@ const router = useRouter()
 const details: AnyObject = ref({})
 const isLoading: Ref<boolean> = ref(true)
 let timeOut: ReturnType<typeof setTimeout>;
+
+onMounted(() => {
+    useUserDetails()
+})
 
 async function getUserDetails(accessToken: any, result: any) {
     const warningShow = document.getElementById('warningShow') as HTMLDivElement
@@ -76,14 +80,23 @@ async function getUserDetails(accessToken: any, result: any) {
         }
     }).catch(() => {
         const warningShow = document.getElementById('warningShow') as HTMLDivElement
-        if (warningShow) {
-            warningShow.style.display = 'flex'
-            warningShow.textContent = 'Something went wrong, check your internet connection and try again.'
-        }
+        nextTick(() => {
+            if (warningShow) {
+                warningShow.style.display = 'flex'
+                warningShow.textContent = 'Something went wrong, check your internet connection and try again.'
+            }
+        })
     })
 }
 
 function LoginWithGmail() {
+    const btn = document.querySelector('.google-button') as HTMLButtonElement
+    nextTick(() => {
+        if (btn) {
+            btn.setAttribute('disabled', 'true')
+            btn.style.cursor = "not-allowed"
+        }
+    })
     setPersistence(auth, browserSessionPersistence)
     signInWithPopup(auth, provider)
         .then((result) => {
@@ -93,14 +106,20 @@ function LoginWithGmail() {
             }
         }).catch(() => {
             const warningShow = document.getElementById('warningShow') as HTMLDivElement
-            if (warningShow) {
-                warningShow.style.display = 'flex'
-                warningShow.textContent = 'Something went wrong, check your internet connection and try again.'
-                timeOut = setTimeout(() => {
-                    const warningShow = document.getElementById('warningShow') as HTMLDivElement
-                    warningShow.style.display = 'none'
-                }, 3000)
-            }
+            nextTick(() => {
+                if (warningShow) {
+                    warningShow.style.display = 'flex'
+                    warningShow.textContent = 'Something went wrong, check your internet connection and try again.'
+                    timeOut = setTimeout(() => {
+                        const warningShow = document.getElementById('warningShow') as HTMLDivElement
+                        warningShow.style.display = 'none'
+                    }, 3000)
+                }
+                if (btn) {
+                    btn.removeAttribute('disabled')
+                    btn.style.cursor = "pointer"
+                }
+            })
         })
 }
 

@@ -13,4 +13,3 @@ onMounted(() => {
 <template>
   <RouterView />
 </template>
-

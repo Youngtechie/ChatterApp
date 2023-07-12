@@ -200,6 +200,7 @@ async function addCommentButton(userId: string, postId: string, posterId: string
     flex-direction: column;
     align-items: center;
     width: 320px;
+    margin-top: 10px;
 }
 
 textarea {

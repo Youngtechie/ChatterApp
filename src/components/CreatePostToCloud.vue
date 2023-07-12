@@ -1,4 +1,5 @@
 <script lang="ts">
+import { nextTick } from "vue";
 import { useChatterStore } from '@/stores/store';
 import { getStorage, ref as storageRef, uploadBytes, deleteObject, getDownloadURL } from 'firebase/storage'
 import { doc, getFirestore, collection, addDoc, serverTimestamp, updateDoc, getDoc, setDoc, type DocumentData } from 'firebase/firestore'
@@ -17,31 +18,46 @@ const FullStorage = storageRef(storage, 'ChatterAppFiles')
 
 export default async function CreatePostToCloud(rawDocument: string, docContent: string, title: string[], tag: string, type: string, disableComment: boolean, postId: string, imageDelete: boolean) {
     if (type === "post") {
+        nextTick(() => {
+            const warningShow = document.getElementById("warningShow") as HTMLDivElement
+            if (warningShow) {
+                warningShow.style.display = 'flex'
+                warningShow.textContent = "Publishing your post ..."
+            }
+        })
+
         const Post = store.createPost()
         Post.postTitle = title
         Post.postSettings.disableComments = disableComment
         Post.postTag = tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()
         Post.posterId = store.signedUser.id
 
-        if (tag.trim() !== '') {
-            const tagRef = doc(db, 'tags', tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase())
-            const tagResult = await getDoc(tagRef) as DocumentData
-            if (tagResult.data().length > 0) {
-                updateDoc((tagRef), {
-                    counts: tagResult.data().counts + 1
-                })
-            }
-            else {
-                setDoc((tagRef), {
-                    counts: 1
-                })
-            }
-        }
-
         if (postId !== "") {
             const postRef = doc(db, 'posts', postId)
             const post = await getDoc(postRef)
             const postID = post.data()?.postId
+
+            if (post.data()!.postTag !== tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()) {
+                const tagRef1 = doc(db, 'tags', post.data()!.postTag)
+                const tagRef2 = doc(db, 'tags', tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase())
+                const tagResult1 = await getDoc(tagRef1)
+                const tagResult2 = await getDoc(tagRef2)
+
+                updateDoc((tagRef1), {
+                    counts: tagResult1.data()!.counts - 1
+                })
+
+                if (tagResult2.exists()) {
+                    updateDoc((tagRef2), {
+                        counts: tagResult2.data()!.counts + 1
+                    })
+                }
+                else {
+                    setDoc((tagRef2), {
+                        counts: 1
+                    })
+                }
+            }
 
             const cloudPostContain = storageRef(FullStorage, `posts/${postID}/postContent`)
             const cloudPostRawContain = storageRef(FullStorage, `posts/${postID}/postRawContent`)
@@ -101,10 +117,48 @@ export default async function CreatePostToCloud(rawDocument: string, docContent:
                 postTag: tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase()
             })
 
-            router.push(`/post/${postId}`);
+            nextTick(() => {
+                const warningShow = document.getElementById("warningShow") as HTMLDivElement
+                if (warningShow) {
+                    warningShow.textContent = "Post has been published"
+                }
+            }).then(() => {
+                setTimeout(() => {
+                    const ans = confirm('Do you want to view your post?')
+                    if (ans === true) {
+                        const warningShow = document.getElementById("warningShow") as HTMLDivElement
+                        if (warningShow) {
+                            warningShow.style.display = "none"
+                        }
+                        router.push(`/post/${postId}`);
+                    }
+                    else {
+                        const warningShow = document.getElementById("warningShow") as HTMLDivElement
+                        if (warningShow) {
+                            warningShow.style.display = "none"
+                        }
+                        router.push({ name: "Home" });
+                    }
+                }, 2000)
+            });
+
             (document.getElementById('publishBtn') as HTMLInputElement).removeAttribute('disabled');
         }
         else {
+            if (tag.trim() !== '') {
+                const tagRef = doc(db, 'tags', tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase())
+                const tagResult = await getDoc(tagRef) as DocumentData
+                if (tagResult.exist()) {
+                    updateDoc((tagRef), {
+                        counts: tagResult.data().counts + 1
+                    })
+                }
+                else {
+                    setDoc((tagRef), {
+                        counts: 1
+                    })
+                }
+            }
             const newPost = await addDoc(collection(db, 'posts'), { ...Post })
 
             await updateDoc(doc(db, 'posts', newPost.id), {
@@ -172,10 +226,34 @@ export default async function CreatePostToCloud(rawDocument: string, docContent:
                         })
                     })
                 })
-            }
-            
-            await router.push(`/post/${newPost.id}`);
-            (document.getElementById('publishBtn') as HTMLInputElement).removeAttribute('disabled');
+
+                nextTick(() => {
+                    const warningShow = document.getElementById("warningShow") as HTMLDivElement
+                    if (warningShow) {
+                        warningShow.textContent = "Post has been published"
+                    }
+                }).then(() => {
+                    setTimeout(() => {
+                        const ans = confirm('Do you want to view your post?')
+                        if (ans === true) {
+                            const warningShow = document.getElementById("warningShow") as HTMLDivElement
+                            if (warningShow) {
+                                warningShow.style.display = "none"
+                            }
+                            router.push(`/post/${postId}`);
+                        }
+                        else {
+                            const warningShow = document.getElementById("warningShow") as HTMLDivElement
+                            if (warningShow) {
+                                warningShow.style.display = "none"
+                            }
+                            router.push({ name: "Home" });
+                        }
+                    }, 2000)
+                });
+
+                (document.getElementById('publishBtn') as HTMLInputElement).removeAttribute('disabled');
+            };
         }
     }
 }

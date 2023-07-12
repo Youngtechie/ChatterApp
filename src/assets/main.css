@@ -157,6 +157,9 @@ button {
   .lineContainer {
     display: none;
   }
+  #warningShow button{
+    display: none;
+  }
   body,
   button,
   input {
@@ -390,4 +393,15 @@ button {
   line-height: 2em;
   max-width: 95vw;
   white-space: pre-wrap;
+}
+#warningShow button {
+  margin-top: 10px;
+  padding: 5px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+}
+#warningShow button:hover {
+  background-color: blue;
+  color: #fff;
 }
