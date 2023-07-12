@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { type Ref, ref, onMounted, onUnmounted, watchEffect, nextTick, computed  } from 'vue';
+import { type Ref, ref, onMounted, onUnmounted, watchEffect, nextTick } from 'vue';
 import MarkdownIt from 'markdown-it';
 import DOMPurify from 'dompurify';
 import router from '@/router/index';
@@ -10,7 +10,6 @@ import useUserDetails from '@/composables/useUserDetails.vue'
 import CreatePostToCloud from '@/components/CreatePostToCloud.vue';
 import axios from 'axios'
 import useAuthentication from '@/composables/useAuth.vue'
-import { useSeoMeta } from '@vueuse/head';
 
 useUserDetails()
 
@@ -94,19 +93,7 @@ function handleBeforeUnload(event: BeforeUnloadEvent) {
   }
 }
 
-
-// Create a computed reference of type string[] using ref() or computed()
-const keys = computed(() => ['ChatterApp write page', 'Create content on ChatterApp', "ChatterApp's write page", 'Write a post on ChatterApp', 'Write a post on Chatter']);
-
   onMounted(() => {
-  useSeoMeta({
-    title: 'Write a post',
-    keywords: computed(()=> keys.value.join(',') as string),
-    description: 'Write a post on Chatter',
-    ogDescription: 'Write a post on Chatter now',
-    ogTitle: 'Write a post',
-    ogUrl: 'https://chatterapp-by-olaegbe.netlify.app/write',
-  })
   // Add event listener for beforeunload
   window.addEventListener('beforeunload', handleBeforeUnload);
   // Add event listener for window resize
