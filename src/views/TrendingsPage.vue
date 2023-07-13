@@ -254,9 +254,10 @@ onUnmounted(() => {
     width: 320px;
     overflow-x: scroll;
     display: flex;
-    flex-direction: row wrap;
+    flex-flow: row wrap;
     align-items: center;
     justify-content: center;
+    align-self: center;
 }
 
 .trendingsBtn button {
