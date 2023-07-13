@@ -157,7 +157,7 @@ async function getPosts(query: any) {
 }
 
 async function getTrendingTags() {
-    const trendingQuery = query(collection(db, 'tags'), limit(5), where('counts', '>', 0));
+    const trendingQuery = query(collection(db, 'tags'), limit(5), where('counts', '>', 0), orderBy('counts', 'asc'));
     (await getDocs(trendingQuery)).docs.forEach((doc) => {
         trendings.value.push(doc.id)
     })
@@ -257,8 +257,8 @@ onUnmounted(() => {
 }
 
 .trendingsSection .trendingsBtn {
-    width: 320px;
-    padding-left: 30px;
+    width: 100%;
+    max-width: 100%;
     overflow-x: scroll;
     display: flex;
     flex-direction: row;
@@ -333,4 +333,10 @@ onUnmounted(() => {
 
 .result-item-header span:last-of-type {
     font-size: medium;
-}</style>
+}
+@media screen and (max-width: 767px){
+    .trendingsSection .trendingsBtn{
+        padding-left: 100px;
+    }
+}
+</style>

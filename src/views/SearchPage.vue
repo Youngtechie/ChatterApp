@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import {onUnmounted} from 'vue'
+import { onUnmounted } from 'vue'
 import { useRouter } from 'vue-router';
 import { useChatterStore } from '@/stores/store';
 import SignOut from '@/composables/useSignOut.vue';
 import useSearch from '@/composables/useSearch.vue';
+import { useSeoMeta } from '@unhead/vue'
 
 const router = useRouter()
 
@@ -12,6 +13,12 @@ const store = useChatterStore()
 store.sidebar = false
 
 let id: ReturnType<typeof setTimeout>
+
+useSeoMeta({
+    title: 'Search',
+    author: 'Olaegbe Abdul-Rahmon',
+    description: 'Discover a world of information with our powerful search page. Explore a vast array of posts and users on chatterApp'
+})
 
 if (store.authenticated === true) {
     if (store.signedUser.id !== undefined && store.signedUser.username === '') {
@@ -30,7 +37,7 @@ if (store.authenticated === true) {
 onUnmounted(() => {
     clearTimeout(id)
     const warning = document.getElementById('warningShow') as HTMLDivElement
-    if(warning){
+    if (warning) {
         warning.style.display = 'none'
     }
 })
@@ -47,6 +54,6 @@ onUnmounted(() => {
     justify-content: center;
     width: 100%;
     height: 100vh;
-    padding-top: 55px; 
+    padding-top: 55px;
 }
 </style>

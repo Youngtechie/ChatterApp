@@ -240,6 +240,10 @@ input[type="date"] {
   border-radius: 4px;
   cursor: pointer;
 }
+.delete-button{
+  color: red;
+  background-color: none;
+}
 
 .submit-button:hover {
   background-color: #0056b3;

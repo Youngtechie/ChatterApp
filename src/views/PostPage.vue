@@ -15,7 +15,7 @@ import useDetailButtons from '@/composables/useDetailButtons.vue'
 import useAddComment from '@/composables/useAddComment.vue';
 import useDeleteComment from '@/composables/useDeleteComment.vue';
 import useEditComment from '@/composables/useEditComment.vue';
-// import { useSeoMeta } from '@vueuse/head';
+import { useSeoMeta } from '@vueuse/head';
 
 useUserDetails()
 
@@ -67,11 +67,24 @@ async function getData() {
         // Handle the successful retrieval of the document here
         if (doc.data() !== undefined) {
             store.viwedPost = doc.data() as DocumentData;
-            getPostContent()
-            getPoster()
-            updateDoc(postRef, {
+            await getPostContent()
+            await getPoster()
+            await updateDoc(postRef, {
                 ["postViews"]: store.viwedPost.postViews + 1
+            }).then(()=>{
+                useSeoMeta({
+                    title: store.viwedPost.postTitle.join(" "),
+                    author: posterDetail.value[0].username,
+                    description: '' ,
+                    ogTitle: store.viwedPost.postTitle.join(" "),
+                    ogDescription: '',
+                    ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+                    twitterTitle: store.viwedPost.postTitle.join(" "),
+                    twitterDescription: '',
+                    twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+                })
             })
+
         }
     } catch (error) {
         // router.push('/error')
@@ -92,19 +105,19 @@ onMounted(() => {
     getData()
 
     id = setTimeout(() => {
-        if(divContent.value !== ''){
+        if (divContent.value !== '') {
             isLoading.value = false;
         }
-        else{
-            nextTick(()=>{
+        else {
+            nextTick(() => {
                 const warningShow = document.getElementById("warningShow") as HTMLDivElement
-                if(warningShow){
+                if (warningShow) {
                     warningShow.style.display = "flex"
                     warningShow.textContent = "Something went wrong, check your network connection and reload the page."
                 }
             })
         }
-    }, 3000); 
+    }, 3000);
 })
 
 async function getPostContent() {
@@ -139,7 +152,6 @@ async function getPoster() {
 }
 
 async function unFollow() {
-
     useUnfollow(store.viwedPost.posterId, posterDetail.value[0].blogName)
     if (store.signedUser.username !== undefined && store.signedUser.username !== '') {
         isFollowing.value = !isFollowing.value
@@ -245,8 +257,7 @@ function back() {
                 <div v-if="store.viwedPost.postSettings.disableComments === false" class="commentAction">
                     <div v-for="(comment, index) in store.viwedPost.postComments.details" :key="index" class="Eachcomment">
                         <div class="commenter">
-                            <div class="imgCon2"
-                                @click.prevent="routeToProfile(comment.id)"
+                            <div class="imgCon2" @click.prevent="routeToProfile(comment.id)"
                                 :style="{ backgroundImage: `url(${comment.avatar})` }">
                             </div>
                             <div>
@@ -297,7 +308,8 @@ function back() {
     background-position: center;
     margin-right: 0.1rem;
 }
-.imgCon2{
+
+.imgCon2 {
     width: 30px;
     height: 30px;
     background-color: #efefef;
@@ -307,6 +319,7 @@ function back() {
     background-position: center;
     margin-right: 0.1rem;
 }
+
 header {
     display: flex;
     justify-content: space-between;
@@ -381,7 +394,8 @@ header button {
     border-radius: 5px;
 }
 
-#navigators button:hover, header button:hover {
+#navigators button:hover,
+header button:hover {
     background-color: #007bff;
     color: #fff;
 }
@@ -459,9 +473,10 @@ h1,
     text-align: center;
 }
 
-h1{
+h1 {
     margin: 0 5px;
 }
+
 h1:not(.coverImage h1) {
     font-weight: 700;
     text-transform: uppercase;
@@ -536,7 +551,8 @@ h1:not(.coverImage h1) {
 h5 {
     font-size: small;
 }
-h4{
+
+h4 {
     font-size: medium;
 }
 
@@ -546,6 +562,7 @@ h4{
     margin-bottom: 5px;
     margin-left: 60px;
 }
+
 .NightApp .followBtns button svg * {
     fill: #fff;
 }
@@ -570,5 +587,4 @@ h4{
 
 .commenterBtn button {
     padding: 5px;
-}
-</style>
+}</style>

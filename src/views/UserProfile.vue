@@ -4,14 +4,14 @@ import { useChatterStore } from '@/stores/store';
 import { useRouter } from 'vue-router';
 import useLoadingPage from "@/composables/useLoadingPage.vue";
 import { getStorage, ref as storageRef, deleteObject, listAll } from 'firebase/storage'
-import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc, limit, deleteDoc } from 'firebase/firestore'
+import { getFirestore, collection, query, where, getDocs, type DocumentData, doc, getDoc, limit, deleteDoc, onSnapshot } from 'firebase/firestore'
 import useUserDetails from '@/composables/useUserDetails.vue'
 import SignOut from '@/composables/useSignOut.vue';
 import useAuthentication from '@/composables/useAuth.vue'
 import useCalculateTime from '@/composables/useCalculateTime.vue';
 import useDetailButtons from '@/composables/useDetailButtons.vue'
 import axios from 'axios'
-import {useSeoMeta} from '@unhead/vue'
+import { useSeoMeta } from '@unhead/vue'
 
 const router = useRouter();
 
@@ -37,7 +37,8 @@ onMounted(() => {
         title: 'My Profile',
         author: 'Olaegbe Abdul-Rahmon',
         description: 'Personal profile',
-       })
+    })
+
     useUserDetails()
 
     nextTick(() => {
@@ -226,7 +227,7 @@ async function deleteUserDetails(userId: string) {
             warningShow.style.display = 'Account deleted successfully'
             store.authenticated = false
             deleted.value = "true"
-           id = setTimeout(() => {
+            id = setTimeout(() => {
                 warningShow.style.display = 'none'
                 store.signedUser = {}
                 router.push('/home')
@@ -268,7 +269,7 @@ async function deleteAccount() {
                 warningShow.style.display = 'none'
             }, 2000)
         })
-        
+
     }
     catch (error) {
         const warningShow = document.getElementById('warningShow') as HTMLDivElement
@@ -306,6 +307,14 @@ id = setTimeout(() => {
             })
         }
         else {
+            onSnapshot(doc(db, 'users', store.signedUser.id), (doc) => {
+                const data = doc.data()
+                if (data !== undefined) {
+                    const { followers, following } = data
+                    store.signedUser.followers.total = followers.total
+                    store.signedUser.following.total = following.total
+                }
+            })
             isLoading.value = false
         }
     }
@@ -323,6 +332,16 @@ onUnmounted(() => {
     }
 })
 
+function copyToClipboard(text: string) {
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      alert('Profile link copied to clipboard!');
+    })
+    .catch((error) => {
+      console.error('Unable to copy text to clipboard:', error);
+    });
+}
+
 
 </script>
 <template>
@@ -336,6 +355,35 @@ onUnmounted(() => {
         </header>
 
         <div class="body" v-if="deleted === 'false'">
+            <div class="copySection">
+                <button title="Copy profile link" @click="copyToClipboard(`https://chatterapp-by-olaegbe.netlify.app/chatterUser/${store.signedUser.id}`)">
+                    <svg height="25px" width="25px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 64" enable-background="new 0 0 64 64"
+                        xml:space="preserve">
+                        <g id="SVGRepo_bgCarrier" stroke-width="0"></g>
+                        <g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g>
+                        <g id="SVGRepo_iconCarrier">
+                            <g id="Text-files">
+                                <path
+                                    d="M53.9791489,9.1429005H50.010849c-0.0826988,0-0.1562004,0.0283995-0.2331009,0.0469999V5.0228 C49.7777481,2.253,47.4731483,0,44.6398468,0h-34.422596C7.3839517,0,5.0793519,2.253,5.0793519,5.0228v46.8432999 c0,2.7697983,2.3045998,5.0228004,5.1378999,5.0228004h6.0367002v2.2678986C16.253952,61.8274002,18.4702511,64,21.1954517,64 h32.783699c2.7252007,0,4.9414978-2.1725998,4.9414978-4.8432007V13.9861002 C58.9206467,11.3155003,56.7043495,9.1429005,53.9791489,9.1429005z M7.1110516,51.8661003V5.0228 c0-1.6487999,1.3938999-2.9909999,3.1062002-2.9909999h34.422596c1.7123032,0,3.1062012,1.3422,3.1062012,2.9909999v46.8432999 c0,1.6487999-1.393898,2.9911003-3.1062012,2.9911003h-34.422596C8.5049515,54.8572006,7.1110516,53.5149002,7.1110516,51.8661003z M56.8888474,59.1567993c0,1.550602-1.3055,2.8115005-2.9096985,2.8115005h-32.783699 c-1.6042004,0-2.9097996-1.2608986-2.9097996-2.8115005v-2.2678986h26.3541946 c2.8333015,0,5.1379013-2.2530022,5.1379013-5.0228004V11.1275997c0.0769005,0.0186005,0.1504021,0.0469999,0.2331009,0.0469999 h3.9682999c1.6041985,0,2.9096985,1.2609005,2.9096985,2.8115005V59.1567993z">
+                                </path>
+                                <path
+                                    d="M38.6031494,13.2063999H16.253952c-0.5615005,0-1.0159006,0.4542999-1.0159006,1.0158005 c0,0.5615997,0.4544001,1.0158997,1.0159006,1.0158997h22.3491974c0.5615005,0,1.0158997-0.4542999,1.0158997-1.0158997 C39.6190491,13.6606998,39.16465,13.2063999,38.6031494,13.2063999z">
+                                </path>
+                                <path
+                                    d="M38.6031494,21.3334007H16.253952c-0.5615005,0-1.0159006,0.4542999-1.0159006,1.0157986 c0,0.5615005,0.4544001,1.0159016,1.0159006,1.0159016h22.3491974c0.5615005,0,1.0158997-0.454401,1.0158997-1.0159016 C39.6190491,21.7877007,39.16465,21.3334007,38.6031494,21.3334007z">
+                                </path>
+                                <path
+                                    d="M38.6031494,29.4603004H16.253952c-0.5615005,0-1.0159006,0.4543991-1.0159006,1.0158997 s0.4544001,1.0158997,1.0159006,1.0158997h22.3491974c0.5615005,0,1.0158997-0.4543991,1.0158997-1.0158997 S39.16465,29.4603004,38.6031494,29.4603004z">
+                                </path>
+                                <path
+                                    d="M28.4444485,37.5872993H16.253952c-0.5615005,0-1.0159006,0.4543991-1.0159006,1.0158997 s0.4544001,1.0158997,1.0159006,1.0158997h12.1904964c0.5615025,0,1.0158005-0.4543991,1.0158005-1.0158997 S29.0059509,37.5872993,28.4444485,37.5872993z">
+                                </path>
+                            </g>
+                        </g>
+                    </svg>
+                </button>
+            </div>
             <div class="imageCon">
                 <div class="imgCon" :style="{ backgroundImage: `url(${store.signedUser.profilePicture})` }"></div>
             </div>
@@ -425,6 +473,23 @@ onUnmounted(() => {
     flex-direction: column;
 }
 
+.copySection {
+    width: 90%;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    position: absolute;
+}
+
+.copySection button{
+    outline: none;
+    border: none;
+    cursor: pointer;
+}
+
+.NightApp .copySection button svg *{
+    fill: #fff;
+}
 .imgCon {
     width: 80px;
     height: 80px;
@@ -439,7 +504,7 @@ main {
     display: flex;
     flex-direction: column;
     align-items: center;
-    height: 100vh;
+    height: 100%;
 }
 
 header {
@@ -449,6 +514,8 @@ header {
     padding: 1rem;
     width: 100%;
     height: 55px;
+    z-index: 909090;
+    position: fixed;
     background-color: #333333;
 }
 
@@ -463,7 +530,8 @@ header button:first-of-type {
     align-items: center;
     padding: 1rem 0;
     width: 100%;
-    height: 90%;
+    height: 100vh;
+    padding-top: 65px;
 }
 
 .imageCon {

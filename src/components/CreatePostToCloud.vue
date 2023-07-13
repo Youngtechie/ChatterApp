@@ -102,6 +102,7 @@ export default async function CreatePostToCloud(rawDocument: string, docContent:
                     warningShow.textContent = "Post has been published"
                 }
             }).then(() => {
+                store.textarea = []
                 setTimeout(() => {
                     const ans = confirm('Do you want to view your post?')
                     if (ans === true) {
@@ -190,6 +191,7 @@ export default async function CreatePostToCloud(rawDocument: string, docContent:
                     warningShow.textContent = "Post has been published"
                 }
             }).then(() => {
+                store.textarea = []
                 setTimeout(() => {
                     const ans = confirm('Do you want to view your post?')
                     if (ans === true) {
