@@ -257,11 +257,14 @@ onUnmounted(() => {
 }
 
 .trendingsSection .trendingsBtn {
-    width: 100%;
+    width: 320px;
+    padding-left: 30px;
+    overflow-x: scroll;
     display: flex;
-    flex-direction: row wrap;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
+    align-self: center;
 }
 
 .trendingsBtn button {
@@ -269,9 +272,6 @@ onUnmounted(() => {
     border-radius: 10px;
     font-weight: 700;
     cursor: pointer;
-}
-
-.trendingsBtn button:not(.trendingsBtn button:first-of-type) {
     margin-left: 20px;
 }
 
@@ -333,5 +333,4 @@ onUnmounted(() => {
 
 .result-item-header span:last-of-type {
     font-size: medium;
-}
-</style>
+}</style>
