@@ -254,7 +254,7 @@ onUnmounted(() => {
     width: 320px;
     overflow-x: scroll;
     display: flex;
-    flex-flow: row wrap;
+    flex-direction: row;
     align-items: center;
     justify-content: center;
     align-self: center;
