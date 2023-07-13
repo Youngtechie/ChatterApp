@@ -9,6 +9,7 @@ import useUserDetails from '@/composables/useUserDetails.vue'
 import CreatePostToCloud from '@/components/CreatePostToCloud.vue';
 import axios from 'axios'
 import useAuthentication from '@/composables/useAuth.vue'
+import {useSeoMeta} from '@unhead/vue'
 
 useUserDetails()
 
@@ -91,7 +92,18 @@ function handleBeforeUnload(event: BeforeUnloadEvent) {
   }
 }
 
-  onMounted(() => {
+onMounted(() => {
+  useSeoMeta({
+        title: 'Write a blog',
+        author: 'Olaegbe Abdul-Rahmon',
+        description: 'Write nice and appealing with our in-built markdown, a rich text editor on ChatterApp',
+        ogTitle: 'Write a blog on ChatterApp',
+        ogDescription: 'Write nice and appealing with our in-built markdown, a rich text editor on ChatterApp',
+        ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+        twitterTitle: 'Write a blog on ChatterApp',
+        twitterDescription: 'Write nice and appealing with our in-built markdown, a rich text editor on ChatterApp',
+        twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+    })
   // Add event listener for beforeunload
   window.addEventListener('beforeunload', handleBeforeUnload);
   // Add event listener for window resize
@@ -273,16 +285,16 @@ function createPost() {
       try {
         CreatePostToCloud(rawDocument.value as string, postContentToBePosted.value as string, titleArr.value, postTag.value, 'post', disableComments.value, id as string)
       } catch (error) {
-        nextTick(()=>{
+        nextTick(() => {
           const warningShow = document.getElementById("warningShow") as HTMLDivElement
-          if(warningShow){
+          if (warningShow) {
             warningShow.style.display = "flex"
             warningShow.textContent = "Can't publish your post, check your network connection and try again."
             timeOut = setTimeout(() => {
-              if(warningShow){
+              if (warningShow) {
                 warningShow.style.display = "none"
               }
-            }, 2000); 
+            }, 2000);
           }
         })
       }

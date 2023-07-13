@@ -8,7 +8,7 @@ import { doc, getFirestore, updateDoc } from 'firebase/firestore'
 import useUserDetails from '@/composables/useUserDetails.vue'
 import SignOut from '@/composables/useSignOut.vue';
 import useAuthentication from '@/composables/useAuth.vue'
-
+import {useSeoMeta} from '@unhead/vue'
 
 const { app, auth } = useAuthentication()
 
@@ -67,6 +67,17 @@ let id = setTimeout(() => {
 }, 5000)
 
 onUnmounted(() => {
+    useSeoMeta({
+        title: 'ChatterApp',
+        author: 'Olaegbe Abdul-Rahmon ',
+        description: 'Unleash the power of Words, Connect with Like-minded Readers on chatterApp',
+        ogTitle: 'ChatterApp',
+        ogDescription: 'Unleash the power of Words, Connect with Like-minded Readers on chatterApp',
+        ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+        twitterTitle: 'ChatterApp',
+        twitterDescription: 'Unleash the power of Words, Connect with Like-minded Readers on chatterApp',
+        twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+    })
     clearTimeout(id)
     const warning = document.getElementById('warningShow') as HTMLDivElement
     if(warning){

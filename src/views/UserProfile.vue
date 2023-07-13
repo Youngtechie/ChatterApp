@@ -11,6 +11,7 @@ import useAuthentication from '@/composables/useAuth.vue'
 import useCalculateTime from '@/composables/useCalculateTime.vue';
 import useDetailButtons from '@/composables/useDetailButtons.vue'
 import axios from 'axios'
+import {useSeoMeta} from '@unhead/vue'
 
 const router = useRouter();
 
@@ -32,6 +33,11 @@ interface EachInteraction {
 }
 
 onMounted(() => {
+    useSeoMeta({
+        title: 'My Profile',
+        author: 'Olaegbe Abdul-Rahmon',
+        description: 'Personal profile',
+       })
     useUserDetails()
 
     nextTick(() => {

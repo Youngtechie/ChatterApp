@@ -8,6 +8,7 @@ import useAuthentication from '@/composables/useAuth.vue'
 import axios from 'axios'
 import useCalculateTime from '@/composables/useCalculateTime.vue'
 import useDetailButtons from '@/composables/useDetailButtons.vue'
+import { useSeoMeta } from '@unhead/vue'
 
 interface Poster {
     img: string,
@@ -46,6 +47,11 @@ const currentTrend = ref('')
 const isloading = ref(true)
 
 onMounted(() => {
+    useSeoMeta({
+        title: 'Trendings',
+        author: 'Olaegbe Abdul-Rahmon',
+        description: 'Discover trending articles, stories, and discussions from talented authors and passionate readers on ChatterApp',
+    })
     nextTick(() => {
         const warningShow = document.getElementById('warningShow');
         if (warningShow) {
@@ -327,4 +333,5 @@ onUnmounted(() => {
 
 .result-item-header span:last-of-type {
     font-size: medium;
-}</style>
+}
+</style>

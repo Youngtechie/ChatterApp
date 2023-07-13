@@ -8,6 +8,7 @@ import useAuthentication from '@/composables/useAuth.vue'
 import axios from 'axios'
 import useCalculateTime from '@/composables/useCalculateTime.vue'
 import useDetailButtons from '@/composables/useDetailButtons.vue'
+import {useSeoMeta} from '@unhead/vue'
 
 interface Poster {
     img: string,
@@ -44,6 +45,17 @@ const isloading = ref(true)
 let bigSizeScreen = ref(false)
 
 onMounted(() => {
+    useSeoMeta({
+        title: 'Explore',
+        author: 'Olaegbe Abdul-Rahmon',
+        description: 'Discover captivating content, engage with a vibrant community, and expand your literary horizons on ChatterApp',
+        ogTitle: 'Explore',
+        ogDescription: 'Discover captivating content, engage with a vibrant community, and expand your literary horizons on ChatterApp',
+        ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+        twitterTitle: 'Explore',
+        twitterDescription: 'Discover captivating content, engage with a vibrant community, and expand your literary horizons on ChatterApp',
+        twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+    })
     nextTick(() => {
         const warningShow = document.getElementById('warningShow');
         if (warningShow) {
