@@ -251,7 +251,7 @@ onUnmounted(() => {
 }
 
 .trendingsSection .trendingsBtn {
-    width: 100%;
+    width: 320px;
     display: flex;
     flex-direction: row wrap;
     align-items: center;
@@ -263,6 +263,7 @@ onUnmounted(() => {
     border-radius: 10px;
     font-weight: 700;
     cursor: pointer;
+    margin-top: 5px;
 }
 
 .trendingsBtn button:not(.trendingsBtn button:first-of-type) {
