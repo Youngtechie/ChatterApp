@@ -252,6 +252,7 @@ onUnmounted(() => {
 
 .trendingsSection .trendingsBtn {
     width: 320px;
+    padding-left: 30px;
     overflow-x: scroll;
     display: flex;
     flex-direction: row;
