@@ -632,12 +632,12 @@ function updateDom() {
 }
 
 function handleInputLast(event: Event) {
-  const inputValue = event.target as HTMLInputElement;
-  const sanitizedValue = inputValue.value.replace(/[0-9\s]/g, '');
+  // const inputValue = event.target as HTMLInputElement;
+  // const sanitizedValue = inputValue.value.replace(/[0-9\s]/g, '');
 
-  if (inputValue.value !== sanitizedValue) {
-    postTag.value = sanitizedValue;
-  }
+  // if (inputValue.value !== sanitizedValue) {
+  //   postTag.value = sanitizedValue;
+  // }
 };
 
 </script>
