@@ -740,7 +740,7 @@ function handleInputLast(event: Event) {
           </select>
 
           <input type="text" v-model="postTag" v-if="tagOption === 'option2'" placeholder="Write your tag here" required
-            @input="handleInputLast" @click.stop/>
+            @input="handleInputLast" @touchstart.stop/>
 
 
         </div>
