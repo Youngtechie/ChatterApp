@@ -71,21 +71,7 @@ async function getData() {
             await getPoster()
             await updateDoc(postRef, {
                 ["postViews"]: store.viwedPost.postViews + 1
-            }).then(() => {
-                useSeoMeta({
-                    title: store.viwedPost.postTitle.join(" "),
-                    author: posterDetail.value[0].username,
-                    description: divContent,
-                    ogTitle: store.viwedPost.postTitle.join(" "),
-                    ogDescription: divContent,
-                    ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
-                    twitterCard: 'summary_large_image',
-                    twitterTitle: store.viwedPost.postTitle.join(" "),
-                    twitterDescription: divContent,
-                    twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
-                })
             })
-
         }
     } catch (error) {
         // router.push('/error')
@@ -94,6 +80,18 @@ async function getData() {
 }
 
 onMounted(() => {
+    useSeoMeta({
+        title: store.viwedPost.postTitle.join(" "),
+        author: posterDetail.value[0].username,
+        description: divContent,
+        ogTitle: store.viwedPost.postTitle.join(" "),
+        ogDescription: divContent,
+        ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+        twitterCard: 'summary_large_image',
+        twitterTitle: store.viwedPost.postTitle.join(" "),
+        twitterDescription: divContent,
+        twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+    })
     const postRef = doc(db, "posts", (props.postId as string))
     try {
         onSnapshot(postRef, (doc) => {
@@ -354,7 +352,8 @@ header button {
     align-items: center;
     justify-content: center;
 }
-.showPost{
+
+.showPost {
     padding: 0 2px;
 }
 
@@ -591,4 +590,5 @@ h4 {
 
 .commenterBtn button {
     padding: 5px;
-}</style>
+}
+</style>
