@@ -17,8 +17,6 @@ import useDeleteComment from '@/composables/useDeleteComment.vue';
 import useEditComment from '@/composables/useEditComment.vue';
 import { useSeoMeta } from '@vueuse/head';
 
-useUserDetails()
-
 interface posterdetail {
     blogName: string;
     profilePicture: string;
@@ -80,16 +78,19 @@ async function getData() {
 }
 
 onMounted(() => {
+
+    useUserDetails()
+    
     useSeoMeta({
         title: store.viwedPost.postTitle.join(" "),
         author: posterDetail.value[0].username,
-        description: divContent,
+        description: divContent.value,
         ogTitle: store.viwedPost.postTitle.join(" "),
-        ogDescription: divContent,
+        ogDescription: divContent.value,
         ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
         twitterCard: 'summary_large_image',
         twitterTitle: store.viwedPost.postTitle.join(" "),
-        twitterDescription: divContent,
+        twitterDescription: divContent.value,
         twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
     })
     const postRef = doc(db, "posts", (props.postId as string))

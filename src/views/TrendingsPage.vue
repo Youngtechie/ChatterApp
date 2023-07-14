@@ -18,8 +18,6 @@ interface Poster {
     blogname: string,
 }
 
-useUserDetails()
-
 const posts = ref<DocumentData[] | null>([])
 
 const divContent = ref('')
@@ -51,7 +49,14 @@ onMounted(() => {
         title: 'Trendings',
         author: 'Olaegbe Abdul-Rahmon',
         description: 'Discover trending articles, stories, and discussions from talented authors and passionate readers on ChatterApp',
+        ogTitle: 'Trendings',
+        ogDescription: 'Discover trending articles, stories, and discussions from talented authors and passionate readers on ChatterApp',
+        ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+        twitterTitle: 'Trendings',
+        twitterDescription: 'Discover trending articles, stories, and discussions from talented authors and passionate readers on ChatterApp',
+        twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
     })
+    useUserDetails()
     nextTick(() => {
         const warningShow = document.getElementById('warningShow');
         if (warningShow) {
@@ -335,8 +340,9 @@ onUnmounted(() => {
 .result-item-header span:last-of-type {
     font-size: medium;
 }
-@media screen and (max-width: 767px){
-    .trendingsSection .trendingsBtn{
+
+@media screen and (max-width: 767px) {
+    .trendingsSection .trendingsBtn {
         padding-left: 100px;
     }
 }
