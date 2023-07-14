@@ -157,7 +157,7 @@ async function getPosts(query: any) {
 }
 
 async function getTrendingTags() {
-    const trendingQuery = query(collection(db, 'tags'), limit(5), where('counts', '>', 0), orderBy('counts', 'asc'));
+    const trendingQuery = query(collection(db, 'tags'), limit(5), where('counts', '>', 0), orderBy('counts', 'desc'));
     (await getDocs(trendingQuery)).docs.forEach((doc) => {
         trendings.value.push(doc.id)
     })
