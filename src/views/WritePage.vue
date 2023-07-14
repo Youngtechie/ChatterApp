@@ -9,7 +9,7 @@ import useUserDetails from '@/composables/useUserDetails.vue'
 import CreatePostToCloud from '@/components/CreatePostToCloud.vue';
 import axios from 'axios'
 import useAuthentication from '@/composables/useAuth.vue'
-import {useSeoMeta} from '@unhead/vue'
+import { useSeoMeta } from '@unhead/vue'
 
 useUserDetails()
 
@@ -94,16 +94,16 @@ function handleBeforeUnload(event: BeforeUnloadEvent) {
 
 onMounted(() => {
   useSeoMeta({
-        title: 'Write a blog',
-        author: 'Olaegbe Abdul-Rahmon',
-        description: 'Write nice and appealing with our in-built markdown, a rich text editor on ChatterApp',
-        ogTitle: 'Write a blog on ChatterApp',
-        ogDescription: 'Write nice and appealing with our in-built markdown, a rich text editor on ChatterApp',
-        ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
-        twitterTitle: 'Write a blog on ChatterApp',
-        twitterDescription: 'Write nice and appealing with our in-built markdown, a rich text editor on ChatterApp',
-        twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
-    })
+    title: 'Write a blog',
+    author: 'Olaegbe Abdul-Rahmon',
+    description: 'Write nice and appealing with our in-built markdown, a rich text editor on ChatterApp',
+    ogTitle: 'Write a blog on ChatterApp',
+    ogDescription: 'Write nice and appealing with our in-built markdown, a rich text editor on ChatterApp',
+    ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+    twitterTitle: 'Write a blog on ChatterApp',
+    twitterDescription: 'Write nice and appealing with our in-built markdown, a rich text editor on ChatterApp',
+    twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+  })
   // Add event listener for beforeunload
   window.addEventListener('beforeunload', handleBeforeUnload);
   // Add event listener for window resize
@@ -629,15 +629,6 @@ function updateDom() {
   }
 }
 
-function handleInputLast(event: Event) {
-  const inputValue = event.target as HTMLInputElement;
-  const sanitizedValue = inputValue.value.replace(/[0-9\s]/g, '');
-
-  if (inputValue.value !== sanitizedValue) {
-    postTag.value = sanitizedValue;
-  }
-};
-
 </script>
 <template>
   <header>
@@ -728,21 +719,12 @@ function handleInputLast(event: Event) {
               <input type="radio" value="option1" id="opt1" name="tag" required v-model="tagOption" />
               <label for="opt1">Choose from available tags</label>
             </div>
-            <div class="option">
-              <input type="radio" value="option2" name="tag" id="opt2" required v-model="tagOption" />
-              <label for="opt2">Create a new tag</label>
-            </div>
+
+            <select id="tags" v-model="postTag" v-if="tagOption === 'option1'" required title="Tags">
+              <option value="" disabled>Select a tag for your post</option>
+              <option v-for="tag in suggestedTags" :key="tag" :value="tag">{{ tag }}</option>
+            </select>
           </div>
-
-          <select id="tags" v-model="postTag" v-if="tagOption === 'option1'" required title="Tags">
-            <option value="" disabled>Select a tag for your post</option>
-            <option v-for="tag in suggestedTags" :key="tag" :value="tag">{{ tag }}</option>
-          </select>
-
-          <input type="text" v-model="postTag" v-if="tagOption === 'option2'" placeholder="Write your tag here" required
-            @input.prevent="handleInputLast" @touch.stop/>
-
-
         </div>
         <div class="secondDiv">
           <p>
