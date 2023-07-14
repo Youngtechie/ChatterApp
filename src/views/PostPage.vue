@@ -78,9 +78,7 @@ async function getData() {
 }
 
 onMounted(() => {
-
     useUserDetails()
-    
     useSeoMeta({
         title: store.viwedPost.postTitle.join(" "),
         author: posterDetail.value[0].username,

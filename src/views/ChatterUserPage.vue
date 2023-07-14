@@ -13,6 +13,7 @@ import useUnfollow from '@/composables/useUnfollow.vue'
 import useCheckFollow from '@/composables/useCheckFollow.vue'
 import useDetailButtons from '@/composables/useDetailButtons.vue'
 import axios from 'axios'
+import { useSeoMeta } from '@vueuse/head';
 
 const isFollowing = ref(false)
 
@@ -49,6 +50,19 @@ const interactionsArr = ref<EachInteraction[]>([])
 
 onMounted(() => {
     useUserDetails()
+
+    useSeoMeta({
+        title: 'Profile',
+        author: 'Olaegbe Abdul-Rahmon',
+        description: 'Connect with me on chatter',
+        ogTitle: "Profile",
+        ogDescription: 'Connect with me on chatter',
+        ogImage: store.viwedProfile.profilePicture,
+        twitterCard: 'summary_large_image',
+        twitterTitle: "Profile",
+        twitterDescription: 'Connect with me on chatter',
+        twitterImage: store.viwedProfile.profilePicture,
+    })
 
     getUser(props.userId)
 
