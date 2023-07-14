@@ -353,6 +353,9 @@ header button {
     align-items: center;
     justify-content: center;
 }
+.showPost{
+    padding: 0 2px;
+}
 
 .postContainer {
     max-width: 650px;
