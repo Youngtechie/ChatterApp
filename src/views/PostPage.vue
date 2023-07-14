@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router';
 import { useChatterStore } from '@/stores/store';
 import { doc, getFirestore, getDoc, type DocumentData, updateDoc, onSnapshot } from 'firebase/firestore'
-import { ref, onUnmounted, onMounted, nextTick, watchEffect } from 'vue'
+import { ref, onUnmounted, onMounted, nextTick } from 'vue'
 import useLoadingPage from "@/composables/useLoadingPage.vue";
 import axios from 'axios'
 import useCalculateTime from '@/composables/useCalculateTime.vue';
