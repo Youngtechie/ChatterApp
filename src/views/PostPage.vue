@@ -2,7 +2,7 @@
 import { useRouter } from 'vue-router';
 import { useChatterStore } from '@/stores/store';
 import { doc, getFirestore, getDoc, type DocumentData, updateDoc, onSnapshot } from 'firebase/firestore'
-import { ref, onUnmounted, onMounted, nextTick } from 'vue'
+import { ref, onUnmounted, onMounted, nextTick, watchEffect } from 'vue'
 import useLoadingPage from "@/composables/useLoadingPage.vue";
 import axios from 'axios'
 import useCalculateTime from '@/composables/useCalculateTime.vue';
@@ -58,7 +58,6 @@ let id: ReturnType<typeof setTimeout>
 // const ogImage = ref('')
 
 
-
 async function getData() {
     try {
         const doc = await getDoc(postRef);
@@ -79,18 +78,6 @@ async function getData() {
 
 onMounted(() => {
     useUserDetails()
-    useSeoMeta({
-        title: store.viwedPost.postTitle.join(" "),
-        author: posterDetail.value[0].username,
-        description: divContent.value,
-        ogTitle: store.viwedPost.postTitle.join(" "),
-        ogDescription: divContent.value,
-        ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
-        twitterCard: 'summary_large_image',
-        twitterTitle: store.viwedPost.postTitle.join(" "),
-        twitterDescription: divContent.value,
-        twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
-    })
     const postRef = doc(db, "posts", (props.postId as string))
     try {
         onSnapshot(postRef, (doc) => {
@@ -100,7 +87,20 @@ onMounted(() => {
     } catch (error) {
         //
     }
-    getData()
+    getData().then(() => {
+        useSeoMeta({
+            title: "My post on Chatter",
+            author: posterDetail.value[0].username,
+            description: store.viwedPost.postTitle.join(" "),
+            ogTitle: "My post on chatter",
+            ogDescription: store.viwedPost.postTitle.join(" "),
+            ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+            twitterCard: 'summary_large_image',
+            twitterTitle: "My post on chatter",
+            twitterDescription: store.viwedPost.postTitle.join(" "),
+            twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+        })
+    })
 
     id = setTimeout(() => {
         if (divContent.value !== '') {

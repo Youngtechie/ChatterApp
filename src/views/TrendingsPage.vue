@@ -46,9 +46,9 @@ const isloading = ref(true)
 
 onMounted(() => {
     useUserDetails()
-    
+
     useSeoMeta({
-        title: 'Trendings',
+        title: currentTrend.value,
         author: 'Olaegbe Abdul-Rahmon',
         description: 'Discover trending articles, stories, and discussions from talented authors and passionate readers on ChatterApp',
         ogTitle: 'Trendings',
@@ -58,7 +58,6 @@ onMounted(() => {
         twitterDescription: 'Discover trending articles, stories, and discussions from talented authors and passionate readers on ChatterApp',
         twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
     })
-
 
     nextTick(() => {
         const warningShow = document.getElementById('warningShow');
