@@ -71,16 +71,17 @@ async function getData() {
             await getPoster()
             await updateDoc(postRef, {
                 ["postViews"]: store.viwedPost.postViews + 1
-            }).then(()=>{
+            }).then(() => {
                 useSeoMeta({
                     title: store.viwedPost.postTitle.join(" "),
                     author: posterDetail.value[0].username,
-                    description: '' ,
+                    description: divContent,
                     ogTitle: store.viwedPost.postTitle.join(" "),
-                    ogDescription: '',
+                    ogDescription: divContent,
                     ogImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
+                    twitterCard: 'summary_large_image',
                     twitterTitle: store.viwedPost.postTitle.join(" "),
-                    twitterDescription: '',
+                    twitterDescription: divContent,
                     twitterImage: 'https://firebasestorage.googleapis.com/v0/b/chatter-75076.appspot.com/o/android-chrome-512x512.png?alt=media&token=04762555-2965-4bdd-b57c-d0121fcfbd89',
                 })
             })
@@ -188,7 +189,7 @@ function back() {
 
 </script>
 <template>
-    <useLoadingPage v-if="isLoading && divContent === ''" action-name="Loading Post..." />
+    <useLoadingPage v-if="isLoading && divContent === '' && posterDetail.length === 0" action-name="Loading Post..." />
     <main v-else class="postFullDetails">
         <header>
             <button @click.prevent="back">Back</button>
@@ -341,7 +342,7 @@ header button {
 }
 
 .followBtns {
-    margin-left: 20px;
+    margin-left: 10px;
 }
 
 .followBtns button {
@@ -587,4 +588,5 @@ h4 {
 
 .commenterBtn button {
     padding: 5px;
-}</style>
+}
+</style>
