@@ -238,8 +238,6 @@ function preview() {
   const sanitized = sanitizer(markdownGenerated)
   blogHTML.value = sanitized;
 
-  (document.getElementById('previewer') as HTMLDivElement).normalize();
-
   postContentToBePosted.value = blogHTML.value
 }
 
@@ -632,12 +630,12 @@ function updateDom() {
 }
 
 function handleInputLast(event: Event) {
-  // const inputValue = event.target as HTMLInputElement;
-  // const sanitizedValue = inputValue.value.replace(/[0-9\s]/g, '');
+  const inputValue = event.target as HTMLInputElement;
+  const sanitizedValue = inputValue.value.replace(/[0-9\s]/g, '');
 
-  // if (inputValue.value !== sanitizedValue) {
-  //   postTag.value = sanitizedValue;
-  // }
+  if (inputValue.value !== sanitizedValue) {
+    postTag.value = sanitizedValue;
+  }
 };
 
 </script>
@@ -650,7 +648,7 @@ function handleInputLast(event: Event) {
   </header>
 
   <div class="sectionContainers">
-    <div :class="[{ none: postSection1 !== 'edit-section' }, { editorsection: true }]">
+    <div v-if="postSection1 === 'edit-section'" :class="{ editorsection: true }">
 
       <button type="button" @click="preview" id="previewBtn">Preview</button>
 
@@ -710,7 +708,7 @@ function handleInputLast(event: Event) {
       </div>
     </div>
 
-    <div :class="[{ none: postSection2 !== 'preview-section' }, { previewsection: true }]">
+    <div v-if="postSection2 === 'preview-section'" :class="[{ previewsection: true }]">
 
       <div class="previewBtns">
         <button type="button" @click.prevent="changeSection('edit-section')">Edit Post</button>
@@ -720,7 +718,7 @@ function handleInputLast(event: Event) {
       <div v-html="blogHTML" id="previewer"></div>
     </div>
 
-    <div :class="[{ none: postSection3 !== 'publish-section' }, { publishsection: true }]">
+    <div v-if="postSection3 === 'publish-section'" :class="[{ publishsection: true }]">
       <button type="button" @click.prevent="changeSection('edit-section')" class="lastEditBtn">Edit Post</button>
       <form @submit.prevent="createPost()">
         <div class="firstDiv">
