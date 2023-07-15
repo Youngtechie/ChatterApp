@@ -266,7 +266,7 @@ function back() {
                             <p>{{ useCalculateTime(comment.time.seconds) }}</p>
                         </div>
                         <div :id="index.toString() + 'commentDiv'" class="commentShow">{{ comment.text }}</div>
-                        <div v-if="store.signedUser.id === store.viwedPost.posterId" class="commenterBtn">
+                        <div v-if="store.signedUser.id === comment.id" class="commenterBtn">
                             <useEditComment :currentUserId="store.signedUser.id" :viewPostId="props.postId"
                                 :viewPostPosterId="store.viwedPost.posterId" :commentId="comment.commentId"
                                 :commentText="comment.text" :divEditId="index.toString() + 'commentDiv'" />
