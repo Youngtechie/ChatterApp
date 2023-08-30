@@ -2,7 +2,7 @@
 
 export default function convertToRelativeTime(timestamp: number): string {
   const currentTime = Math.floor(Date.now() / 1000); // Current time in seconds
-
+  
   // Calculate the time difference in seconds
   const timeDiffInSeconds = currentTime - timestamp;
 
@@ -14,15 +14,12 @@ export default function convertToRelativeTime(timestamp: number): string {
   } else if (timeDiffInSeconds < 86400) {
     const hoursDiff = Math.floor(timeDiffInSeconds / 3600);
     return hoursDiff + " hours ago";
-  } else if (timeDiffInSeconds < 2592000) {
+  } else{
     const daysDiff = Math.floor(timeDiffInSeconds / 86400);
     if(daysDiff === 1){
       return daysDiff + " day ago";
     }
     return daysDiff + " days ago";
-  } else {
-    const dateTime = new Date(timestamp * 1000); // Convert timestamp to milliseconds
-    return dateTime.toLocaleString();
   }
 }
 </script>
